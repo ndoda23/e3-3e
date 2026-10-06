@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = T["Manage.ResetAuthenticator"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<section class="card narrow">
+    <div class="card-body stack">
+        <div class="alert warning" role="alert">
+            <icon name="alert-triangle" size="18" />
+            <span>@T["Manage.ResetAuthenticatorWarning"]</span>
+        </div>
+        <form method="post" asp-action="ResetAuthenticatorConfirmed" class="row">
+            <button type="submit" class="btn danger-solid">@T["Manage.ResetAuthenticator"]</button>
+            <a class="btn ghost" asp-action="TwoFactor">@T["Common.Cancel"]</a>
+        </form>
+    </div>
+</section>

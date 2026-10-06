@@ -1,0 +1,47 @@
+@model BranchForm
+@{
+    var existing = Model.Existing;
+    ViewData["Title"] = existing is null ? T["Branches.Create"].Value : T["Branches.EditTitle", existing.Name].Value;
+    ViewData["Section"] = T["Nav.Branches"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@(existing is null ? T["Branches.CreateHint"] : T["Branches.EditHint"])</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="@(existing is null ? "Create" : "Edit")" asp-route-id="@existing?.Id.Value" class="card-body form" novalidate>
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Code" class="@(existing is null ? "required" : null)"></label>
+                @if (existing is null)
+                {
+                    <input asp-for="Code" class="inp mono" autocomplete="off" spellcheck="false" maxlength="10" autofocus aria-describedby="code-hint" />
+                    <span id="code-hint" class="hint">@T["Branches.CodeHint"]</span>
+                }
+                else
+                {
+                    <input asp-for="Code" class="inp mono" readonly aria-describedby="code-hint" />
+                    <span id="code-hint" class="hint">@T["Branches.CodeImmutable"]</span>
+                }
+                <span asp-validation-for="Code"></span>
+            </div>
+            <div class="field">
+                <label asp-for="City" class="required"></label>
+                <input asp-for="City" class="inp" autocomplete="off" />
+                <span asp-validation-for="City"></span>
+            </div>
+            <div class="field full">
+                <label asp-for="Name" class="required"></label>
+                <input asp-for="Name" class="inp" autocomplete="off" />
+                <span asp-validation-for="Name"></span>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Common.Save"]</button>
+        </div>
+    </form>
+</section>

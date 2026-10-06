@@ -1,0 +1,17 @@
+@model Lams.Web.Models.RecoveryCodeViewModel
+@{
+    ViewData["Title"] = T["RecoveryCode.Title"].Value;
+    ViewData["Description"] = T["RecoveryCode.Description"].Value;
+}
+<form method="post" asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div class="field">
+        <label asp-for="RecoveryCode" class="required"></label>
+        <input asp-for="RecoveryCode" class="inp mono" autocomplete="off" autofocus />
+        <span asp-validation-for="RecoveryCode"></span>
+    </div>
+    <button type="submit" class="btn primary lg block">@T["RecoveryCode.Submit"]</button>
+</form>
+@section Footer {
+    <a asp-action="LoginWith2fa" asp-route-returnUrl="@ViewData["ReturnUrl"]">@T["RecoveryCode.Back"]</a>
+}

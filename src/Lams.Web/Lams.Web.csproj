@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Presentation layer and composition root. -->
+  <PropertyGroup>
+    <UserSecretsId>lams-web-3f0c5f9e-6a8e-4c7b-9a51-2b1d6c4e8f10</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lams.Application\Lams.Application.csproj" />
+    <ProjectReference Include="..\Lams.Infrastructure\Lams.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="QRCoder" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Lams.IntegrationTests" />
+  </ItemGroup>
+</Project>

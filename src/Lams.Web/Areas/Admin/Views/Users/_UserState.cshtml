@@ -1,0 +1,13 @@
+@model (bool IsActive, bool IsLockedOut)
+@if (!Model.IsActive)
+{
+    <span class="pill neutral"><span class="dot"></span>@T["Users.State.Inactive"]</span>
+}
+else if (Model.IsLockedOut)
+{
+    <span class="pill danger"><span class="dot"></span>@T["Users.State.Locked"]</span>
+}
+else
+{
+    <span class="pill success"><span class="dot"></span>@T["Users.State.Active"]</span>
+}

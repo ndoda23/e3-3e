@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- UI texts, English (neutral culture). Keys are grouped by prefix. Georgian goes in SharedResource.ka.resx. -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Application / layout -->
+  <data name="App.Name" xml:space="preserve"><value>LAMS</value></data>
+  <data name="App.Tagline" xml:space="preserve"><value>Credit Operations</value></data>
+  <data name="Layout.SkipToContent" xml:space="preserve"><value>Skip to content</value></data>
+  <data name="Layout.Breadcrumbs" xml:space="preserve"><value>Breadcrumbs</value></data>
+  <data name="Layout.MainNavigation" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Layout.SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="Topbar.CreateApplication" xml:space="preserve"><value>Create Application</value></data>
+
+  <!-- Navigation -->
+  <data name="Nav.Section.Workspace" xml:space="preserve"><value>Workspace</value></data>
+  <data name="Nav.Section.Administration" xml:space="preserve"><value>Administration</value></data>
+  <data name="Nav.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Nav.Applications" xml:space="preserve"><value>Applications</value></data>
+  <data name="Nav.Packages" xml:space="preserve"><value>Packages</value></data>
+  <data name="Nav.Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="Nav.NewApplication" xml:space="preserve"><value>Create Application</value></data>
+  <data name="Nav.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Nav.Roles" xml:space="preserve"><value>Roles &amp; permissions</value></data>
+  <data name="Nav.AuthorityLimits" xml:space="preserve"><value>Authority limits</value></data>
+  <data name="Nav.Branches" xml:space="preserve"><value>Branches</value></data>
+  <data name="Nav.AuditLog" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Nav.CreditPolicy" xml:space="preserve"><value>Credit policy</value></data>
+  <data name="Nav.Pricing" xml:space="preserve"><value>Risk-based pricing</value></data>
+  <data name="Nav.Settings" xml:space="preserve"><value>Settings</value></data>
+
+  <!-- Dashboards (FRD M1) -->
+  <data name="Dashboard.Officer" xml:space="preserve"><value>Officer dashboard</value></data>
+  <data name="Dashboard.Officer.Description" xml:space="preserve"><value>Your applications and packages, with status and ageing.</value></data>
+  <data name="Dashboard.Underwriter" xml:space="preserve"><value>Underwriter dashboard</value></data>
+  <data name="Dashboard.Underwriter.Description" xml:space="preserve"><value>Applications awaiting your decision.</value></data>
+  <data name="Dashboard.Branch" xml:space="preserve"><value>Branch dashboard</value></data>
+  <data name="Dashboard.Branch.Description" xml:space="preserve"><value>Branch overview: team performance and items waiting for approval.</value></data>
+  <data name="Dashboard.BusinessDevelopment" xml:space="preserve"><value>BDM dashboard</value></data>
+  <data name="Dashboard.BusinessDevelopment.Description" xml:space="preserve"><value>Pipeline: acquisition funnel, channels and monthly targets.</value></data>
+  <data name="Dashboard.BackOffice" xml:space="preserve"><value>Back office dashboard</value></data>
+  <data name="Dashboard.BackOffice.Description" xml:space="preserve"><value>Booking queue of approved applications.</value></data>
+  <data name="Dashboard.AmlScreening" xml:space="preserve"><value>AML screening dashboard</value></data>
+  <data name="Dashboard.AmlScreening.Description" xml:space="preserve"><value>Screening queue of files sent for AML check.</value></data>
+  <data name="Dashboard.Fab" xml:space="preserve"><value>FAB dashboard</value></data>
+  <data name="Dashboard.Fab.Description" xml:space="preserve"><value>ROAE analysis queue of pricing exceptions.</value></data>
+  <data name="Dashboard.Exceptions" xml:space="preserve"><value>Exceptions dashboard</value></data>
+  <data name="Dashboard.Exceptions.Description" xml:space="preserve"><value>Pricing exceptions waiting for your approval.</value></data>
+  <data name="Dashboard.Administration" xml:space="preserve"><value>Administration</value></data>
+  <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, limits and branches.</value></data>
+  <data name="Dashboard.Placeholder.Title" xml:space="preserve"><value>Your work queue arrives in Phase 2</value></data>
+  <data name="Dashboard.Placeholder.Description" xml:space="preserve"><value>Application intake and case management are built in the next phase. Your access is already set up.</value></data>
+
+  <!-- Placeholders -->
+  <data name="ComingSoon.Title" xml:space="preserve"><value>Coming in a later phase</value></data>
+  <data name="ComingSoon.Description" xml:space="preserve"><value>This page is part of the navigation but is built in a later phase.</value></data>
+
+  <!-- User attributes -->
+  <data name="AuthorityLevel.Junior" xml:space="preserve"><value>Junior</value></data>
+  <data name="AuthorityLevel.Standard" xml:space="preserve"><value>Standard</value></data>
+  <data name="AuthorityLevel.Senior" xml:space="preserve"><value>Senior</value></data>
+  <data name="Segment.Retail" xml:space="preserve"><value>Retail</value></data>
+  <data name="Segment.Business" xml:space="preserve"><value>Business</value></data>
+
+  <!-- Error pages -->
+  <data name="Error.NotFound.Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="Error.NotFound.Description" xml:space="preserve"><value>The page you are looking for does not exist or has moved.</value></data>
+  <data name="Error.ServerError.Title" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Error.ServerError.Description" xml:space="preserve"><value>An unexpected error occurred and has been logged. Please try again. If it keeps happening, contact support and quote the reference below.</value></data>
+  <data name="Error.Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Error.TooManyRequests.Title" xml:space="preserve"><value>Too many attempts</value></data>
+  <data name="Error.TooManyRequests.Description" xml:space="preserve"><value>You have made too many requests in a short time. Please wait a minute and try again.</value></data>
+  <data name="Error.StatusCode.Title" xml:space="preserve"><value>The request could not be completed</value></data>
+  <data name="Error.StatusCode.Description" xml:space="preserve"><value>Please go back and try again.</value></data>
+  <data name="Error.BackHome" xml:space="preserve"><value>Back to the start page</value></data>
+
+  <!-- Account, My account, fields, validation (Step 6) -->
+  <data name="Layout.MyAccount" xml:space="preserve"><value>My account</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login.Description" xml:space="preserve"><value>Use your LAMS user name or email address.</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login.Footer" xml:space="preserve"><value>Accounts are created by your administrator. There is no self-registration.</value></data>
+  <data name="Login.InvalidCredentials" xml:space="preserve"><value>Invalid user name or password.</value></data>
+  <data name="Login.TemporaryPasswordExpired" xml:space="preserve"><value>Your temporary password has expired. Contact your administrator.</value></data>
+  <data name="Login.InvalidCode" xml:space="preserve"><value>The code is not valid. Please try again.</value></data>
+  <data name="TwoFactor.Title" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="TwoFactor.Description" xml:space="preserve"><value>Enter the 6-digit code from your authenticator app.</value></data>
+  <data name="TwoFactor.Submit" xml:space="preserve"><value>Verify</value></data>
+  <data name="TwoFactor.NoDevice" xml:space="preserve"><value>No access to your app?</value></data>
+  <data name="TwoFactor.UseRecoveryCode" xml:space="preserve"><value>Use a recovery code</value></data>
+  <data name="RecoveryCode.Title" xml:space="preserve"><value>Sign in with a recovery code</value></data>
+  <data name="RecoveryCode.Description" xml:space="preserve"><value>Each recovery code can be used once.</value></data>
+  <data name="RecoveryCode.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="RecoveryCode.Back" xml:space="preserve"><value>Use the authenticator app instead</value></data>
+  <data name="Lockout.Title" xml:space="preserve"><value>Account locked</value></data>
+  <data name="Lockout.Description" xml:space="preserve"><value>Too many unsuccessful sign-in attempts.</value></data>
+  <data name="Lockout.Detail" xml:space="preserve"><value>For your security the account is locked for 15 minutes. Try again later or contact your administrator.</value></data>
+  <data name="Lockout.BackToLogin" xml:space="preserve"><value>Back to sign in</value></data>
+  <data name="AccessDenied.Title" xml:space="preserve"><value>Access denied</value></data>
+  <data name="AccessDenied.Description" xml:space="preserve"><value>You do not have permission to open this page.</value></data>
+  <data name="ForcedChangePassword.Title" xml:space="preserve"><value>Choose a new password</value></data>
+  <data name="ForcedChangePassword.Description" xml:space="preserve"><value>You signed in with a temporary password. Choose your own password to continue.</value></data>
+  <data name="ForcedChangePassword.Footer" xml:space="preserve"><value>You must change your password before continuing.</value></data>
+  <data name="ChangePassword.Submit" xml:space="preserve"><value>Change password</value></data>
+  <data name="ChangePassword.Rules" xml:space="preserve"><value>At least 12 characters, with upper- and lower-case letters, a digit and a symbol. You cannot reuse any of your last 5 passwords.</value></data>
+  <data name="EnableAuthenticator.Title" xml:space="preserve"><value>Set up two-factor authentication</value></data>
+  <data name="EnableAuthenticator.Description" xml:space="preserve"><value>Protect your account with an authenticator app.</value></data>
+  <data name="EnableAuthenticator.Required" xml:space="preserve"><value>Two-factor authentication is required for your account. Set it up to continue.</value></data>
+  <data name="EnableAuthenticator.Step1" xml:space="preserve"><value>Install an authenticator app on your phone (for example Microsoft Authenticator or Google Authenticator).</value></data>
+  <data name="EnableAuthenticator.Step2" xml:space="preserve"><value>Scan this QR code with the app.</value></data>
+  <data name="EnableAuthenticator.Step3" xml:space="preserve"><value>Enter the 6-digit code shown in the app.</value></data>
+  <data name="EnableAuthenticator.QrLabel" xml:space="preserve"><value>QR code for setting up the authenticator app</value></data>
+  <data name="EnableAuthenticator.ManualKey" xml:space="preserve"><value>Cannot scan? Enter this key manually:</value></data>
+  <data name="EnableAuthenticator.Submit" xml:space="preserve"><value>Verify and turn on</value></data>
+  <data name="EnableAuthenticator.Footer" xml:space="preserve"><value>Set up two-factor authentication to continue.</value></data>
+  <data name="RecoveryCodes.Title" xml:space="preserve"><value>Your recovery codes</value></data>
+  <data name="RecoveryCodes.Description" xml:space="preserve"><value>Use one of these codes to sign in if you lose access to your authenticator app.</value></data>
+  <data name="RecoveryCodes.Warning" xml:space="preserve"><value>Store these codes in a safe place now. They are shown only once and each code works only once.</value></data>
+  <data name="RecoveryCodes.Continue" xml:space="preserve"><value>I have saved my codes</value></data>
+  <data name="Manage.Section" xml:space="preserve"><value>My account</value></data>
+  <data name="Manage.Title" xml:space="preserve"><value>My account</value></data>
+  <data name="Manage.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Manage.ProfileHint" xml:space="preserve"><value>Your role, branch and contact details are managed by your administrator.</value></data>
+  <data name="Manage.ChangePassword" xml:space="preserve"><value>Change password</value></data>
+  <data name="Manage.ChangePasswordHint" xml:space="preserve"><value>Enter your current password and choose a new one.</value></data>
+  <data name="Manage.PasswordChanged" xml:space="preserve"><value>Your password has been changed.</value></data>
+  <data name="Manage.TwoFactor" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Manage.TwoFactorHint" xml:space="preserve"><value>An authenticator app adds a second step when you sign in.</value></data>
+  <data name="Manage.TwoFactorOn" xml:space="preserve"><value>On</value></data>
+  <data name="Manage.TwoFactorOff" xml:space="preserve"><value>Off</value></data>
+  <data name="Manage.TwoFactorRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="Manage.RecoveryCodesLeft" xml:space="preserve"><value>Recovery codes left: {0}</value></data>
+  <data name="Manage.NewRecoveryCodes" xml:space="preserve"><value>Generate new recovery codes</value></data>
+  <data name="Manage.ResetAuthenticator" xml:space="preserve"><value>Reset authenticator app</value></data>
+  <data name="Manage.ResetAuthenticatorWarning" xml:space="preserve"><value>Resetting creates a new key: your current app stops working and you must set it up again before continuing.</value></data>
+  <data name="Manage.DisableTwoFactor" xml:space="preserve"><value>Turn off</value></data>
+  <data name="Manage.EnableTwoFactor" xml:space="preserve"><value>Set up authenticator app</value></data>
+  <data name="Manage.TwoFactorDisabled" xml:space="preserve"><value>Two-factor authentication has been turned off.</value></data>
+  <data name="Field.Login" xml:space="preserve"><value>User name or email</value></data>
+  <data name="Field.Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Field.AuthenticatorCode" xml:space="preserve"><value>Verification code</value></data>
+  <data name="Field.RecoveryCode" xml:space="preserve"><value>Recovery code</value></data>
+  <data name="Field.CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="Field.NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="Field.ConfirmPassword" xml:space="preserve"><value>Confirm new password</value></data>
+  <data name="Field.UserName" xml:space="preserve"><value>User name</value></data>
+  <data name="Field.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Field.Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Field.AuthorityLevel" xml:space="preserve"><value>Authority level</value></data>
+  <data name="Field.Segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="Field.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Field.TwoFactor" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Field.LastLogin" xml:space="preserve"><value>Last sign-in</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>{0} is required.</value></data>
+  <data name="Validation.AuthenticatorCode" xml:space="preserve"><value>Enter the 6-digit code.</value></data>
+  <data name="Validation.PasswordsDoNotMatch" xml:space="preserve"><value>The passwords do not match.</value></data>
+  <data name="Error.Identity.PasswordMismatch" xml:space="preserve"><value>The current password is not correct.</value></data>
+  <data name="Error.Identity.PasswordReused" xml:space="preserve"><value>You cannot reuse any of your last 5 passwords.</value></data>
+  <data name="Error.Identity.PasswordTooShort" xml:space="preserve"><value>The password must be at least 12 characters long.</value></data>
+  <data name="Error.Identity.PasswordRequiresDigit" xml:space="preserve"><value>The password must contain a digit.</value></data>
+  <data name="Error.Identity.PasswordRequiresLower" xml:space="preserve"><value>The password must contain a lower-case letter.</value></data>
+  <data name="Error.Identity.PasswordRequiresUpper" xml:space="preserve"><value>The password must contain an upper-case letter.</value></data>
+  <data name="Error.Identity.PasswordRequiresNonAlphanumeric" xml:space="preserve"><value>The password must contain a symbol.</value></data>
+  <data name="Error.Identity.PasswordRequiresUniqueChars" xml:space="preserve"><value>The password must use at least 4 different characters.</value></data>
+  <data name="Error.Account.InvalidAuthenticatorCode" xml:space="preserve"><value>The verification code is not valid. Check the code in your app and try again.</value></data>
+  <data name="Error.Account.MfaRequired" xml:space="preserve"><value>Two-factor authentication is required for your account and cannot be turned off.</value></data>
+  <data name="Error.Account.MfaNotEnabled" xml:space="preserve"><value>Two-factor authentication is not enabled for your account.</value></data>
+  <data name="Common.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Common.Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>Save changes</value></data>
+  <data name="Pager.Label" xml:space="preserve"><value>Pages</value></data>
+  <data name="Pager.Next" xml:space="preserve"><value>Next page</value></data>
+  <data name="Pager.Previous" xml:space="preserve"><value>Previous page</value></data>
+  <data name="Pager.Showing" xml:space="preserve"><value>{0}–{1} of {2}</value></data>
+  <data name="Field.Capacity" xml:space="preserve"><value>Capacity</value></data>
+  <data name="Field.RequireMfa" xml:space="preserve"><value>Require two-factor authentication</value></data>
+  <data name="Field.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Field.FullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="UserCard.RoleWithLevel" xml:space="preserve"><value>{1} {0}</value></data>
+  <data name="AuthorityLevel.Junior.Short" xml:space="preserve"><value>Jr</value></data>
+  <data name="AuthorityLevel.Standard.Short" xml:space="preserve"><value>Std</value></data>
+  <data name="AuthorityLevel.Senior.Short" xml:space="preserve"><value>Sr</value></data>
+  <data name="Dashboard.AuthorityLimit" xml:space="preserve"><value>Authority limit:</value></data>
+  <data name="Dashboard.AuthorityLimitNone" xml:space="preserve"><value>Authority limit: none set, so every decision is escalated.</value></data>
+  <data name="Audit.When" xml:space="preserve"><value>When</value></data>
+  <data name="Audit.Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Audit.By" xml:space="preserve"><value>By</value></data>
+  <data name="Audit.IpAddress" xml:space="preserve"><value>IP address</value></data>
+  <data name="Users.Description" xml:space="preserve"><value>Staff accounts, their single role and the attributes the role requires.</value></data>
+  <data name="Users.Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Users.StaffHint" xml:space="preserve"><value>Search, filter and sort; toggle who is working today.</value></data>
+  <data name="Users.Search" xml:space="preserve"><value>Search users</value></data>
+  <data name="Users.SearchPlaceholder" xml:space="preserve"><value>Search name, user name or email…</value></data>
+  <data name="Users.AllRoles" xml:space="preserve"><value>All roles</value></data>
+  <data name="Users.AllBranches" xml:space="preserve"><value>All branches</value></data>
+  <data name="Users.Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Users.Status.All" xml:space="preserve"><value>Any status</value></data>
+  <data name="Users.Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Users.Status.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Users.Status.LockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="Users.Column.User" xml:space="preserve"><value>User</value></data>
+  <data name="Users.Column.Working" xml:space="preserve"><value>Working today</value></data>
+  <data name="Users.State.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Users.State.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Users.State.Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Users.You" xml:space="preserve"><value>You</value></data>
+  <data name="Users.In" xml:space="preserve"><value>In</value></data>
+  <data name="Users.Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Users.WorkingToday" xml:space="preserve"><value>Working today: {0}</value></data>
+  <data name="Users.NeverSignedIn" xml:space="preserve"><value>Never</value></data>
+  <data name="Users.NoResults" xml:space="preserve"><value>No users match these filters.</value></data>
+  <data name="Users.View" xml:space="preserve"><value>View user</value></data>
+  <data name="Users.Create" xml:space="preserve"><value>New user</value></data>
+  <data name="Users.CreateHint" xml:space="preserve"><value>The user receives a temporary password and must change it at first sign-in.</value></data>
+  <data name="Users.CreateSubmit" xml:space="preserve"><value>Create user</value></data>
+  <data name="Users.CreateAnother" xml:space="preserve"><value>Create another user</value></data>
+  <data name="Users.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Users.EditTitle" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="Users.EditHint" xml:space="preserve"><value>Account details, role and the attributes the role requires.</value></data>
+  <data name="Users.AccessChangeWarning" xml:space="preserve"><value>Changing the role, branch, segment or authority level signs the user out of their open sessions within a minute.</value></data>
+  <data name="Users.UserNameHint" xml:space="preserve"><value>3–64 letters, digits, dots, hyphens or underscores, e.g. tamta.tatishvili.</value></data>
+  <data name="Users.CapacityHint" xml:space="preserve"><value>Maximum number of open files at once (0–100).</value></data>
+  <data name="Users.ChooseRole" xml:space="preserve"><value>Choose a role</value></data>
+  <data name="Users.ChooseRoleFirst" xml:space="preserve"><value>Choose a role to see the branch, segment and authority level fields it requires.</value></data>
+  <data name="Users.RoleHasNoAttributes" xml:space="preserve"><value>This role has no branch, segment or authority level.</value></data>
+  <data name="Users.ChooseBranch" xml:space="preserve"><value>Choose a branch</value></data>
+  <data name="Users.NoBranch" xml:space="preserve"><value>No branch</value></data>
+  <data name="Users.InactiveBranch" xml:space="preserve"><value>{0} (inactive)</value></data>
+  <data name="Users.ChooseLevel" xml:space="preserve"><value>Choose a level</value></data>
+  <data name="Users.NoLevel" xml:space="preserve"><value>No level</value></data>
+  <data name="Users.LevelHint" xml:space="preserve"><value>Sets the credit decision limit (Admin › Authority limits).</value></data>
+  <data name="Users.ChooseSegment" xml:space="preserve"><value>Choose a segment</value></data>
+  <data name="Users.NoSegment" xml:space="preserve"><value>No segment</value></data>
+  <data name="Users.RequireMfaHint" xml:space="preserve"><value>The user must set up an authenticator app at first sign-in, even if the role does not require it.</value></data>
+  <data name="Users.Saved" xml:space="preserve"><value>The user has been saved.</value></data>
+  <data name="Users.BackToList" xml:space="preserve"><value>All users</value></data>
+  <data name="Users.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Users.Security" xml:space="preserve"><value>Sign-in and security</value></data>
+  <data name="Users.CreatedAt" xml:space="preserve"><value>Created</value></data>
+  <data name="Users.UpdatedAt" xml:space="preserve"><value>Last changed</value></data>
+  <data name="Users.TemporaryPassword" xml:space="preserve"><value>Temporary</value></data>
+  <data name="Users.TemporaryPasswordExpires" xml:space="preserve"><value>Expires {0}</value></data>
+  <data name="Users.PasswordSet" xml:space="preserve"><value>Set by the user</value></data>
+  <data name="Users.MfaEnrolled" xml:space="preserve"><value>Set up</value></data>
+  <data name="Users.MfaNotEnrolled" xml:space="preserve"><value>Not set up</value></data>
+  <data name="Users.MfaRequiredByRole" xml:space="preserve"><value>Required by role</value></data>
+  <data name="Users.MfaRequiredForUser" xml:space="preserve"><value>Required for this user</value></data>
+  <data name="Users.LockedUntil" xml:space="preserve"><value>Locked until</value></data>
+  <data name="Users.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Users.ResetPassword" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Users.ForceSignOut" xml:space="preserve"><value>Force sign-out</value></data>
+  <data name="Users.Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Users.RequireMfa" xml:space="preserve"><value>Require two-factor</value></data>
+  <data name="Users.StopRequiringMfa" xml:space="preserve"><value>Stop requiring two-factor</value></data>
+  <data name="Users.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Users.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Users.Deactivated" xml:space="preserve"><value>The user has been deactivated and signed out.</value></data>
+  <data name="Users.Activated" xml:space="preserve"><value>The user has been activated.</value></data>
+  <data name="Users.Unlocked" xml:space="preserve"><value>The account has been unlocked.</value></data>
+  <data name="Users.SignedOut" xml:space="preserve"><value>The user's sessions end within a minute.</value></data>
+  <data name="Users.MfaRequired" xml:space="preserve"><value>Two-factor authentication is now required for this user.</value></data>
+  <data name="Users.MfaNotRequired" xml:space="preserve"><value>Two-factor authentication is no longer required for this user (unless the role requires it).</value></data>
+  <data name="Users.AvailabilitySaved" xml:space="preserve"><value>Availability has been updated.</value></data>
+  <data name="Users.MarkedWorking" xml:space="preserve"><value>{0} is marked as working today.</value></data>
+  <data name="Users.MarkedUnavailable" xml:space="preserve"><value>{0} is marked as unavailable.</value></data>
+  <data name="Users.RecentActivity" xml:space="preserve"><value>Recent activity</value></data>
+  <data name="Users.RecentActivityHint" xml:space="preserve"><value>The last 10 audit records where this user acted or was changed.</value></data>
+  <data name="Users.NoActivity" xml:space="preserve"><value>No activity recorded yet.</value></data>
+  <data name="Users.Confirm.Deactivate.Title" xml:space="preserve"><value>Deactivate this user?</value></data>
+  <data name="Users.Confirm.Deactivate.Description" xml:space="preserve"><value>The user can no longer sign in, open sessions end within a minute and they are marked unavailable. The account is kept and can be activated again.</value></data>
+  <data name="Users.Confirm.Deactivate.Button" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Users.Confirm.ForceSignOut.Title" xml:space="preserve"><value>Sign this user out everywhere?</value></data>
+  <data name="Users.Confirm.ForceSignOut.Description" xml:space="preserve"><value>All open sessions end within a minute. The user can sign in again.</value></data>
+  <data name="Users.Confirm.ForceSignOut.Button" xml:space="preserve"><value>Force sign-out</value></data>
+  <data name="Users.Confirm.ResetPassword.Title" xml:space="preserve"><value>Reset the password?</value></data>
+  <data name="Users.Confirm.ResetPassword.Description" xml:space="preserve"><value>A new temporary password replaces the current one and open sessions end. The new password is shown once; give it to the user securely.</value></data>
+  <data name="Users.Confirm.ResetPassword.Button" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Users.Created.Title" xml:space="preserve"><value>User created</value></data>
+  <data name="Users.PasswordReset.Title" xml:space="preserve"><value>Password reset</value></data>
+  <data name="Users.TempPassword.ShownOnce" xml:space="preserve"><value>This temporary password is shown only once. Give it to the user securely; they must change it at first sign-in.</value></data>
+  <data name="Users.TempPassword.Label" xml:space="preserve"><value>Temporary password</value></data>
+  <data name="Users.TempPassword.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Users.TempPassword.Copied" xml:space="preserve"><value>Password copied to the clipboard.</value></data>
+  <data name="Users.TempPassword.Expires" xml:space="preserve"><value>Valid until {0}.</value></data>
+  <data name="Users.Done" xml:space="preserve"><value>Done</value></data>
+  <data name="AuditAction.Created" xml:space="preserve"><value>Created</value></data>
+  <data name="AuditAction.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="AuditAction.Deleted" xml:space="preserve"><value>Deleted</value></data>
+  <data name="AuditAction.User.Created" xml:space="preserve"><value>User created</value></data>
+  <data name="AuditAction.User.Updated" xml:space="preserve"><value>User changed</value></data>
+  <data name="AuditAction.Role.Updated" xml:space="preserve"><value>Role changed</value></data>
+  <data name="AuditAction.Branch.Created" xml:space="preserve"><value>Branch created</value></data>
+  <data name="AuditAction.Branch.Updated" xml:space="preserve"><value>Branch changed</value></data>
+  <data name="AuditAction.Branch.Deleted" xml:space="preserve"><value>Branch deleted</value></data>
+  <data name="AuditAction.AuthorityLimit.Created" xml:space="preserve"><value>Authority limit created</value></data>
+  <data name="AuditAction.AuthorityLimit.Updated" xml:space="preserve"><value>Authority limit changed</value></data>
+  <data name="AuditAction.AuthorityLimit.Deleted" xml:space="preserve"><value>Authority limit deleted</value></data>
+  <data name="AuditAction.LoginSucceeded" xml:space="preserve"><value>Signed in</value></data>
+  <data name="AuditAction.LoginFailed" xml:space="preserve"><value>Sign-in failed</value></data>
+  <data name="AuditAction.LoginFailed:TemporaryPasswordExpired" xml:space="preserve"><value>Sign-in failed: temporary password expired</value></data>
+  <data name="AuditAction.LockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="AuditAction.Logout" xml:space="preserve"><value>Signed out</value></data>
+  <data name="AuditAction.SessionExpired" xml:space="preserve"><value>Session expired</value></data>
+  <data name="AuditAction.PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
+  <data name="AuditAction.PasswordReset" xml:space="preserve"><value>Password reset by administrator</value></data>
+  <data name="AuditAction.MfaEnabled" xml:space="preserve"><value>Two-factor turned on</value></data>
+  <data name="AuditAction.MfaDisabled" xml:space="preserve"><value>Two-factor turned off</value></data>
+  <data name="AuditAction.MfaReset" xml:space="preserve"><value>Authenticator reset</value></data>
+  <data name="AuditAction.MfaRequirementChanged" xml:space="preserve"><value>Two-factor requirement changed</value></data>
+  <data name="AuditAction.RecoveryCodesGenerated" xml:space="preserve"><value>Recovery codes generated</value></data>
+  <data name="AuditAction.UserUnlocked" xml:space="preserve"><value>Account unlocked</value></data>
+  <data name="AuditAction.UserActivated" xml:space="preserve"><value>User activated</value></data>
+  <data name="AuditAction.UserDeactivated" xml:space="preserve"><value>User deactivated</value></data>
+  <data name="AuditAction.ForcedSignOut" xml:space="preserve"><value>Signed out by administrator</value></data>
+  <data name="AuditAction.RolePermissionsChanged" xml:space="preserve"><value>Role permissions changed</value></data>
+  <data name="Roles.Description" xml:space="preserve"><value>Each user has exactly one role. A role's permissions decide what its users can see and do.</value></data>
+  <data name="Roles.Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Roles.RolesHint" xml:space="preserve"><value>Data scope, dashboard and field rules are fixed per role; permissions and the two-factor requirement are editable.</value></data>
+  <data name="Roles.DataScope" xml:space="preserve"><value>Data scope</value></data>
+  <data name="Roles.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Roles.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Roles.PermissionCount" xml:space="preserve"><value>Permissions</value></data>
+  <data name="Roles.Administrative" xml:space="preserve"><value>Administrative</value></data>
+  <data name="Roles.MfaOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Roles.EditPermissions" xml:space="preserve"><value>Edit permissions</value></data>
+  <data name="Roles.Matrix" xml:space="preserve"><value>Permission matrix</value></data>
+  <data name="Roles.MatrixHint" xml:space="preserve"><value>Who holds which permission. Open a role to change its permissions.</value></data>
+  <data name="Roles.Permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="Roles.GrantedTo" xml:space="preserve"><value>{0}: granted to {1}</value></data>
+  <data name="Roles.NotGrantedTo" xml:space="preserve"><value>{0}: not granted to {1}</value></data>
+  <data name="Roles.BackToList" xml:space="preserve"><value>All roles</value></data>
+  <data name="Roles.Profile" xml:space="preserve"><value>Role profile</value></data>
+  <data name="Roles.ProfileHint" xml:space="preserve"><value>Fixed by the system (read-only).</value></data>
+  <data name="Roles.MfaHint" xml:space="preserve"><value>When required, every user of this role must set up an authenticator app at their next sign-in.</value></data>
+  <data name="Roles.MfaRequiredForRole" xml:space="preserve"><value>Required for this role</value></data>
+  <data name="Roles.RequireMfa" xml:space="preserve"><value>Require for this role</value></data>
+  <data name="Roles.StopRequiringMfa" xml:space="preserve"><value>Stop requiring for this role</value></data>
+  <data name="Roles.MfaRequired" xml:space="preserve"><value>Two-factor authentication is now required for this role.</value></data>
+  <data name="Roles.MfaNotRequired" xml:space="preserve"><value>Two-factor authentication is no longer required for this role.</value></data>
+  <data name="Roles.SodBusiness" xml:space="preserve"><value>Segregation of duties: a business role cannot hold administration permissions.</value></data>
+  <data name="Roles.SodAdministrative" xml:space="preserve"><value>Segregation of duties: the administrator role holds only administration permissions and must keep "Manage users" and "Manage roles".</value></data>
+  <data name="Roles.ModuleCount" xml:space="preserve"><value>{0} of {1} granted</value></data>
+  <data name="Roles.Locked" xml:space="preserve"><value>Required</value></data>
+  <data name="Roles.NotAssignable" xml:space="preserve"><value>Not for this role</value></data>
+  <data name="Roles.SaveHint" xml:space="preserve"><value>Changes apply to every user of this role on their next page load, without signing out.</value></data>
+  <data name="Roles.Discard" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Roles.SavePermissions" xml:space="preserve"><value>Save permissions</value></data>
+  <data name="Roles.Saved" xml:space="preserve"><value>The role's permissions have been saved.</value></data>
+  <data name="DataScope.None" xml:space="preserve"><value>None</value></data>
+  <data name="DataScope.None.Description" xml:space="preserve"><value>Sees no business records (administration only).</value></data>
+  <data name="DataScope.Own" xml:space="preserve"><value>Own</value></data>
+  <data name="DataScope.Own.Description" xml:space="preserve"><value>Records the user created or owns.</value></data>
+  <data name="DataScope.Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="DataScope.Assigned.Description" xml:space="preserve"><value>Records assigned to the user.</value></data>
+  <data name="DataScope.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="DataScope.Branch.Description" xml:space="preserve"><value>All records of the user's branch.</value></data>
+  <data name="DataScope.Segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="DataScope.Segment.Description" xml:space="preserve"><value>All records of the user's segment (Retail or Business).</value></data>
+  <data name="DataScope.Organization" xml:space="preserve"><value>Organization</value></data>
+  <data name="DataScope.Organization.Description" xml:space="preserve"><value>All records in the bank.</value></data>
+  <data name="AttributeRule.NotAllowed" xml:space="preserve"><value>Not used</value></data>
+  <data name="AttributeRule.Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="AttributeRule.Required" xml:space="preserve"><value>Required</value></data>
+  <data name="Common.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Field.Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="Field.MaxAmount" xml:space="preserve"><value>Maximum amount</value></data>
+  <data name="Field.MaxRateGapPp" xml:space="preserve"><value>Maximum rate gap (pp)</value></data>
+  <data name="Field.MinCustomerRoaePct" xml:space="preserve"><value>Minimum customer ROAE (%)</value></data>
+  <data name="AuthorityLimits.Description" xml:space="preserve"><value>How far each role may decide on its own. Changes apply to the next decision, immediately.</value></data>
+  <data name="AuthorityLimits.Credit" xml:space="preserve"><value>Credit decision limits</value></data>
+  <data name="AuthorityLimits.CreditHint" xml:space="preserve"><value>The largest loan a decider may approve, per role, level and currency. Above the limit, or when no row matches (for example another currency), the file is escalated.</value></data>
+  <data name="AuthorityLimits.NewCredit" xml:space="preserve"><value>New credit decision limit</value></data>
+  <data name="AuthorityLimits.EditCredit" xml:space="preserve"><value>Edit credit decision limit</value></data>
+  <data name="AuthorityLimits.CreditFormHint" xml:space="preserve"><value>A row applies to one role, one authority level (if the role has levels) and one currency.</value></data>
+  <data name="AuthorityLimits.AnyLevel" xml:space="preserve"><value>All users of the role</value></data>
+  <data name="AuthorityLimits.ByLevel" xml:space="preserve"><value> — by level</value></data>
+  <data name="AuthorityLimits.NoLevelOption" xml:space="preserve"><value>No level (role without levels)</value></data>
+  <data name="AuthorityLimits.LevelHint" xml:space="preserve"><value>Roles marked "by level" need a level; other roles must leave it empty.</value></data>
+  <data name="AuthorityLimits.MaxAmountHint" xml:space="preserve"><value>Loans up to and including this amount can be approved.</value></data>
+  <data name="AuthorityLimits.NoCredit" xml:space="preserve"><value>No credit decision limits: every decision is escalated.</value></data>
+  <data name="AuthorityLimits.Pricing" xml:space="preserve"><value>Pricing exception limits</value></data>
+  <data name="AuthorityLimits.PricingHint" xml:space="preserve"><value>Which pricing exceptions a role may approve. An exception outside the limit, or for a role without a row, goes to the Director. Heads approve only their own segment.</value></data>
+  <data name="AuthorityLimits.NewPricing" xml:space="preserve"><value>New pricing exception limit</value></data>
+  <data name="AuthorityLimits.EditPricing" xml:space="preserve"><value>Edit pricing exception limit</value></data>
+  <data name="AuthorityLimits.PricingFormHint" xml:space="preserve"><value>Leave a threshold empty for no limit on it. A row with both empty approves every exception.</value></data>
+  <data name="AuthorityLimits.GapHint" xml:space="preserve"><value>Approvable when the rate is less than this many percentage points below the policy floor (the value itself is not).</value></data>
+  <data name="AuthorityLimits.RoaeHint" xml:space="preserve"><value>Approvable when the customer ROAE is at least this value.</value></data>
+  <data name="AuthorityLimits.GapBelow" xml:space="preserve"><value>Below {0} pp</value></data>
+  <data name="AuthorityLimits.RoaeAtLeast" xml:space="preserve"><value>At least {0}%</value></data>
+  <data name="AuthorityLimits.NoLimit" xml:space="preserve"><value>No limit</value></data>
+  <data name="AuthorityLimits.NoPricing" xml:space="preserve"><value>No pricing exception limits: every exception goes to the Director.</value></data>
+  <data name="AuthorityLimits.RoleRequired" xml:space="preserve"><value>Choose a role.</value></data>
+  <data name="AuthorityLimits.Created" xml:space="preserve"><value>The limit has been added.</value></data>
+  <data name="AuthorityLimits.Saved" xml:space="preserve"><value>The limit has been saved.</value></data>
+  <data name="AuthorityLimits.Deleted" xml:space="preserve"><value>The limit has been deleted.</value></data>
+  <data name="AuthorityLimits.Delete.Title" xml:space="preserve"><value>Delete this limit?</value></data>
+  <data name="AuthorityLimits.Delete.CreditDescription" xml:space="preserve"><value>Without this row, decisions for this role, level and currency are escalated. The change is audited.</value></data>
+  <data name="AuthorityLimits.Delete.PricingDescription" xml:space="preserve"><value>Without this row, every pricing exception of this role goes to the Director. The change is audited.</value></data>
+  <data name="AuthorityLimits.Delete.Button" xml:space="preserve"><value>Delete limit</value></data>
+  <data name="Field.BranchCode" xml:space="preserve"><value>Code</value></data>
+  <data name="Field.BranchName" xml:space="preserve"><value>Name</value></data>
+  <data name="Field.City" xml:space="preserve"><value>City</value></data>
+  <data name="Branches.Description" xml:space="preserve"><value>Branches staff can be assigned to. A branch in use is deactivated, never deleted.</value></data>
+  <data name="Branches.Create" xml:space="preserve"><value>New branch</value></data>
+  <data name="Branches.CreateHint" xml:space="preserve"><value>The code cannot be changed later.</value></data>
+  <data name="Branches.EditTitle" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="Branches.EditHint" xml:space="preserve"><value>Name and city can be changed; the code is permanent.</value></data>
+  <data name="Branches.CodeHint" xml:space="preserve"><value>2–10 letters, digits or hyphens, e.g. VAK. Stored in upper case and never changed.</value></data>
+  <data name="Branches.CodeImmutable" xml:space="preserve"><value>The code is permanent.</value></data>
+  <data name="Branches.Count" xml:space="preserve"><value>{0} active · {1} inactive</value></data>
+  <data name="Branches.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Branches.None" xml:space="preserve"><value>No branches yet.</value></data>
+  <data name="Branches.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Branches.Created" xml:space="preserve"><value>The branch has been added.</value></data>
+  <data name="Branches.Saved" xml:space="preserve"><value>The branch has been saved.</value></data>
+  <data name="Branches.Activated" xml:space="preserve"><value>The branch has been activated.</value></data>
+  <data name="Branches.Deactivated" xml:space="preserve"><value>The branch has been deactivated.</value></data>
+  <data name="Branches.Deleted" xml:space="preserve"><value>The branch has been deleted.</value></data>
+  <data name="Branches.Deactivate.Title" xml:space="preserve"><value>Deactivate this branch?</value></data>
+  <data name="Branches.Deactivate.Description" xml:space="preserve"><value>It can no longer be chosen for users. The {0} user(s) assigned to it keep it until you change them. You can activate it again at any time.</value></data>
+  <data name="Branches.Deactivate.Button" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Branches.Delete.Title" xml:space="preserve"><value>Delete this branch?</value></data>
+  <data name="Branches.Delete.Description" xml:space="preserve"><value>No user is assigned to it, so it can be deleted. The deletion is audited and cannot be undone.</value></data>
+  <data name="Branches.Delete.Button" xml:space="preserve"><value>Delete branch</value></data>
+  <data name="Users.AllActionsByUser" xml:space="preserve"><value>All actions by this user</value></data>
+  <data name="Audit.Description" xml:space="preserve"><value>Every sign-in, security event and administrative change. Records cannot be changed or deleted.</value></data>
+  <data name="Audit.Records" xml:space="preserve"><value>Records</value></data>
+  <data name="Audit.RecordsHint" xml:space="preserve"><value>Newest first. Open a record to see what changed.</value></data>
+  <data name="Audit.Search" xml:space="preserve"><value>Search the audit log</value></data>
+  <data name="Audit.SearchPlaceholder" xml:space="preserve"><value>User name or record id…</value></data>
+  <data name="Audit.AllActions" xml:space="preserve"><value>All actions</value></data>
+  <data name="Audit.AllSubjects" xml:space="preserve"><value>All subjects</value></data>
+  <data name="Audit.Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Audit.SubjectId" xml:space="preserve"><value>Subject id</value></data>
+  <data name="Audit.From" xml:space="preserve"><value>From (date)</value></data>
+  <data name="Audit.To" xml:space="preserve"><value>To (date)</value></data>
+  <data name="Audit.ActorFilter" xml:space="preserve"><value>Only records where this user acted</value></data>
+  <data name="Audit.ClearActor" xml:space="preserve"><value>Show everyone</value></data>
+  <data name="Audit.System" xml:space="preserve"><value>System</value></data>
+  <data name="Audit.ViewDetails" xml:space="preserve"><value>View record</value></data>
+  <data name="Audit.NoResults" xml:space="preserve"><value>No records match these filters.</value></data>
+  <data name="Audit.BackToList" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit.Record" xml:space="preserve"><value>Record</value></data>
+  <data name="Audit.AllByUser" xml:space="preserve"><value>All actions by this user</value></data>
+  <data name="Audit.UserAgent" xml:space="preserve"><value>Browser</value></data>
+  <data name="Audit.CorrelationId" xml:space="preserve"><value>Request id</value></data>
+  <data name="Audit.Changes" xml:space="preserve"><value>What changed</value></data>
+  <data name="Audit.ChangesHint" xml:space="preserve"><value>Before and after, as stored. Passwords, security stamps and authenticator keys are never recorded.</value></data>
+  <data name="Audit.NoChanges" xml:space="preserve"><value>This event records no data change.</value></data>
+  <data name="Audit.Property" xml:space="preserve"><value>Field</value></data>
+  <data name="Audit.Before" xml:space="preserve"><value>Before</value></data>
+  <data name="Audit.After" xml:space="preserve"><value>After</value></data>
+  <data name="Audit.Removed" xml:space="preserve"><value>Removed</value></data>
+  <data name="Audit.Added" xml:space="preserve"><value>Added</value></data>
+  <data name="AuditEntity.User" xml:space="preserve"><value>User</value></data>
+  <data name="AuditEntity.Role" xml:space="preserve"><value>Role</value></data>
+  <data name="AuditEntity.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="AuditEntity.AuthorityLimit" xml:space="preserve"><value>Authority limit</value></data>
+</root>

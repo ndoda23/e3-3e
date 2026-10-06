@@ -1,0 +1,73 @@
+@model UserIndexViewModel
+@{
+    ViewData["Title"] = T["Nav.Users"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    var q = Model.Query;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Users.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <a asp-permission="@Permissions.Admin.UsersManage" class="btn primary" asp-action="Create">
+            <icon name="user-plus" size="15" />@T["Users.Create"]
+        </a>
+    </div>
+</div>
+@if (TempData["Notice"] is string notice)
+{
+    <div class="alert success mb" role="status"><icon name="check" size="18" /><span>@notice</span></div>
+}
+<section class="card" aria-labelledby="users-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="users-title">@T["Users.Staff"]</h2>
+            <p class="card-sub">@T["Users.StaffHint"]</p>
+        </div>
+        @* Without JavaScript this is a normal GET form; with htmx it refreshes only the list as you type. *@
+        <form class="card-tools filters" method="get" asp-action="Index" role="search"
+              hx-get="@Url.Action("Rows")" hx-target="#user-rows" hx-trigger="input delay:300ms, submit">
+            @if (q.Sort != UserSortField.Name)
+            {
+                <input type="hidden" name="sort" value="@q.Sort" />
+            }
+            @if (q.Desc)
+            {
+                <input type="hidden" name="desc" value="true" />
+            }
+            <div class="search">
+                <icon name="search" size="14" />
+                <label class="sr-only" for="user-search">@T["Users.Search"]</label>
+                <input id="user-search" type="search" name="search" value="@q.Search" placeholder="@T["Users.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+            <label class="sr-only" for="user-role">@T["Field.Role"]</label>
+            <select id="user-role" name="role" class="select">
+                <option value="">@T["Users.AllRoles"]</option>
+                @foreach (var role in Model.Roles)
+                {
+                    <option value="@role.Id" selected="@(q.Role == role.Id)">@role.Name</option>
+                }
+            </select>
+            <label class="sr-only" for="user-branch">@T["Field.Branch"]</label>
+            <select id="user-branch" name="branch" class="select">
+                <option value="">@T["Users.AllBranches"]</option>
+                @foreach (var branch in Model.Branches)
+                {
+                    <option value="@branch.Id" selected="@(q.Branch == branch.Id)">@branch.Name</option>
+                }
+            </select>
+            <label class="sr-only" for="user-status">@T["Field.Status"]</label>
+            <select id="user-status" name="status" class="select">
+                @foreach (var status in Enum.GetValues<UserStatusFilter>())
+                {
+                    <option value="@(status == UserStatusFilter.All ? string.Empty : status.ToString())" selected="@(q.Status == status)">@T[$"Users.Status.{status}"]</option>
+                }
+            </select>
+            <noscript><button type="submit" class="btn sm">@T["Users.Filter"]</button></noscript>
+        </form>
+    </div>
+    <div id="user-rows" class="tbl-body">
+        <partial name="_UserRows" model="Model" />
+    </div>
+</section>

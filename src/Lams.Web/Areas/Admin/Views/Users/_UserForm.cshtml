@@ -1,0 +1,53 @@
+@model UserFormModel
+<div asp-validation-summary="ModelOnly" role="alert"></div>
+<div class="form-grid">
+    <div class="field full">
+        <label asp-for="FullName" class="required"></label>
+        <input asp-for="FullName" class="inp" autocomplete="off" autofocus />
+        <span asp-validation-for="FullName"></span>
+    </div>
+    <div class="field">
+        <label asp-for="UserName" class="required"></label>
+        <input asp-for="UserName" class="inp mono" autocomplete="off" spellcheck="false" aria-describedby="username-hint" />
+        <span id="username-hint" class="hint">@T["Users.UserNameHint"]</span>
+        <span asp-validation-for="UserName"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Email" class="required"></label>
+        <input asp-for="Email" type="email" class="inp" autocomplete="off" />
+        <span asp-validation-for="Email"></span>
+    </div>
+    <div class="field">
+        <label asp-for="RoleId" class="required"></label>
+        @* Changing the role reloads the branch / segment / level fields that the role governs (htmx). *@
+        <select asp-for="RoleId" class="inp"
+                hx-get="@Url.Action("RoleFields")" hx-target="#role-fields" hx-swap="outerHTML"
+                hx-include="#BranchId, #Segment, #AuthorityLevel">
+            <option value="">@T["Users.ChooseRole"]</option>
+            @foreach (var role in Model.Roles)
+            {
+                <option value="@role.Id">@role.Name (@role.Code)</option>
+            }
+        </select>
+        <span asp-validation-for="RoleId"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Capacity" class="required"></label>
+        <input asp-for="Capacity" type="number" min="0" max="@StaffMember.MaxCapacity" class="inp tnum" aria-describedby="capacity-hint" />
+        <span id="capacity-hint" class="hint">@T["Users.CapacityHint"]</span>
+        <span asp-validation-for="Capacity"></span>
+    </div>
+    <partial name="_RoleAttributeFields" model="Model" />
+    @if (Model.Existing is null)
+    {
+        <div class="field full">
+            <label class="check">
+                <input asp-for="RequireMfa" class="cb" />
+                <span>
+                    <span class="field-label">@T["Field.RequireMfa"]</span>
+                    <span class="hint block">@T["Users.RequireMfaHint"]</span>
+                </span>
+            </label>
+        </div>
+    }
+</div>

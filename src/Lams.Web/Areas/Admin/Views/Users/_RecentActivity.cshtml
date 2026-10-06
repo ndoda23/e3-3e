@@ -1,0 +1,50 @@
+@model RecentActivityViewModel
+@{
+    var refreshUrl = Url.Action("RecentActivity", new { id = Model.UserId.Value });
+}
+<section id="recent-activity" class="card" aria-labelledby="activity-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="activity-title">@T["Users.RecentActivity"]</h2>
+            <p class="card-sub">@T["Users.RecentActivityHint"]</p>
+        </div>
+        <div class="card-tools">
+            <a asp-permission="@Permissions.Admin.AuditView" class="btn sm" asp-controller="AuditLog" asp-action="Index" asp-route-user="@Model.UserId.Value">
+                <icon name="history" size="14" />@T["Users.AllActionsByUser"]
+            </a>
+            <button type="button" class="btn sm" hx-get="@refreshUrl" hx-target="#recent-activity" hx-swap="outerHTML">
+                <icon name="refresh" size="14" />@T["Common.Refresh"]
+            </button>
+        </div>
+    </div>
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty">@T["Users.NoActivity"]</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th scope="col">@T["Audit.When"]</th>
+                        <th scope="col">@T["Audit.Action"]</th>
+                        <th scope="col">@T["Audit.By"]</th>
+                        <th scope="col">@T["Audit.IpAddress"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="muted tnum">@DisplayFormat.DateTime(item.OccurredAt)</td>
+                            <td>@T.AuditAction(item.Action, item.EntityType)</td>
+                            <td>@(item.UserName ?? DisplayFormat.Empty)</td>
+                            <td class="mono small">@(item.IpAddress ?? DisplayFormat.Empty)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -1,0 +1,12 @@
+@model AvailabilityToggleModel
+@* A form with one switch button: posts the opposite state. With htmx it swaps itself; without, the page reloads. *@
+<form class="availability" method="post" asp-action="Availability" asp-route-id="@Model.UserId.Value"
+      hx-post="@Url.Action("Availability", new { id = Model.UserId.Value })" hx-target="this" hx-swap="outerHTML">
+    <input type="hidden" name="isAvailable" value="@(Model.IsAvailable ? "false" : "true")" />
+    <button type="submit" class="toggle" role="switch" aria-checked="@(Model.IsAvailable ? "true" : "false")"
+            aria-label="@T["Users.WorkingToday", Model.FullName]"
+            disabled="@(!Model.CanManage || !Model.IsActive)">
+        <span class="track"></span>
+        <span class="@(Model.IsAvailable ? "state-on" : "state-off")">@(Model.IsAvailable ? T["Users.In"] : T["Users.Off"])</span>
+    </button>
+</form>

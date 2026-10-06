@@ -1,0 +1,30 @@
+@model Lams.Web.Models.PagerModel
+<nav class="pager" aria-label="@T["Pager.Label"]">
+    <span>@T["Pager.Showing", Model.FirstItem, Model.LastItem, Model.TotalCount]</span>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pager-right">
+            <a class="pg-btn" href="@Model.PageUrl(Model.Page - 1)" hx-get="@Model.PartialUrl(Model.Page - 1)" hx-target="@Model.Target"
+               aria-disabled="@(Model.Page <= 1 ? "true" : null)" title="@T["Pager.Previous"]">
+                <icon name="chevron-left" size="14" label="@T["Pager.Previous"]" />
+            </a>
+            @foreach (var p in Model.Pages())
+            {
+                if (p is { } number)
+                {
+                    <a class="pg-btn @(number == Model.Page ? "active" : null)" href="@Model.PageUrl(number)"
+                       hx-get="@Model.PartialUrl(number)" hx-target="@Model.Target"
+                       aria-current="@(number == Model.Page ? "page" : null)">@number</a>
+                }
+                else
+                {
+                    <span class="pg-gap" aria-hidden="true">…</span>
+                }
+            }
+            <a class="pg-btn" href="@Model.PageUrl(Model.Page + 1)" hx-get="@Model.PartialUrl(Model.Page + 1)" hx-target="@Model.Target"
+               aria-disabled="@(Model.Page >= Model.TotalPages ? "true" : null)" title="@T["Pager.Next"]">
+                <icon name="chevron-right" size="14" label="@T["Pager.Next"]" />
+            </a>
+        </div>
+    }
+</nav>

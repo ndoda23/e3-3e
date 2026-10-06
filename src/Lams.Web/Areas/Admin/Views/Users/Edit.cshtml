@@ -1,0 +1,28 @@
+@model UserFormModel
+@{
+    var existing = Model.Existing!;
+    ViewData["Title"] = T["Users.EditTitle", existing.FullName].Value;
+    ViewData["Section"] = T["Nav.Users"].Value;
+}
+<div class="page-head">
+    <div class="row">
+        <avatar name="@existing.FullName" size="lg" />
+        <div>
+            <h1 class="page-title">@existing.FullName</h1>
+            <p class="page-desc">@T["Users.EditHint"]</p>
+        </div>
+    </div>
+</div>
+<div class="alert info mb form-card">
+    <icon name="shield-check" size="18" />
+    <span>@T["Users.AccessChangeWarning"]</span>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="Edit" asp-route-id="@existing.Id.Value" class="card-body form" novalidate>
+        <partial name="_UserForm" model="Model" />
+        <div class="form-actions">
+            <a class="btn" asp-action="Details" asp-route-id="@existing.Id.Value">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Common.Save"]</button>
+        </div>
+    </form>
+</section>

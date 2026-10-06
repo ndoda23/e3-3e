@@ -1,0 +1,9 @@
+[*.cs]
+# Test method names use underscores for readability.
+dotnet_diagnostic.CA1707.severity = none
+# Test classes are discovered by reflection.
+dotnet_diagnostic.CA1515.severity = none
+# Static readonly fields without underscore are fine in tests.
+dotnet_naming_rule.private_fields_underscore.severity = none
+# Inline arrays in test data are clearer than static fields.
+dotnet_diagnostic.CA1861.severity = none

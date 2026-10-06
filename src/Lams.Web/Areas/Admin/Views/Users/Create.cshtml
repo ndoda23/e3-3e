@@ -1,0 +1,20 @@
+@model UserFormModel
+@{
+    ViewData["Title"] = T["Users.Create"].Value;
+    ViewData["Section"] = T["Nav.Users"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Users.CreateHint"]</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="Create" class="card-body form" novalidate>
+        <partial name="_UserForm" model="Model" />
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="user-plus" size="15" />@T["Users.CreateSubmit"]</button>
+        </div>
+    </form>
+</section>

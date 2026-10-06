@@ -1,0 +1,37 @@
+@model (string? EntityType, string? EntityId)
+@{
+    // A link to the audited record where an admin page exists for it; otherwise the plain identifier.
+    string? url = null;
+    if (Model.EntityType is not null && Model.EntityId is not null)
+    {
+        var isGuid = Guid.TryParse(Model.EntityId, out var guid);
+        url = Model.EntityType switch
+        {
+            "User" when isGuid => Url.Action("Details", "Users", new { id = guid }),
+            "Branch" when isGuid => Url.Action("Edit", "Branches", new { id = guid }),
+            "Role" when isGuid => Url.Action("Permissions", "Roles", new { id = guid }),
+            "Role" => Url.Action("Index", "Roles"),
+            "AuthorityLimit" => Url.Action("Index", "AuthorityLimits"),
+            _ => null,
+        };
+    }
+}
+@if (Model.EntityType is null)
+{
+    @DisplayFormat.Empty
+}
+else
+{
+    <span>@T.TextOrDefault($"AuditEntity.{Model.EntityType}", Model.EntityType)</span>
+    @if (Model.EntityId is not null)
+    {
+        if (url is not null)
+        {
+            <a class="mono small" href="@url" title="@Model.EntityId">@(Model.EntityId.Length > 13 ? Model.EntityId[..8] + "…" : Model.EntityId)</a>
+        }
+        else
+        {
+            <span class="mono small" title="@Model.EntityId">@(Model.EntityId.Length > 13 ? Model.EntityId[..8] + "…" : Model.EntityId)</span>
+        }
+    }
+}

@@ -1,0 +1,7 @@
+@model ConfirmUserOperationModel
+@{
+    ViewData["Title"] = T[$"Users.Confirm.{Model.Operation}.Title"].Value;
+    ViewData["Section"] = T["Nav.Users"].Value;
+}
+@* Shown when JavaScript is off: the same dialog as a page. *@
+<partial name="_ConfirmActionModal" model="Model" />

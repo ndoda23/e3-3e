@@ -1,0 +1,61 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,xml,csproj,props,targets,yml,yaml}]
+indent_size = 2
+
+[*.{css,js,cshtml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# ----- Language / style -----
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_braces = when_multiline:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_readonly_field = true:warning
+
+# Private fields: _camelCase
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly.applicable_kinds = field
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+# Unused usings are errors (needs GenerateDocumentationFile for IDE0005 in build; kept as suggestion otherwise)
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# ----- Analyzer rules tuned for an ASP.NET Core application -----
+# ConfigureAwait is not needed in ASP.NET Core (no SynchronizationContext).
+dotnet_diagnostic.CA2007.severity = none
+# Public types are required by MVC, EF Core, DI and tests; internal-by-default does not fit this app.
+dotnet_diagnostic.CA1515.severity = none
+# Domain / DTO collections are exposed intentionally as read-only interfaces.
+dotnet_diagnostic.CA1002.severity = suggestion
+# The solution is C# only; VB keyword clashes (e.g. a type named Error) are irrelevant.
+dotnet_diagnostic.CA1716.severity = none
+
+# EF Core migrations are generated code.
+[**/Migrations/*.cs]
+generated_code = true

@@ -1,0 +1,35 @@
+@model ConfirmUserOperationModel
+@{
+    var id = Model.UserId.Value;
+    var operation = Model.Operation.ToString();
+    var actionUrl = Url.Action(operation, new { id });
+    var detailsUrl = Url.Action("Details", new { id });
+    var icon = Model.Operation switch
+    {
+        UserOperation.Deactivate => "user-x",
+        UserOperation.ForceSignOut => "log-out",
+        _ => "key",
+    };
+}
+<div class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-desc" tabindex="-1">
+        <div class="modal-head">
+            <span class="modal-icon @(Model.IsDangerous ? "danger" : "warning")"><icon name="@icon" size="20" /></span>
+            <div>
+                <h2 class="modal-title" id="confirm-title">@T[$"Users.Confirm.{operation}.Title"]</h2>
+                <p class="modal-sub">@Model.FullName</p>
+            </div>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-desc">@T[$"Users.Confirm.{operation}.Description"]</p>
+        </div>
+        @* Reset password answers with the one-time password modal (htmx); the other actions reload the details page. *@
+        <form class="modal-foot" method="post" action="@actionUrl"
+              hx-post="@(Model.Operation == UserOperation.ResetPassword ? actionUrl : null)"
+              hx-target="@(Model.Operation == UserOperation.ResetPassword ? "#modal-host" : null)">
+            @Html.AntiForgeryToken()
+            <a class="btn" href="@detailsUrl" data-close-modal>@T["Common.Cancel"]</a>
+            <button type="submit" class="btn @(Model.IsDangerous ? "danger-solid" : "primary")" autofocus>@T[$"Users.Confirm.{operation}.Button"]</button>
+        </form>
+    </div>
+</div>

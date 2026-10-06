@@ -1,0 +1,8 @@
+@model int
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = T["Error.StatusCode.Title"].Value;
+    ViewData["Description"] = T["Error.StatusCode.Description"].Value;
+}
+<p class="status-code">@Model</p>
+<a class="btn primary block" href="/">@T["Error.BackHome"]</a>

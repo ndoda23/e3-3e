@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = T["Lockout.Title"].Value;
+    ViewData["Description"] = T["Lockout.Description"].Value;
+}
+<div class="alert warning mb" role="alert">
+    <icon name="lock" size="18" />
+    <span>@T["Lockout.Detail"]</span>
+</div>
+<a class="btn block" asp-action="Login">@T["Lockout.BackToLogin"]</a>

@@ -1,0 +1,124 @@
+@model AuditDetailsViewModel
+@{
+    var r = Model.Record;
+    var c = Model.Changes;
+    ViewData["Title"] = T.AuditAction(r.Action, r.EntityType);
+    ViewData["Section"] = T["Nav.AuditLog"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc"><span class="code">@r.Action</span> · @DisplayFormat.DateTime(r.OccurredAt)</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Audit.BackToList"]</a>
+    </div>
+</div>
+<section class="card mb" aria-labelledby="audit-meta-title">
+    <div class="card-head">
+        <h2 class="card-title" id="audit-meta-title">@T["Audit.Record"]</h2>
+        <span class="card-tools small">#@r.Id.Value</span>
+    </div>
+    <div class="card-body">
+        <dl class="dl">
+            <dt>@T["Audit.When"]</dt><dd>@r.OccurredAt.ToLocalTime().ToString("F") <span class="small mono">(@r.OccurredAt.UtcDateTime.ToString("u"))</span></dd>
+            <dt>@T["Audit.By"]</dt>
+            <dd>
+                @(r.UserName ?? T["Audit.System"].Value)
+                @if (r.UserId is { } actor)
+                {
+                    <a class="small" asp-action="Index" asp-route-user="@actor">@T["Audit.AllByUser"]</a>
+                }
+            </dd>
+            <dt>@T["Audit.Subject"]</dt><dd><partial name="_AuditSubject" model="(r.EntityType, r.EntityId)" /></dd>
+            @if (r.EntityId is not null)
+            {
+                <dt>@T["Audit.SubjectId"]</dt><dd class="mono small">@r.EntityId</dd>
+            }
+            <dt>@T["Audit.IpAddress"]</dt><dd class="mono">@(r.IpAddress ?? DisplayFormat.Empty)</dd>
+            <dt>@T["Audit.UserAgent"]</dt><dd class="small">@(r.UserAgent ?? DisplayFormat.Empty)</dd>
+            <dt>@T["Audit.CorrelationId"]</dt><dd class="mono small">@(r.CorrelationId ?? DisplayFormat.Empty)</dd>
+        </dl>
+    </div>
+</section>
+
+<section class="card" aria-labelledby="audit-changes-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="audit-changes-title">@T["Audit.Changes"]</h2>
+            <p class="card-sub">@T["Audit.ChangesHint"]</p>
+        </div>
+    </div>
+    @if (c.IsEmpty)
+    {
+        <div class="empty">@T["Audit.NoChanges"]</div>
+    }
+    else if (c.IsPropertyTable)
+    {
+        <div class="table-wrap">
+            <table class="tbl diff">
+                <thead>
+                    <tr>
+                        <th scope="col">@T["Audit.Property"]</th>
+                        <th scope="col">@T["Audit.Before"]</th>
+                        <th scope="col">@T["Audit.After"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in c.Properties)
+                    {
+                        <tr class="@(p.IsChanged ? "changed" : null)" data-property="@p.Name">
+                            <th scope="row" class="mono small">@p.Name</th>
+                            <td class="mono small before">@(p.Before ?? DisplayFormat.Empty)</td>
+                            <td class="mono small after">@(p.After ?? DisplayFormat.Empty)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (c.IsList)
+    {
+        <div class="card-body grid-2">
+            <div>
+                <h3 class="field-label">@T["Audit.Removed"]</h3>
+                <ul class="diff-list removed">
+                    @foreach (var item in c.Removed)
+                    {
+                        <li class="mono small" data-removed="@item">− @item</li>
+                    }
+                    @if (c.Removed.Count == 0)
+                    {
+                        <li class="muted small">@DisplayFormat.Empty</li>
+                    }
+                </ul>
+            </div>
+            <div>
+                <h3 class="field-label">@T["Audit.Added"]</h3>
+                <ul class="diff-list added">
+                    @foreach (var item in c.Added)
+                    {
+                        <li class="mono small" data-added="@item">+ @item</li>
+                    }
+                    @if (c.Added.Count == 0)
+                    {
+                        <li class="muted small">@DisplayFormat.Empty</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-body grid-2">
+            <div>
+                <h3 class="field-label">@T["Audit.Before"]</h3>
+                <pre class="json">@(c.RawBefore ?? DisplayFormat.Empty)</pre>
+            </div>
+            <div>
+                <h3 class="field-label">@T["Audit.After"]</h3>
+                <pre class="json">@(c.RawAfter ?? DisplayFormat.Empty)</pre>
+            </div>
+        </div>
+    }
+</section>

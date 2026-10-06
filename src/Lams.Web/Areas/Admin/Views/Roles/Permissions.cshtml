@@ -1,0 +1,125 @@
+@model RolePermissionsViewModel
+@{
+    var role = Model.Role;
+    var profile = role.Profile;
+    ViewData["Title"] = role.DisplayName;
+    ViewData["Section"] = T["Nav.Roles"].Value;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@role.DisplayName</h1>
+            <span class="code">@profile.Code.Value</span>
+            @if (profile.IsAdministrative)
+            {
+                <span class="chip">@T["Roles.Administrative"]</span>
+            }
+        </div>
+        <p class="page-desc">@role.Description</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Roles.BackToList"]</a>
+    </div>
+</div>
+@if (TempData["Notice"] is string notice)
+{
+    <div class="alert success mb" role="status"><icon name="check" size="18" /><span>@notice</span></div>
+}
+
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="role-profile-title">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="role-profile-title">@T["Roles.Profile"]</h2>
+                <p class="card-sub">@T["Roles.ProfileHint"]</p>
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="dl">
+                <dt>@T["Roles.DataScope"]</dt>
+                <dd>@T[$"DataScope.{profile.DataScope}"] <div class="small">@T[$"DataScope.{profile.DataScope}.Description"]</div></dd>
+                <dt>@T["Roles.Dashboard"]</dt><dd>@T[$"Dashboard.{profile.Dashboard}"]</dd>
+                <dt>@T["Field.Branch"]</dt><dd>@T[$"AttributeRule.{profile.BranchRule}"]</dd>
+                <dt>@T["Field.AuthorityLevel"]</dt><dd>@T[$"AttributeRule.{profile.AuthorityLevelRule}"]</dd>
+                <dt>@T["Field.Segment"]</dt><dd>@T[$"AttributeRule.{profile.SegmentRule}"]</dd>
+                <dt>@T["Roles.Users"]</dt><dd class="tnum">@role.UserCount</dd>
+            </dl>
+        </div>
+    </section>
+    <section class="card" aria-labelledby="role-mfa-title">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="role-mfa-title">@T["Field.TwoFactor"]</h2>
+                <p class="card-sub">@T["Roles.MfaHint"]</p>
+            </div>
+        </div>
+        <div class="card-body stack">
+            <div class="row">
+                @if (role.RequireMfa)
+                {
+                    <span class="pill info"><span class="dot"></span>@T["Roles.MfaRequiredForRole"]</span>
+                }
+                else
+                {
+                    <span class="pill neutral"><span class="dot"></span>@T["Roles.MfaOptional"]</span>
+                }
+            </div>
+            <form method="post" asp-action="RequireMfa" asp-route-id="@role.Id.Value">
+                <input type="hidden" name="require" value="@(role.RequireMfa ? "false" : "true")" />
+                <button type="submit" class="btn sm"><icon name="smartphone" size="14" />@(role.RequireMfa ? T["Roles.StopRequiringMfa"] : T["Roles.RequireMfa"])</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+<form method="post" asp-action="Permissions" asp-route-id="@role.Id.Value" class="stack" novalidate>
+    <div asp-validation-summary="All" role="alert"></div>
+    <div class="alert info">
+        <icon name="shield-check" size="18" />
+        <span>@(profile.IsAdministrative ? T["Roles.SodAdministrative"] : T["Roles.SodBusiness"])</span>
+    </div>
+    @foreach (var group in Model.Editor.Groups)
+    {
+        var headingId = $"module-{group.ModuleKey}";
+        <section class="card" aria-labelledby="@headingId">
+            <div class="card-head">
+                <h2 class="card-title" id="@headingId">@T.TextOrDefault($"PermissionModule.{group.ModuleKey}", group.ModuleName)</h2>
+                <span class="card-tools small">@T["Roles.ModuleCount", group.Items.Count(i => i.IsGranted), group.Items.Count]</span>
+            </div>
+            <ul class="perm-list">
+                @foreach (var item in group.Items)
+                {
+                    var inputId = "perm-" + item.Code.Replace('.', '-');
+                    var disabled = item.IsLocked || !item.IsAssignable;
+                    <li class="perm @(disabled ? "disabled" : null)" data-permission="@item.Code">
+                        <input type="checkbox" class="cb" id="@inputId" name="permissions" value="@item.Code"
+                               checked="@item.IsGranted" disabled="@disabled" aria-describedby="@inputId-desc" />
+                        @if (item.IsLocked)
+                        {
+                            @* Disabled checkboxes are not posted: the locked grant is sent explicitly. *@
+                            <input type="hidden" name="permissions" value="@item.Code" />
+                        }
+                        <label for="@inputId" class="perm-text">
+                            <span class="perm-name">@T.TextOrDefault($"Permission.{item.Code}", item.DisplayName)</span>
+                            <span class="code">@item.Code</span>
+                            @if (item.IsLocked)
+                            {
+                                <span class="pill info"><icon name="lock" size="11" />@T["Roles.Locked"]</span>
+                            }
+                            else if (!item.IsAssignable)
+                            {
+                                <span class="pill neutral">@T["Roles.NotAssignable"]</span>
+                            }
+                            <span class="perm-desc" id="@inputId-desc">@T.TextOrDefault($"Permission.{item.Code}.Description", item.Description)</span>
+                        </label>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+    <div class="save-bar">
+        <span class="small">@T["Roles.SaveHint"]</span>
+        <a class="btn" asp-action="Permissions" asp-route-id="@role.Id.Value">@T["Roles.Discard"]</a>
+        <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Roles.SavePermissions"]</button>
+    </div>
+</form>

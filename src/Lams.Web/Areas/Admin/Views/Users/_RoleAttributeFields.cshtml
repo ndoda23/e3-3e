@@ -1,0 +1,66 @@
+@model UserFormModel
+@{
+    var role = Model.SelectedRole;
+}
+@* Fields governed by the role: Required (must be set), Optional (may be set) or NotAllowed (not shown, cleared). *@
+<div id="role-fields" class="form-grid full" data-role="@role?.Code">
+    @if (role is null)
+    {
+        <p class="hint full">@T["Users.ChooseRoleFirst"]</p>
+    }
+    else if (role.BranchRule == AttributeRule.NotAllowed
+             && role.SegmentRule == AttributeRule.NotAllowed
+             && role.AuthorityLevelRule == AttributeRule.NotAllowed)
+    {
+        <p class="hint full">@T["Users.RoleHasNoAttributes"]</p>
+    }
+    else
+    {
+        @if (role.BranchRule != AttributeRule.NotAllowed)
+        {
+            var required = role.BranchRule == AttributeRule.Required;
+            <div class="field">
+                <label asp-for="BranchId" class="@(required ? "required" : null)"></label>
+                <select asp-for="BranchId" class="inp">
+                    <option value="">@(required ? T["Users.ChooseBranch"] : T["Users.NoBranch"])</option>
+                    @foreach (var branch in Model.SelectableBranches)
+                    {
+                        <option value="@branch.Id">@(branch.IsActive ? branch.Name : T["Users.InactiveBranch", branch.Name].Value)</option>
+                    }
+                </select>
+                <span asp-validation-for="BranchId"></span>
+            </div>
+        }
+        @if (role.AuthorityLevelRule != AttributeRule.NotAllowed)
+        {
+            var required = role.AuthorityLevelRule == AttributeRule.Required;
+            <div class="field">
+                <label asp-for="AuthorityLevel" class="@(required ? "required" : null)"></label>
+                <select asp-for="AuthorityLevel" class="inp" aria-describedby="level-hint">
+                    <option value="">@(required ? T["Users.ChooseLevel"] : T["Users.NoLevel"])</option>
+                    @foreach (var level in Enum.GetValues<AuthorityLevel>())
+                    {
+                        <option value="@level">@T[$"AuthorityLevel.{level}"]</option>
+                    }
+                </select>
+                <span id="level-hint" class="hint">@T["Users.LevelHint"]</span>
+                <span asp-validation-for="AuthorityLevel"></span>
+            </div>
+        }
+        @if (role.SegmentRule != AttributeRule.NotAllowed)
+        {
+            var required = role.SegmentRule == AttributeRule.Required;
+            <div class="field">
+                <label asp-for="Segment" class="@(required ? "required" : null)"></label>
+                <select asp-for="Segment" class="inp">
+                    <option value="">@(required ? T["Users.ChooseSegment"] : T["Users.NoSegment"])</option>
+                    @foreach (var segment in Enum.GetValues<Segment>())
+                    {
+                        <option value="@segment">@T[$"Segment.{segment}"]</option>
+                    }
+                </select>
+                <span asp-validation-for="Segment"></span>
+            </div>
+        }
+    }
+</div>

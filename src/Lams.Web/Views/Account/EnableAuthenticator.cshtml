@@ -1,0 +1,44 @@
+@using Lams.Web.Infrastructure
+@model Lams.Web.Models.EnableAuthenticatorViewModel
+@{
+    ViewData["Title"] = T["EnableAuthenticator.Title"].Value;
+    ViewData["Description"] = T["EnableAuthenticator.Description"].Value;
+}
+@if (Model.Required)
+{
+    <div class="alert info mb" role="status">
+        <icon name="shield-check" size="18" />
+        <span>@T["EnableAuthenticator.Required"]</span>
+    </div>
+}
+<ol class="steps">
+    <li>@T["EnableAuthenticator.Step1"]</li>
+    <li>
+        @T["EnableAuthenticator.Step2"]
+        <div class="qr-wrap">@QrCodeSvg.Render(Model.AuthenticatorUri, T["EnableAuthenticator.QrLabel"].Value)</div>
+        <p class="small">@T["EnableAuthenticator.ManualKey"] <span class="code" data-shared-key>@Model.SharedKey</span></p>
+    </li>
+    <li>@T["EnableAuthenticator.Step3"]</li>
+</ol>
+<form method="post" asp-action="EnableAuthenticator" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div class="field">
+        <label asp-for="Code" class="required"></label>
+        <input asp-for="Code" class="inp mono" autocomplete="one-time-code" inputmode="numeric" maxlength="7" />
+        <span asp-validation-for="Code"></span>
+    </div>
+    <button type="submit" class="btn primary lg block">@T["EnableAuthenticator.Submit"]</button>
+</form>
+@section Footer {
+    @if (Model.Required)
+    {
+        <form method="post" action="/Account/Logout" class="row">
+            <span class="grow">@T["EnableAuthenticator.Footer"]</span>
+            <button type="submit" class="btn sm ghost">@T["Layout.SignOut"]</button>
+        </form>
+    }
+    else
+    {
+        <a href="/Account/Manage/TwoFactor">@T["Common.Cancel"]</a>
+    }
+}

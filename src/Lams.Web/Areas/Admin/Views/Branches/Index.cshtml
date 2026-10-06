@@ -1,0 +1,103 @@
+@model IReadOnlyList<Lams.Application.Branches.BranchSummary>
+@{
+    ViewData["Title"] = T["Nav.Branches"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    var active = Model.Count(b => b.IsActive);
+
+    string ConfirmUrl(Guid id, bool delete) => Url.Action("Confirm", new { id, delete = delete ? "true" : "false" })!;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Branches.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn primary" asp-action="Create"><icon name="plus" size="15" />@T["Branches.Create"]</a>
+    </div>
+</div>
+@if (TempData["Notice"] is string notice)
+{
+    <div class="alert success mb" role="status"><icon name="check" size="18" /><span>@notice</span></div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert danger mb" role="alert"><icon name="alert-triangle" size="18" /><span>@error</span></div>
+}
+<section class="card" aria-labelledby="branches-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="branches-title">@T["Nav.Branches"]</h2>
+            <p class="card-sub">@T["Branches.Count", active, Model.Count - active]</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Field.BranchCode"]</th>
+                    <th scope="col">@T["Field.BranchName"]</th>
+                    <th scope="col">@T["Field.City"]</th>
+                    <th scope="col" class="num">@T["Branches.Users"]</th>
+                    <th scope="col">@T["Field.Status"]</th>
+                    <th scope="col"><span class="sr-only">@T["Common.Actions"]</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var branch in Model)
+                {
+                    var id = branch.Id.Value;
+                    <tr class="@(branch.IsActive ? null : "inactive")" data-branch="@branch.Code">
+                        <td><span class="code">@branch.Code</span></td>
+                        <td>@branch.Name</td>
+                        <td>@branch.City</td>
+                        <td class="num">
+                            @if (branch.AssignedUserCount > 0)
+                            {
+                                <a href="@Url.Action("Index", "Users", new { branch = id })">@branch.AssignedUserCount</a>
+                            }
+                            else
+                            {
+                                @branch.AssignedUserCount
+                            }
+                        </td>
+                        <td>
+                            @if (branch.IsActive)
+                            {
+                                <span class="pill success"><span class="dot"></span>@T["Users.State.Active"]</span>
+                            }
+                            else
+                            {
+                                <span class="pill neutral"><span class="dot"></span>@T["Users.State.Inactive"]</span>
+                            }
+                        </td>
+                        <td class="actions">
+                            <div class="row">
+                                <a class="btn sm" asp-action="Edit" asp-route-id="@id"><icon name="edit" size="14" />@T["Common.Edit"]</a>
+                                @if (branch.IsActive)
+                                {
+                                    <a class="btn sm" href="@ConfirmUrl(id, false)" hx-get="@ConfirmUrl(id, false)" hx-target="#modal-host">@T["Branches.Deactivate.Button"]</a>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-action="Activate" asp-route-id="@id">
+                                        <button type="submit" class="btn sm">@T["Branches.Activate"]</button>
+                                    </form>
+                                }
+                                @if (branch.AssignedUserCount == 0)
+                                {
+                                    <a class="icon-btn plain" href="@ConfirmUrl(id, true)" hx-get="@ConfirmUrl(id, true)" hx-target="#modal-host" title="@T["Branches.Delete.Button"]">
+                                        <icon name="x" size="16" label="@T["Branches.Delete.Button"]" />
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.Count == 0)
+        {
+            <div class="empty">@T["Branches.None"]</div>
+        }
+    </div>
+</section>

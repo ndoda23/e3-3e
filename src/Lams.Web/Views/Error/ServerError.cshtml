@@ -1,0 +1,8 @@
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = T["Error.ServerError.Title"].Value;
+    ViewData["Description"] = T["Error.ServerError.Description"].Value;
+    var reference = System.Diagnostics.Activity.Current?.TraceId.ToString() ?? Context.TraceIdentifier;
+}
+<p class="small">@T["Error.Reference"]: <span class="code">@reference</span></p>
+<a class="btn primary block" href="/">@T["Error.BackHome"]</a>

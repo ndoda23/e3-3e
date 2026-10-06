@@ -1,0 +1,109 @@
+@model UserIndexViewModel
+@{
+    var q = Model.Query;
+    var page = Model.Users;
+
+    string IndexUrl(UserSortField? sort = null, bool? desc = null, int? number = null) =>
+        Url.Action("Index", q.RouteValues(sort, desc, number))!;
+    string RowsUrl(UserSortField? sort = null, bool? desc = null, int? number = null) =>
+        Url.Action("Rows", q.RouteValues(sort, desc, number))!;
+
+    var columns = new (UserSortField? Field, string Label)[]
+    {
+        (UserSortField.Name, T["Users.Column.User"].Value),
+        (UserSortField.Role, T["Field.Role"].Value),
+        (UserSortField.Branch, T["Field.Branch"].Value),
+        (UserSortField.Status, T["Field.Status"].Value),
+        (null, T["Users.Column.Working"].Value),
+        (UserSortField.LastLogin, T["Field.LastLogin"].Value),
+    };
+    var pager = new Lams.Web.Models.PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => IndexUrl(number: n), n => RowsUrl(number: n), "#user-rows");
+}
+<div class="table-wrap">
+    <table class="tbl">
+        <caption class="sr-only">@T["Users.Staff"]</caption>
+        <thead>
+            <tr>
+                @foreach (var column in columns)
+                {
+                    if (column.Field is not { } field)
+                    {
+                        <th scope="col">@column.Label</th>
+                        continue;
+                    }
+
+                    // Clicking the sorted column flips the direction; another column sorts ascending from page 1.
+                    var active = q.Sort == field;
+                    var desc = active && !q.Desc;
+                    <th scope="col" aria-sort="@(active ? (q.Desc ? "descending" : "ascending") : null)">
+                        <a href="@IndexUrl(field, desc, 1)" hx-get="@RowsUrl(field, desc, 1)" hx-target="#user-rows">
+                            @column.Label
+                            @if (active)
+                            {
+                                <icon name="@(q.Desc ? "chevron-down" : "chevron-up")" size="12" />
+                            }
+                        </a>
+                    </th>
+                }
+                <th scope="col"><span class="sr-only">@T["Common.Actions"]</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in page.Items)
+            {
+                var detailsUrl = Url.Action("Details", new { id = user.Id.Value });
+                var attributes = new List<string>();
+                if (user.AuthorityLevel is { } level)
+                {
+                    attributes.Add(T[$"AuthorityLevel.{level}"].Value);
+                }
+                if (user.Segment is { } segment)
+                {
+                    attributes.Add(T[$"Segment.{segment}"].Value);
+                }
+                <tr class="@(user.IsActive ? null : "inactive")" data-user="@user.UserName">
+                    <td>
+                        <div class="person">
+                            <avatar name="@user.FullName" />
+                            <div class="grow">
+                                <div class="person-name">
+                                    <a class="row-link" href="@detailsUrl">@user.FullName</a>
+                                    @if (user.Id == Model.CurrentUserId)
+                                    {
+                                        <span class="chip">@T["Users.You"]</span>
+                                    }
+                                </div>
+                                <div class="person-sub">@user.Email</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>@user.RoleName</div>
+                        @if (attributes.Count > 0)
+                        {
+                            <div class="person-sub">@string.Join(" · ", attributes)</div>
+                        }
+                    </td>
+                    <td>@(user.BranchName ?? DisplayFormat.Empty)</td>
+                    <td><partial name="_UserState" model="(user.IsActive, user.IsLockedOut)" /></td>
+                    <td>
+                        <partial name="_AvailabilityToggle" model="new AvailabilityToggleModel(user.Id, user.FullName, user.IsAvailable, user.IsActive, Model.CanManage)" />
+                    </td>
+                    <td class="muted">@(user.LastLoginAt is null ? T["Users.NeverSignedIn"].Value : DisplayFormat.DateTime(user.LastLoginAt))</td>
+                    <td class="actions">
+                        <a class="icon-btn plain" href="@detailsUrl" title="@T["Users.View"]">
+                            <icon name="eye" size="16" label="@T["Users.View"]" />
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (page.TotalCount == 0)
+    {
+        <div class="empty">@T["Users.NoResults"]</div>
+    }
+</div>
+<partial name="_Pager" model="pager" />

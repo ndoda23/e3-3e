@@ -1,0 +1,22 @@
+@model Lams.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = T["Login.Title"].Value;
+    ViewData["Description"] = T["Login.Description"].Value;
+}
+<form method="post" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div class="field">
+        <label asp-for="Login" class="required"></label>
+        <input asp-for="Login" class="inp" autocomplete="username" autofocus />
+        <span asp-validation-for="Login"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Password" class="required"></label>
+        <input asp-for="Password" class="inp" autocomplete="current-password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <button type="submit" class="btn primary lg block">@T["Login.Submit"]</button>
+</form>
+@section Footer {
+    @T["Login.Footer"]
+}

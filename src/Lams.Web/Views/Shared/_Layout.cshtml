@@ -1,0 +1,50 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var title = ViewData["Title"] as string ?? T["App.Name"].Value;
+    var sectionTitle = ViewData["Section"] as string;
+}
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title · LAMS</title>
+    @* htmx: no injected inline styles, no eval, no script tags in swapped content, no history snapshots of sensitive pages. *@
+    <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false,"historyCacheSize":0,"selfRequestsOnly":true}' />
+    <meta name="request-verification-token" content="@requestToken" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/lib/htmx/htmx.min.js" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">@T["Layout.SkipToContent"]</a>
+    <div class="app">
+        <vc:sidebar />
+        <div class="main">
+            <header class="topbar">
+                <nav aria-label="@T["Layout.Breadcrumbs"]">
+                    <ol class="breadcrumbs">
+                        @if (sectionTitle is not null)
+                        {
+                            <li>@sectionTitle</li>
+                        }
+                        <li aria-current="page">@title</li>
+                    </ol>
+                </nav>
+                <div class="topbar-actions">
+                    <a asp-permission="@Permissions.Applications.Create" class="btn primary" href="/Applications/New">
+                        <icon name="plus" size="15" />
+                        @T["Topbar.CreateApplication"]
+                    </a>
+                </div>
+            </header>
+            <main id="main" class="page" tabindex="-1">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <div id="modal-host"></div>
+    <div id="toast-host" class="toast-host" aria-live="polite"></div>
+</body>
+</html>

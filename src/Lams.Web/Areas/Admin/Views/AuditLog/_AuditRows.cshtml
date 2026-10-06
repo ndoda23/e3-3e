@@ -1,0 +1,46 @@
+@model AuditIndexViewModel
+@{
+    var q = Model.Query;
+    var page = Model.Records;
+    var pager = new Lams.Web.Models.PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => Url.Action("Index", q.RouteValues(n))!, n => Url.Action("Rows", q.RouteValues(n))!, "#audit-rows");
+}
+<div class="table-wrap">
+    <table class="tbl">
+        <caption class="sr-only">@T["Audit.Records"]</caption>
+        <thead>
+            <tr>
+                <th scope="col">@T["Audit.When"]</th>
+                <th scope="col">@T["Audit.Action"]</th>
+                <th scope="col">@T["Audit.By"]</th>
+                <th scope="col">@T["Audit.Subject"]</th>
+                <th scope="col">@T["Audit.IpAddress"]</th>
+                <th scope="col"><span class="sr-only">@T["Common.Actions"]</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in page.Items)
+            {
+                var detailsUrl = Url.Action("Details", new { id = record.Id.Value });
+                <tr data-audit="@record.Action">
+                    <td class="muted tnum nowrap">@DisplayFormat.DateTime(record.OccurredAt)</td>
+                    <td><a class="row-link" href="@detailsUrl">@T.AuditAction(record.Action, record.EntityType)</a></td>
+                    <td>@(record.UserName ?? T["Audit.System"].Value)</td>
+                    <td><partial name="_AuditSubject" model="(record.EntityType, record.EntityId)" /></td>
+                    <td class="mono small">@(record.IpAddress ?? DisplayFormat.Empty)</td>
+                    <td class="actions">
+                        <a class="icon-btn plain" href="@detailsUrl" title="@T["Audit.ViewDetails"]">
+                            <icon name="eye" size="16" label="@T["Audit.ViewDetails"]" />
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (page.TotalCount == 0)
+    {
+        <div class="empty">@T["Audit.NoResults"]</div>
+    }
+</div>
+<partial name="_Pager" model="pager" />

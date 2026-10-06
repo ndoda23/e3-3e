@@ -1,0 +1,55 @@
+@model PricingLimitForm
+@{
+    var existing = Model.Existing;
+    ViewData["Title"] = (existing is null ? T["AuthorityLimits.NewPricing"] : T["AuthorityLimits.EditPricing"]).Value;
+    ViewData["Section"] = T["Nav.AuthorityLimits"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["AuthorityLimits.PricingFormHint"]</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="@(existing is null ? "CreatePricing" : "EditPricing")" asp-route-id="@existing?.Id.Value" class="card-body form" novalidate>
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <div class="form-grid">
+            @if (existing is null)
+            {
+                <div class="field full">
+                    <label asp-for="RoleId" class="required"></label>
+                    <select asp-for="RoleId" class="inp">
+                        <option value="">@T["Users.ChooseRole"]</option>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.Id">@role.Name (@role.Code)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="RoleId"></span>
+                </div>
+            }
+            else
+            {
+                <dl class="dl full">
+                    <dt>@T["Field.Role"]</dt><dd>@existing.RoleName <span class="code">@existing.RoleCode</span></dd>
+                </dl>
+            }
+            <div class="field">
+                <label asp-for="MaxRateGapPp"></label>
+                <input asp-for="MaxRateGapPp" type="number" min="0" max="100" step="0.01" class="inp tnum" aria-describedby="gap-hint" />
+                <span id="gap-hint" class="hint">@T["AuthorityLimits.GapHint"]</span>
+                <span asp-validation-for="MaxRateGapPp"></span>
+            </div>
+            <div class="field">
+                <label asp-for="MinCustomerRoaePct"></label>
+                <input asp-for="MinCustomerRoaePct" type="number" min="0" max="100" step="0.01" class="inp tnum" aria-describedby="roae-hint" />
+                <span id="roae-hint" class="hint">@T["AuthorityLimits.RoaeHint"]</span>
+                <span asp-validation-for="MinCustomerRoaePct"></span>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Common.Save"]</button>
+        </div>
+    </form>
+</section>
