@@ -39,7 +39,7 @@ authority limits, branches, audit log). The implementation plan and progress are
 
 ## Accounts
 
-There is no self-registration. Accounts are created by an administrator (Admin › Users), who receives a temporary
+There is no self-registration.Accounts are created by an administrator (Admin › Users), who receives a temporary
 password (valid 72 hours, shown once) that the user must change at first sign-in.
 
 **System administrator** — seeded in every environment from configuration: user name `sysadmin`
