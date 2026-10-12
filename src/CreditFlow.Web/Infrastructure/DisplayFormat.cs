@@ -1,5 +1,5 @@
 using System.Globalization;
-using CreditFlow.Domain.AuthorityLimits;
+using CreditFlow.Domain.Common;
 
 namespace CreditFlow.Web.Infrastructure;
 

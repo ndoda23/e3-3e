@@ -13,9 +13,14 @@ namespace CreditFlow.Web.Areas.Admin.Controllers;
 /// <summary>
 /// Admin › Audit log: a read-only viewer (filters, paging, details with before / after). There is deliberately no
 /// action that changes or deletes records (the log is append-only in code and in the database).
+/// <para>
+/// Not an <see cref="AdminController"/>: besides the administrator (<c>admin.audit.view</c>), read-only roles such as the
+/// Auditor (<c>audit.view</c>) open it without holding any administration permission.
+/// </para>
 /// </summary>
-[HasPermission(P.Admin.AuditView)]
-public sealed class AuditLogController(IAuditLogQueries auditLog, IUserDirectory directory) : AdminController
+[Area("Admin")]
+[HasAnyPermission(P.Admin.AuditView, P.Audit.View)]
+public sealed class AuditLogController(IAuditLogQueries auditLog, IUserDirectory directory) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index([FromQuery] AuditListQuery query, CancellationToken cancellationToken) =>

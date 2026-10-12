@@ -1,27 +1,16 @@
 @model CreditFlow.Application.Authorization.UserAccessProfile?
 @if (Model is not null)
 {
-    // Line 2: role with level ("Senior Underwriter"), never truncated. Line 3: segment and branch.
-    var role = Model.AuthorityLevel is { } level
-        ? T["UserCard.RoleWithLevel", Model.RoleName, T[$"AuthorityLevel.{level}"].Value].Value
-        : Model.RoleName;
-    var meta = new List<string>();
-    if (Model.Segment is { } segment)
-    {
-        meta.Add(T[$"Segment.{segment}"].Value);
-    }
-    if (Model.BranchName is { } branch)
-    {
-        meta.Add(branch);
-    }
-    var metaText = string.Join(" · ", meta);
+    // Line 2: the role, never truncated. Line 3: the branch, if any.
+    var role = Model.RoleName;
+    var metaText = Model.BranchName;
 
     <div class="user-card">
         <avatar name="@Model.FullName" />
         <a class="grow user-link" href="/Account/Manage" title="@T["Layout.MyAccount"]">
             <div class="user-name truncate" title="@Model.FullName">@Model.FullName</div>
             <div class="user-role" data-user-role>@role</div>
-            @if (meta.Count > 0)
+            @if (metaText is not null)
             {
                 <div class="user-meta truncate" title="@metaText">@metaText</div>
             }

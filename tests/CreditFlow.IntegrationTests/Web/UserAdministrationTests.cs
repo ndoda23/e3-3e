@@ -22,7 +22,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Administrator_sees_the_user_list_and_htmx_filters_return_only_the_rows()
     {
-        var (underwriter, _, _) = await CreateSeniorUnderwriterAsync();
+        var (underwriter, _, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
 
@@ -57,7 +57,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Status_filter_and_sort_are_applied()
     {
-        var (_, inactiveId, _) = await CreateUserAsync(RoleCodes.Director);
+        var (_, inactiveId, _) = await CreateUserAsync(RoleCodes.Auditor);
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
         await PostActionAsync(browser, inactiveId, "Deactivate");
@@ -72,22 +72,21 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     // ----- Create -----
 
     [Fact]
-    public async Task Creating_a_senior_underwriter_shows_the_temporary_password_once_and_it_signs_in()
+    public async Task Creating_an_operator_shows_the_temporary_password_once_and_it_signs_in()
     {
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var (uwRole, vake) = await QueryAsync(async db => (
-            await db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct),
+        var (operatorRole, vake) = await QueryAsync(async db => (
+            await db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct),
             (await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct)).Value));
 
         var response = await browser.PostFormAsync("/Admin/Users/Create", "/Admin/Users/Create", new Dictionary<string, string>
         {
-            ["FullName"] = "Nino Senior",
-            ["UserName"] = "nino.senior",
-            ["Email"] = "nino.s@pcb.ge",
-            ["RoleId"] = uwRole.ToString(),
+            ["FullName"] = "Nino Operator",
+            ["UserName"] = "nino.operator",
+            ["Email"] = "nino.o@pcb.ge",
+            ["RoleId"] = operatorRole.ToString(),
             ["BranchId"] = vake.ToString(),
-            ["AuthorityLevel"] = "Senior",
             ["Capacity"] = "12",
         });
 
@@ -98,13 +97,12 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
             TemporaryPasswordPattern().Match(await response.Content.ReadAsStringAsync(Ct)).Groups["password"].Value);
         Assert.False(string.IsNullOrWhiteSpace(password));
 
-        var staff = await QueryAsync(db => db.StaffMembers.SingleAsync(s => s.FullName == "Nino Senior", Ct));
-        Assert.Equal(AuthorityLevel.Senior, staff.AuthorityLevel);
+        var staff = await QueryAsync(db => db.StaffMembers.SingleAsync(s => s.FullName == "Nino Operator", Ct));
         Assert.Equal(vake, staff.BranchId!.Value.Value);
         Assert.Equal(12, staff.Capacity);
 
         using var newUser = NewSession();
-        var login = await newUser.LoginAsync("nino.senior", password);
+        var login = await newUser.LoginAsync("nino.operator", password);
         Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
         Assert.Equal("/Account/ChangePassword", (await newUser.GetAsync("/")).Headers.Location!.OriginalString);
     }
@@ -114,31 +112,30 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     {
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var uwRole = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
+        var operatorRole = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct));
 
         var response = await browser.PostFormAsync("/Admin/Users/Create", "/Admin/Users/Create", new Dictionary<string, string>
         {
             ["FullName"] = "Missing Attributes",
             ["UserName"] = "x",
             ["Email"] = "not-an-email",
-            ["RoleId"] = uwRole.ToString(),
+            ["RoleId"] = operatorRole.ToString(),
             ["Capacity"] = "10",
         });
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(Ct));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("The selected role requires a branch.", html, StringComparison.Ordinal);
-        Assert.Contains("The selected role requires an authority level.", html, StringComparison.Ordinal);
         Assert.Contains("A user name has 3 to 64", html, StringComparison.Ordinal);
         Assert.Contains("Enter a valid email address.", html, StringComparison.Ordinal);
         Assert.False(await QueryAsync(db => db.StaffMembers.AnyAsync(s => s.FullName == "Missing Attributes", Ct)));
     }
 
     [Theory]
-    [InlineData(RoleCodes.Underwriter, true, true, false)]
-    [InlineData(RoleCodes.Head, true, false, true)]
-    [InlineData(RoleCodes.SystemAdministrator, false, false, false)]
-    public async Task Role_fields_follow_the_role(string roleCode, bool branch, bool level, bool segment)
+    [InlineData(RoleCodes.Operator, true)]
+    [InlineData(RoleCodes.Underwriter, false)]
+    [InlineData(RoleCodes.Admin, false)]
+    public async Task Branch_field_follows_the_role(string roleCode, bool branch)
     {
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
@@ -148,8 +145,6 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
 
         Assert.Contains($"data-role=\"{roleCode}\"", html, StringComparison.Ordinal);
         Assert.Equal(branch, html.Contains("name=\"BranchId\"", StringComparison.Ordinal));
-        Assert.Equal(level, html.Contains("name=\"AuthorityLevel\"", StringComparison.Ordinal));
-        Assert.Equal(segment, html.Contains("name=\"Segment\"", StringComparison.Ordinal));
     }
 
     // ----- Edit -----
@@ -157,22 +152,21 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Changing_the_branch_saves_it_and_ends_the_users_sessions()
     {
-        var (userName, id, _) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var (uwRole, saburtalo, stampBefore) = await QueryAsync(async db => (
-            await db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct),
+        var (operatorRole, saburtalo, stampBefore) = await QueryAsync(async db => (
+            await db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct),
             (await db.Branches.Where(b => b.Code == BranchSeedCatalog.Saburtalo).Select(b => b.Id).SingleAsync(Ct)).Value,
             await db.Users.Where(u => u.Id == id.Value).Select(u => u.SecurityStamp).SingleAsync(Ct)));
 
         var response = await browser.PostFormAsync($"/Admin/Users/Edit/{id}", $"/Admin/Users/Edit/{id}", new Dictionary<string, string>
         {
-            ["FullName"] = "Test UW",
+            ["FullName"] = "Test OP",
             ["UserName"] = userName,
             ["Email"] = $"{userName}@pcb.ge",
-            ["RoleId"] = uwRole.ToString(),
+            ["RoleId"] = operatorRole.ToString(),
             ["BranchId"] = saburtalo.ToString(),
-            ["AuthorityLevel"] = "Senior",
             ["Capacity"] = "10",
         });
 
@@ -191,7 +185,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Deactivation_is_confirmed_in_a_modal_and_audited()
     {
-        var (_, id, _) = await CreateSeniorUnderwriterAsync();
+        var (_, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
 
@@ -227,7 +221,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Password_reset_shows_the_new_password_once_in_a_modal()
     {
-        var (_, id, _) = await CreateSeniorUnderwriterAsync();
+        var (_, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
         var token = WebSession.Token(await browser.GetPageAsync($"/Admin/Users/Details/{id}"));
@@ -246,7 +240,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Unlock_force_sign_out_and_mfa_requirement_are_applied()
     {
-        var (_, id, _) = await CreateSeniorUnderwriterAsync();
+        var (_, id, _) = await CreateOperatorAsync();
         await using (var scope = Factory.Services.CreateAsyncScope())
         {
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -275,7 +269,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Availability_switch_updates_itself_with_htmx_and_shows_a_toast()
     {
-        var (_, id, _) = await CreateSeniorUnderwriterAsync();
+        var (_, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
         var token = WebSession.Token(await browser.GetPageAsync("/Admin/Users"));
@@ -293,8 +287,8 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     [Fact]
     public async Task Non_administrators_cannot_use_user_actions()
     {
-        var (_, targetId, _) = await CreateUserAsync(RoleCodes.LoanOfficer, BranchSeedCatalog.Vake, AuthorityLevel.Junior);
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (_, targetId, _) = await CreateUserAsync(RoleCodes.Operator, BranchSeedCatalog.Vake);
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
         var token = WebSession.Token(await browser.GetPageAsync("/"));
@@ -306,38 +300,38 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         Assert.True(await QueryAsync(db => db.StaffMembers.Where(s => s.Id == targetId).Select(s => s.IsActive).SingleAsync(Ct)));
     }
 
-    // ----- Dashboard and user card (UI fixes) -----
+    // ----- Dashboard and user card -----
 
     [Fact]
-    public async Task Underwriter_dashboard_shows_level_chip_and_actual_authority_limit()
+    public async Task Operator_dashboard_shows_the_role_chip_and_the_branch_on_the_user_card()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 
         var html = WebUtility.HtmlDecode(await browser.GetPageAsync("/"));
 
-        Assert.Contains("data-dashboard-chip>Sr UW · Test UW<", html, StringComparison.Ordinal);
-        Assert.Contains("₾50,000", html, StringComparison.Ordinal);
-        Assert.Contains("data-user-role>Senior Underwriter<", html, StringComparison.Ordinal);
+        Assert.Contains("data-dashboard-chip>OP · Test OP<", html, StringComparison.Ordinal);
+        Assert.Contains("data-dashboard=\"Operator\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-user-role>Operator<", html, StringComparison.Ordinal);
+        Assert.Contains(">Vake<", html, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task Branch_dashboard_shows_the_branch_limit_and_officers_see_none()
+    [Theory]
+    [InlineData(RoleCodes.Underwriter, "Underwriting")]
+    [InlineData(RoleCodes.SeniorUnderwriter, "Underwriting")]
+    [InlineData(RoleCodes.CreditCommittee, "Committee")]
+    [InlineData(RoleCodes.Compliance, "Compliance")]
+    [InlineData(RoleCodes.Auditor, "Audit")]
+    public async Task Each_role_lands_on_its_own_dashboard(string roleCode, string dashboard)
     {
-        var (manager, _, password) = await CreateUserAsync(RoleCodes.BranchManager, BranchSeedCatalog.Vake);
-        var (officer, _, officerPassword) = await CreateUserAsync(RoleCodes.LoanOfficer, BranchSeedCatalog.Vake, AuthorityLevel.Junior);
-        using var managerBrowser = NewSession();
-        using var officerBrowser = NewSession();
-        await managerBrowser.LoginAsync(manager, password);
-        await officerBrowser.LoginAsync(officer, officerPassword);
+        var (userName, _, password) = await CreateUserAsync(roleCode);
+        using var browser = NewSession();
+        await browser.LoginAsync(userName, password);
 
-        var managerHtml = WebUtility.HtmlDecode(await managerBrowser.GetPageAsync("/"));
-        var officerHtml = await officerBrowser.GetPageAsync("/");
+        var html = await browser.GetPageAsync("/");
 
-        Assert.Contains("data-dashboard-chip>BM · Test BM<", managerHtml, StringComparison.Ordinal);
-        Assert.Contains("₾150,000", managerHtml, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-authority-limit", officerHtml, StringComparison.Ordinal);
+        Assert.Contains($"data-dashboard=\"{dashboard}\"", html, StringComparison.Ordinal);
     }
 
     private static async Task PostActionAsync(

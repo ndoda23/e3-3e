@@ -18,10 +18,6 @@ public sealed record CreateUserCommand
 
     public BranchId? BranchId { get; init; }
 
-    public Segment? Segment { get; init; }
-
-    public AuthorityLevel? AuthorityLevel { get; init; }
-
     public int Capacity { get; init; } = StaffMember.DefaultCapacity;
 
     /// <summary>Require MFA enrolment for this user regardless of the role setting.</summary>
@@ -41,10 +37,6 @@ public sealed record UpdateUserCommand
     public required RoleId RoleId { get; init; }
 
     public BranchId? BranchId { get; init; }
-
-    public Segment? Segment { get; init; }
-
-    public AuthorityLevel? AuthorityLevel { get; init; }
 
     public int Capacity { get; init; } = StaffMember.DefaultCapacity;
 }

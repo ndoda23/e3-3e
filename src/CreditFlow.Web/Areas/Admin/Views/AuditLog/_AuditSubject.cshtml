@@ -1,17 +1,22 @@
 @model (string? EntityType, string? EntityId)
+@inject CreditFlow.Web.Authorization.CurrentAccess Access
 @{
-    // A link to the audited record where an admin page exists for it; otherwise the plain identifier.
+    // A link to the audited record where an admin page exists for it and the viewer may open it (a read-only auditor
+    // sees the plain identifier); otherwise the plain identifier.
+    var viewer = await Access.GetAsync();
     string? url = null;
-    if (Model.EntityType is not null && Model.EntityId is not null)
+    if (viewer is not null && Model.EntityType is not null && Model.EntityId is not null)
     {
         var isGuid = Guid.TryParse(Model.EntityId, out var guid);
         url = Model.EntityType switch
         {
-            "User" when isGuid => Url.Action("Details", "Users", new { id = guid }),
-            "Branch" when isGuid => Url.Action("Edit", "Branches", new { id = guid }),
-            "Role" when isGuid => Url.Action("Permissions", "Roles", new { id = guid }),
-            "Role" => Url.Action("Index", "Roles"),
-            "AuthorityLimit" => Url.Action("Index", "AuthorityLimits"),
+            "User" when isGuid && viewer.HasPermission(Permissions.Admin.UsersView) =>
+                Url.Action("Details", "Users", new { id = guid }),
+            "Branch" when isGuid && viewer.HasPermission(Permissions.Admin.BranchesManage) =>
+                Url.Action("Edit", "Branches", new { id = guid }),
+            "Role" when isGuid && viewer.HasPermission(Permissions.Admin.RolesManage) =>
+                Url.Action("Permissions", "Roles", new { id = guid }),
+            "Role" when viewer.HasPermission(Permissions.Admin.RolesManage) => Url.Action("Index", "Roles"),
             _ => null,
         };
     }

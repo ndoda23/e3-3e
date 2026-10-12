@@ -21,6 +21,11 @@ public static class RoleErrors
         $"A business role cannot hold the administration permission '{permission}'.",
         "Permissions");
 
+    public static Error ReadOnlyRoleCannotHoldWritePermission(PermissionCode permission) => Error.Validation(
+        "Role.ReadOnlyRoleCannotHoldWritePermission",
+        $"A read-only role can hold only read permissions, not '{permission}'.",
+        "Permissions");
+
     public static Error AdministrativeRoleCannotHoldBusinessPermission(PermissionCode permission) => Error.Validation(
         "Role.AdministrativeRoleCannotHoldBusinessPermission",
         $"An administrative role can hold only administration permissions, not '{permission}'.",

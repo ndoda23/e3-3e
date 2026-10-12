@@ -1,11 +1,9 @@
 using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Authorization;
-using CreditFlow.Application.AuthorityLimits;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
-using CreditFlow.Domain.AuthorityLimits;
 using CreditFlow.Domain.Branches;
 using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Roles;
@@ -207,8 +205,8 @@ internal sealed class FakeStaffRepository(FakeReferenceRepositories reference) :
     public void Add(StaffMember staffMember) => Members[staffMember.Id] = staffMember;
 }
 
-/// <summary>Roles (from the seed catalog), branches and authority limits held in memory.</summary>
-internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchRepository, IAuthorityLimitRepository
+/// <summary>Roles (from the seed catalog) and branches held in memory.</summary>
+internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchRepository
 {
     private readonly Dictionary<RoleId, RoleDetails> _roles =
         CreditFlow.Application.ReferenceData.RoleSeedCatalog.All
@@ -216,8 +214,6 @@ internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchReposi
             .ToDictionary(r => r.Id);
 
     public Dictionary<BranchId, Branch> Branches { get; } = [];
-
-    public List<AuthorityLimit> Limits { get; } = [];
 
     public bool IsAdministrative(RoleId roleId) => _roles[roleId].Profile.IsAdministrative;
 
@@ -276,40 +272,4 @@ internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchReposi
     public void Add(Branch branch) => Branches[branch.Id] = branch;
 
     public void Remove(Branch branch) => Branches.Remove(branch.Id);
-
-    // ----- Authority limits -----
-    Task<IReadOnlyList<AuthorityLimit>> IAuthorityLimitRepository.ListAsync(CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<AuthorityLimit>>(Limits.ToList());
-
-    public Task<IReadOnlyList<AuthorityLimit>> ListForRoleAsync(RoleId roleId, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<AuthorityLimit>>(Limits.Where(l => l.RoleId == roleId).ToList());
-
-    public Task<AuthorityLimit?> GetAsync(AuthorityLimitId id, CancellationToken cancellationToken) =>
-        Task.FromResult(Limits.SingleOrDefault(l => l.Id == id));
-
-    public Task<bool> CreditDecisionLimitExistsAsync(
-        RoleId roleId, AuthorityLevel? authorityLevel, Currency currency, CancellationToken cancellationToken) =>
-        Task.FromResult(Limits.Any(l => l.AppliesToCreditDecision(roleId, authorityLevel, currency)));
-
-    public Task<bool> PricingExceptionLimitExistsAsync(RoleId roleId, CancellationToken cancellationToken) =>
-        Task.FromResult(Limits.Any(l => l.AppliesToPricingException(roleId)));
-
-    public void Add(AuthorityLimit limit) => Limits.Add(limit);
-
-    public void Remove(AuthorityLimit limit) => Limits.Remove(limit);
-
-    /// <summary>Loads the seeded authority limits.</summary>
-    public FakeReferenceRepositories WithSeededLimits()
-    {
-        foreach (var seed in CreditFlow.Application.ReferenceData.AuthorityLimitSeedCatalog.All)
-        {
-            var roleId = TestReferenceData.RoleId(seed.RoleCode);
-            var limit = seed.LimitType == LimitType.CreditDecision
-                ? AuthorityLimit.CreateCreditDecision(roleId, seed.AuthorityLevel, seed.Currency!.Value, seed.MaxAmount!.Value)
-                : AuthorityLimit.CreatePricingException(roleId, seed.MaxRateGapPp, seed.MinCustomerRoaePct);
-            Limits.Add(limit.Value);
-        }
-
-        return this;
-    }
 }

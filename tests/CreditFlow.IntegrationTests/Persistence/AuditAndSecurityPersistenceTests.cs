@@ -132,7 +132,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
             return await factory.CreateAsync((await userManager.FindByIdAsync(admin.Id.ToString()))!);
         });
 
-        var adminRole = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.SystemAdministrator, Ct));
+        var adminRole = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.Admin, Ct));
         Assert.Equal(
             [ClaimTypes.NameIdentifier, ClaimTypes.Name, "AspNet.Identity.SecurityStamp", CreditFlowClaimTypes.RoleId],
             principal.Claims.Select(c => c.Type));
@@ -145,7 +145,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
     {
         var admin = await AdminAsync();
         Host.CurrentUser.UserId = new UserId(admin.Id);
-        var uw = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.Underwriter, Ct));
+        var operatorRole = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.Operator, Ct));
         var (vake, saburtalo) = await Host.QueryAsync(async db => (
             await db.Branches.SingleAsync(b => b.Code == BranchSeedCatalog.Vake, Ct),
             await db.Branches.SingleAsync(b => b.Code == BranchSeedCatalog.Saburtalo, Ct)));
@@ -153,8 +153,8 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
         var issued = await Host.InScopeAsync(sp => sp.GetRequiredService<UserAdministrationService>().CreateAsync(
             new CreateUserCommand
             {
-                UserName = "tamta.t", Email = "tamta.t@pcb.ge", FullName = "Tamta Tatishvili",
-                RoleId = new RoleId(uw.Id), BranchId = vake.Id, AuthorityLevel = AuthorityLevel.Senior,
+                UserName = "anna.g", Email = "anna.g@pcb.ge", FullName = "Anna Gelashvili",
+                RoleId = new RoleId(operatorRole.Id), BranchId = vake.Id,
             },
             Ct));
         var userId = issued.Value.UserId;
@@ -168,7 +168,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
         await Host.InScopeAsync(async sp =>
         {
             var service = sp.GetRequiredService<RoleAdministrationService>();
-            var details = (await service.ListAsync(Ct)).Single(r => r.Id == new RoleId(uw.Id));
+            var details = (await service.ListAsync(Ct)).Single(r => r.Id == new RoleId(operatorRole.Id));
             var result = await service.UpdatePermissionsAsync(
                 new UpdateRolePermissionsCommand(details.Id, details.Permissions.Where(p => p != Permissions.Reports.View).ToList()), Ct);
             Assert.True(result.IsSuccess);
@@ -184,7 +184,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
                 new UpdateUserCommand
                 {
                     Id = userId, UserName = d.UserName, Email = d.Email, FullName = d.FullName, RoleId = d.RoleId,
-                    BranchId = saburtalo.Id, AuthorityLevel = d.AuthorityLevel,
+                    BranchId = saburtalo.Id,
                 },
                 Ct);
             Assert.True(result.IsSuccess);

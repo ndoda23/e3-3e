@@ -142,7 +142,7 @@ public sealed class UsersController(
         return View(await WithLookupsAsync(form, cancellationToken));
     }
 
-    /// <summary>The branch / segment / authority level fields for the chosen role (htmx, on role change).</summary>
+    /// <summary>The branch field for the chosen role (htmx, on role change).</summary>
     [HttpGet]
     [HasPermission(P.Admin.UsersManage)]
     public async Task<IActionResult> RoleFields([FromQuery] UserFormModel form, CancellationToken cancellationToken)

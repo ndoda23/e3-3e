@@ -37,9 +37,9 @@
                             <div class="person-name">
                                 <a class="row-link" asp-action="Permissions" asp-route-id="@role.Id.Value">@role.DisplayName</a>
                                 <span class="code">@role.Profile.Code.Value</span>
-                                @if (role.Profile.IsAdministrative)
+                                @if (role.Profile.Kind != RoleKind.Business)
                                 {
-                                    <span class="chip">@T["Roles.Administrative"]</span>
+                                    <span class="chip">@T[$"RoleKind.{role.Profile.Kind}"]</span>
                                 }
                             </div>
                             <div class="person-sub">@role.Description</div>

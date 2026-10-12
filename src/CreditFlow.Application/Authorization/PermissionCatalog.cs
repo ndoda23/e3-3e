@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Roles;
 
 namespace CreditFlow.Application.Authorization;
@@ -7,7 +8,13 @@ namespace CreditFlow.Application.Authorization;
 public sealed record PermissionModule(string Key, string DisplayName, int Order);
 
 /// <summary>A permission with the texts shown in the admin UI (English fallback; the UI localizes by code).</summary>
-public sealed record PermissionDefinition(string Code, PermissionModule Module, string DisplayName, string Description)
+/// <param name="Code">The permission code.</param>
+/// <param name="Module">The editor group.</param>
+/// <param name="DisplayName">Short name.</param>
+/// <param name="Description">What the permission allows.</param>
+/// <param name="IsReadOnly">The permission only reads data, so a read-only role (Auditor) may hold it.</param>
+public sealed record PermissionDefinition(
+    string Code, PermissionModule Module, string DisplayName, string Description, bool IsReadOnly)
 {
     public bool IsAdministrative => Code.StartsWith(PermissionCode.AdministrativePrefix, StringComparison.Ordinal);
 }
@@ -15,108 +22,100 @@ public sealed record PermissionDefinition(string Code, PermissionModule Module, 
 /// <summary>The single catalog of permissions known to CreditFlow.</summary>
 public static class PermissionCatalog
 {
-    public static readonly PermissionModule ApplicationsModule = new("applications", "Applications", 1);
-    public static readonly PermissionModule AmlModule = new("aml", "AML / KYC", 2);
-    public static readonly PermissionModule PricingModule = new("pricing", "Pricing exceptions", 3);
-    public static readonly PermissionModule CommitteeModule = new("committee", "Credit committee", 4);
-    public static readonly PermissionModule BackOfficeModule = new("backoffice", "Back office", 5);
-    public static readonly PermissionModule DocumentsModule = new("documents", "Documents", 6);
-    public static readonly PermissionModule ReportsModule = new("reports", "Reports", 7);
-    public static readonly PermissionModule AdministrationModule = new("admin", "Administration", 8);
+    public static readonly PermissionModule ClientsModule = new("clients", "Clients", 1);
+    public static readonly PermissionModule ApplicationsModule = new("applications", "Applications", 2);
+    public static readonly PermissionModule DocumentsModule = new("documents", "Documents", 3);
+    public static readonly PermissionModule ComplianceModule = new("compliance", "Compliance", 4);
+    public static readonly PermissionModule UnderwritingModule = new("underwriting", "Underwriting", 5);
+    public static readonly PermissionModule ScoringModule = new("scoring", "Scoring", 6);
+    public static readonly PermissionModule CommitteeModule = new("committee", "Credit committee", 7);
+    public static readonly PermissionModule ContractsModule = new("contracts", "Contracts", 8);
+    public static readonly PermissionModule LoansModule = new("loans", "Loans", 9);
+    public static readonly PermissionModule ReportsModule = new("reports", "Reports", 10);
+    public static readonly PermissionModule AuditModule = new("audit", "Audit", 11);
+    public static readonly PermissionModule AdministrationModule = new("admin", "Administration", 12);
 
     public static IReadOnlyList<PermissionDefinition> All { get; } =
     [
+        // Clients
+        Read(Permissions.Clients.View, ClientsModule, "View clients",
+            "See client records: identity, ID document, incomes, obligations and screening results."),
+        Write(Permissions.Clients.Manage, ClientsModule, "Manage clients",
+            "Register clients and edit their identity document, incomes and obligations."),
+
         // Applications
-        Define(Permissions.Applications.ViewFull, ApplicationsModule, "View full application file",
-            "Open the complete application file (all tabs), within the role's data scope."),
-        Define(Permissions.Applications.Create, ApplicationsModule, "Create applications",
-            "Create applications and customer packages."),
-        Define(Permissions.Applications.EditTerms, ApplicationsModule, "Revise terms",
-            "Revise loan terms and the repayment schedule."),
-        Define(Permissions.Applications.SendToAml, ApplicationsModule, "Send for AML check",
-            "Send the file to the AML / KYC screening queue."),
-        Define(Permissions.Applications.Recommend, ApplicationsModule, "Recommend",
-            "Recommend approve or decline and forward the file to an underwriter."),
-        Define(Permissions.Applications.Decide, ApplicationsModule, "Approve / decline",
-            "Approve or decline a loan within the user's credit decision limit."),
-        Define(Permissions.Applications.Escalate, ApplicationsModule, "Escalate",
-            "Escalate a file that is above the user's authority limit."),
-        Define(Permissions.Applications.RequestInfo, ApplicationsModule, "Request more information",
-            "Ask the customer for more documents or information."),
-        Define(Permissions.Applications.ReferToCommittee, ApplicationsModule, "Refer to committee",
-            "Refer a file or package to the credit committee."),
-        Define(Permissions.Applications.AddPortfolioNote, ApplicationsModule, "Add portfolio note",
-            "Add a portfolio note to a file (read-only roles)."),
-        Define(Permissions.Applications.Reassign, ApplicationsModule, "Reassign",
-            "Reassign a file to another user (actions menu). No role defined yet."),
-        Define(Permissions.Applications.MarkPriority, ApplicationsModule, "Mark priority",
-            "Mark a file as priority (actions menu). No role defined yet."),
-        Define(Permissions.Applications.Tag, ApplicationsModule, "Tag",
-            "Tag a file (actions menu). No role defined yet."),
-        Define(Permissions.Applications.AddInternalNote, ApplicationsModule, "Internal note",
-            "Add an internal note (actions menu). No role defined yet."),
-        Define(Permissions.Applications.RepullCreditData, ApplicationsModule, "Re-pull credit data",
-            "Pull the credit bureau report again (actions menu). No role defined yet."),
-        Define(Permissions.Applications.ReverifyIncome, ApplicationsModule, "Re-verify income",
-            "Verify RS.ge income again (actions menu). No role defined yet."),
-        Define(Permissions.Applications.Print, ApplicationsModule, "Print application",
-            "Print the application (actions menu). No role defined yet."),
-        Define(Permissions.Applications.Archive, ApplicationsModule, "Archive",
-            "Archive an application (actions menu). No role defined yet."),
-
-        // AML / KYC
-        Define(Permissions.Aml.ViewScreening, AmlModule, "View AML screening file",
-            "Restricted view of files sent for AML: identity, related parties and documents only."),
-        Define(Permissions.Aml.RecordOutcome, AmlModule, "Record AML outcome",
-            "Clear, flag or request more information on an AML check."),
-
-        // Pricing exceptions
-        Define(Permissions.Pricing.ViewExceptions, PricingModule, "View pricing exceptions",
-            "Restricted view of pricing exceptions: ROAE breakdown and offered terms only."),
-        Define(Permissions.Pricing.ConfirmRoae, PricingModule, "Confirm / override ROAE",
-            "Confirm or override the customer ROAE with a note and forward the exception."),
-        Define(Permissions.Pricing.ApproveException, PricingModule, "Approve pricing exception",
-            "Approve or decline a pricing exception within the user's pricing exception limit."),
-
-        // Committee
-        Define(Permissions.Committee.Vote, CommitteeModule, "Record committee verdicts",
-            "Vote on and record package committee verdicts."),
-
-        // Back office
-        Define(Permissions.BackOffice.BookOrReturn, BackOfficeModule, "Book or return",
-            "Book an approved loan or return it to the loan officer with a reason."),
+        Read(Permissions.Applications.View, ApplicationsModule, "View applications",
+            "Open applications within the role's data scope, with status history and scoring results."),
+        Write(Permissions.Applications.Create, ApplicationsModule, "Create applications",
+            "Create and edit draft applications (parties, terms, collateral) and submit them."),
+        Write(Permissions.Applications.Cancel, ApplicationsModule, "Cancel applications",
+            "Cancel an application before disbursement, with a reason."),
+        Write(Permissions.Applications.RecordClientResponse, ApplicationsModule, "Record client response",
+            "Record that the client accepted or declined a counter-offer."),
 
         // Documents
-        Define(Permissions.Documents.View, DocumentsModule, "View and download documents",
-            "View and download the documents of a file."),
-        Define(Permissions.Documents.Upload, DocumentsModule, "Upload documents",
-            "Add documents to a file."),
-        Define(Permissions.Documents.DeleteOwnNew, DocumentsModule, "Remove own new documents",
-            "Remove a document the user just added. Documents that came with the application can never be removed."),
-        Define(Permissions.Documents.RequestFromCustomer, DocumentsModule, "Request documents from customer",
-            "Request documents from the customer by email or SMS."),
+        Read(Permissions.Documents.View, DocumentsModule, "View documents",
+            "View and download the documents of an application."),
+        Write(Permissions.Documents.Upload, DocumentsModule, "Upload documents",
+            "Upload documents to an application and remove them before scoring."),
+
+        // Compliance
+        Write(Permissions.Compliance.Review, ComplianceModule, "Compliance review",
+            "Clear or reject an application held for a sanctions or PEP match, with a reason."),
+
+        // Underwriting
+        Write(Permissions.Underwriting.Decide, UnderwritingModule, "Decide (Underwriter)",
+            "Approve or reject applications up to the Underwriter threshold."),
+        Write(Permissions.Underwriting.DecideSenior, UnderwritingModule, "Decide (Senior Underwriter)",
+            "Approve or reject applications up to the Senior Underwriter threshold, including escalated ones."),
+        Write(Permissions.Underwriting.CounterOffer, UnderwritingModule, "Counter-offer",
+            "Offer a different amount, term or rate; the client must agree and the application is scored again."),
+
+        // Scoring
+        Write(Permissions.Scoring.Override, ScoringModule, "Override scoring rule",
+            "Approve despite a failed overridable scoring rule, with a reason."),
+
+        // Committee
+        Write(Permissions.Committee.Vote, CommitteeModule, "Committee vote",
+            "Vote on applications above the Senior Underwriter threshold."),
+
+        // Contracts
+        Write(Permissions.Contracts.Manage, ContractsModule, "Manage contracts",
+            "Mark the contract signed and the conditions met; print the contract and the schedule."),
+
+        // Loans
+        Write(Permissions.Loans.Disburse, LoansModule, "Disburse",
+            "Request the disbursement of an approved loan whose contract is signed and conditions are met."),
+        Read(Permissions.Loans.View, LoansModule, "View loans", "See loans, their schedules and repayments."),
+        Write(Permissions.Loans.RecordRepayment, LoansModule, "Record repayments",
+            "Record regular and early repayments."),
 
         // Reports
-        Define(Permissions.Reports.View, ReportsModule, "View reports",
-            "Run reports, limited to the role's data scope."),
+        Read(Permissions.Reports.View, ReportsModule, "View reports", "Run reports, limited to the role's data scope."),
+        Read(Permissions.Reports.Export, ReportsModule, "Export reports", "Export reports to Excel and CSV."),
 
-        // Administration (System Administrator only)
-        Define(Permissions.Admin.UsersView, AdministrationModule, "View users", "See the user list and user details."),
-        Define(Permissions.Admin.UsersManage, AdministrationModule, "Manage users",
+        // Audit
+        Read(Permissions.Audit.View, AuditModule, "View audit log", "Read the audit log (read-only roles)."),
+
+        // Administration (Admin only)
+        Read(Permissions.Admin.UsersView, AdministrationModule, "View users", "See the user list and user details."),
+        Write(Permissions.Admin.UsersManage, AdministrationModule, "Manage users",
             "Create and edit users, activate / deactivate, unlock, reset passwords, force sign-out, require MFA."),
-        Define(Permissions.Admin.RolesManage, AdministrationModule, "Manage roles",
+        Write(Permissions.Admin.RolesManage, AdministrationModule, "Manage roles",
             "Change the permissions of roles and require MFA per role."),
-        Define(Permissions.Admin.AuthorityLimitsManage, AdministrationModule, "Manage authority limits",
-            "Edit credit decision and pricing exception limits."),
-        Define(Permissions.Admin.BranchesManage, AdministrationModule, "Manage branches",
+        Write(Permissions.Admin.BranchesManage, AdministrationModule, "Manage branches",
             "Create, edit, activate and deactivate branches."),
-        Define(Permissions.Admin.AuditView, AdministrationModule, "View audit log", "Read the audit log."),
-        Define(Permissions.Admin.CreditPolicyManage, AdministrationModule, "Manage credit policy",
-            "Edit the credit policy."),
-        Define(Permissions.Admin.PricingManage, AdministrationModule, "Manage risk-based pricing",
-            "Manage the risk-based pricing grid."),
-        Define(Permissions.Admin.SettingsManage, AdministrationModule, "Manage settings",
-            "Manage system settings."),
+        Read(Permissions.Admin.AuditView, AdministrationModule, "View audit log", "Read the audit log."),
+        Write(Permissions.Admin.ProductsManage, AdministrationModule, "Manage loan products",
+            "Create loan products and publish new product versions."),
+        Write(Permissions.Admin.ScoringRulesManage, AdministrationModule, "Manage scoring rules",
+            "Publish new versions of the scoring rule set."),
+        Write(Permissions.Admin.ApprovalThresholdsManage, AdministrationModule, "Manage approval thresholds",
+            "Change the Underwriter and Senior Underwriter thresholds and the committee quorum."),
+        Write(Permissions.Admin.FxRatesManage, AdministrationModule, "Manage FX rates",
+            "Edit and import exchange rates."),
+        Write(Permissions.Admin.HolidaysManage, AdministrationModule, "Manage holidays",
+            "Edit the bank holidays used by the working-day calendar."),
     ];
 
     public static IReadOnlyList<PermissionModule> Modules { get; } =
@@ -129,7 +128,16 @@ public static class PermissionCatalog
 
     public static PermissionDefinition? Find(string code) => ByCode.GetValueOrDefault(code);
 
-    private static PermissionDefinition Define(
-        string code, PermissionModule module, string displayName, string description) =>
-        new(code, module, displayName, description);
+    /// <summary>True for a known permission that only reads data. Unknown codes are not read-only (fail closed).</summary>
+    public static bool IsReadOnly(PermissionCode code) => Find(code.Value) is { IsReadOnly: true };
+
+    /// <summary>Builds a role's permission set with the segregation-of-duties rules of its kind.</summary>
+    public static Result<PermissionSet> CreateSet(RoleKind kind, IEnumerable<string> permissionCodes) =>
+        PermissionSet.Create(kind, permissionCodes, IsReadOnly);
+
+    private static PermissionDefinition Read(string code, PermissionModule module, string displayName, string description) =>
+        new(code, module, displayName, description, IsReadOnly: true);
+
+    private static PermissionDefinition Write(string code, PermissionModule module, string displayName, string description) =>
+        new(code, module, displayName, description, IsReadOnly: false);
 }

@@ -1,7 +1,6 @@
 using System.Text.Json;
 using CreditFlow.Application.Common;
 using CreditFlow.Domain.Auditing;
-using CreditFlow.Domain.AuthorityLimits;
 using CreditFlow.Domain.Branches;
 using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Users;
@@ -26,7 +25,6 @@ public sealed class AuditTrailInterceptor(ICurrentUser currentUser, TimeProvider
         [typeof(StaffMember)] = "User",
         [typeof(ApplicationRole)] = "Role",
         [typeof(Branch)] = "Branch",
-        [typeof(AuthorityLimit)] = "AuthorityLimit",
     };
 
     /// <summary>Properties never written to the log.</summary>

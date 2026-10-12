@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 namespace CreditFlow.Infrastructure.Identity;
 
 /// <summary>
-/// The authentication account. It holds ONLY authentication data; all business data (name, role, branch, segment,
-/// authority level, active flag, availability, capacity) lives on the domain <c>StaffMember</c>, which shares this id.
+/// The authentication account. It holds ONLY authentication data; all business data (name, role, branch,
+/// active flag, availability, capacity) lives on the domain <c>StaffMember</c>, which shares this id.
 /// External logins (Active Directory / Entra ID) can later be linked through <c>AspNetUserLogins</c> to the same account.
 /// </summary>
 public sealed class ApplicationUser : IdentityUser<Guid>

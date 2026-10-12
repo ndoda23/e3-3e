@@ -18,15 +18,13 @@ public sealed record CachedStaffAccess(
     Guid RoleId,
     Guid? BranchId,
     string? BranchName,
-    Segment? Segment,
-    AuthorityLevel? AuthorityLevel,
     bool IsActive,
     bool MustChangePassword,
     bool TwoFactorEnabled,
     bool AccountRequiresMfa)
 {
     public static readonly CachedStaffAccess Missing =
-        new(false, Guid.Empty, string.Empty, Guid.Empty, null, null, null, null, false, false, false, false);
+        new(false, Guid.Empty, string.Empty, Guid.Empty, null, null, false, false, false, false);
 }
 
 /// <summary>Cached role definition with its permissions.</summary>
@@ -35,12 +33,10 @@ public sealed record CachedRoleAccess(
     Guid Id,
     string Code,
     string DisplayName,
+    RoleKind Kind,
     DataScope DataScope,
     DashboardKind Dashboard,
     AttributeRule BranchRule,
-    AttributeRule SegmentRule,
-    AttributeRule AuthorityLevelRule,
-    bool IsAdministrative,
     bool RequireMfa,
     IReadOnlyList<string> Permissions);
 
@@ -71,12 +67,10 @@ internal sealed class UserAccessProfileService(HybridCache cache, CreditFlowDbCo
         {
             Id = new RoleId(role.Id),
             Code = RoleCode.Create(role.Code).Value,
+            Kind = role.Kind,
             DataScope = role.DataScope,
             Dashboard = role.Dashboard,
             BranchRule = role.BranchRule,
-            SegmentRule = role.SegmentRule,
-            AuthorityLevelRule = role.AuthorityLevelRule,
-            IsAdministrative = role.IsAdministrative,
         };
 
         return UserAccessProfile.FromParts(
@@ -87,8 +81,6 @@ internal sealed class UserAccessProfileService(HybridCache cache, CreditFlowDbCo
             role.Permissions,
             staff.BranchId is { } branchId ? new BranchId(branchId) : null,
             staff.BranchName,
-            staff.Segment,
-            staff.AuthorityLevel,
             staff.IsActive);
     }
 
@@ -134,8 +126,6 @@ internal sealed class UserAccessProfileService(HybridCache cache, CreditFlowDbCo
                 row.RoleId,
                 row.BranchId,
                 row.BranchName,
-                row.Segment,
-                row.AuthorityLevel,
                 row.IsActive,
                 row.MustChangePassword,
                 row.TwoFactorEnabled,
@@ -154,12 +144,10 @@ internal sealed class UserAccessProfileService(HybridCache cache, CreditFlowDbCo
                 role.Id,
                 role.Code,
                 role.DisplayName,
+                role.Kind,
                 role.DataScope,
                 role.Dashboard,
                 role.BranchRule,
-                role.SegmentRule,
-                role.AuthorityLevelRule,
-                role.IsAdministrative,
                 role.RequireMfa,
                 role.Permissions.Select(p => p.Permission).Order(StringComparer.Ordinal).ToArray());
     }

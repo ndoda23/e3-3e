@@ -18,8 +18,6 @@ public sealed class UserModelTests
         nameof(StaffMember.FullName),
         nameof(StaffMember.RoleId),
         nameof(StaffMember.BranchId),
-        nameof(StaffMember.Segment),
-        nameof(StaffMember.AuthorityLevel),
         nameof(StaffMember.IsActive),
         nameof(StaffMember.IsAvailable),
         nameof(StaffMember.Capacity),

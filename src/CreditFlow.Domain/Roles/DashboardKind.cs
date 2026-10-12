@@ -1,15 +1,12 @@
 namespace CreditFlow.Domain.Roles;
 
-/// <summary>Landing page a role is sent to after sign-in (FRD M1).</summary>
+/// <summary>The landing page a role is sent to after sign-in.</summary>
 public enum DashboardKind
 {
-    Officer = 1,
-    Underwriter = 2,
-    Branch = 3,
-    BusinessDevelopment = 4,
-    BackOffice = 5,
-    AmlScreening = 6,
-    Fab = 7,
-    Exceptions = 8,
-    Administration = 9,
+    Operator = 1,
+    Underwriting = 2,
+    Committee = 3,
+    Compliance = 4,
+    Audit = 5,
+    Administration = 6,
 }

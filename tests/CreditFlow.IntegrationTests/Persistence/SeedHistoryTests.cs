@@ -1,8 +1,12 @@
 using System.Text.RegularExpressions;
 using CreditFlow.Application.Authorization;
+using CreditFlow.Application.Common;
 using CreditFlow.Application.ReferenceData;
-using CreditFlow.Domain.AuthorityLimits;
+using CreditFlow.Application.Users;
+using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Roles;
+using CreditFlow.Domain.Users;
+using CreditFlow.Infrastructure.Identity;
 using CreditFlow.Infrastructure.Persistence;
 using CreditFlow.Infrastructure.Persistence.Seeding;
 using CreditFlow.IntegrationTests.Infrastructure;
@@ -23,31 +27,70 @@ public sealed class SeedHistoryTests(SqlServerContainer sql) : DatabaseTestBase(
 
         Assert.Equal(SeedUnits.All.Select(u => u.Id), applied);
         Assert.Equal(
-            ["0001_initial_roles_permissions", "0002_initial_branches", "0003_initial_authority_limits"],
+            [
+                "0001_initial_roles_permissions", "0002_initial_branches", "0003_initial_authority_limits",
+                "0004_creditflow_roles",
+            ],
             applied);
     }
 
     [Fact]
-    public async Task Deleted_limits_of_a_type_do_not_come_back_on_restart()
+    public async Task A_fresh_database_has_exactly_the_creditflow_roles_with_the_seeded_matrix()
     {
-        // The administrator deletes every pricing-exception limit and every credit limit of the underwriter role.
-        await Host.InScopeAsync(async sp =>
+        var roles = await Host.QueryAsync(db => db.Roles.Include(r => r.Permissions).ToListAsync(Ct));
+
+        Assert.Equal(
+            RoleSeedCatalog.All.Select(r => r.Code).Order(StringComparer.Ordinal),
+            roles.Select(r => r.Code).Order(StringComparer.Ordinal));
+        Assert.All(roles, role => Assert.Equal(
+            RoleSeedCatalog.Get(role.Code).Permissions.Order(StringComparer.Ordinal),
+            role.Permissions.Select(p => p.Permission).Order(StringComparer.Ordinal)));
+    }
+
+    [Fact]
+    public async Task Unit_0004_converts_a_database_that_still_has_the_lams_roles()
+    {
+        // Simulate a Phase 1 database: unit 0004 has not run, a Loan Officer and a Head still exist, and the kept
+        // Underwriter role still holds a LAMS permission.
+        var (officerId, headId) = await Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            var uw = new RoleId(await db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
-            db.AuthorityLimits.RemoveRange(await db.AuthorityLimits
-                .Where(l => l.LimitType == LimitType.PricingException
-                            || (l.LimitType == LimitType.CreditDecision && l.RoleId == uw))
-                .ToListAsync(Ct));
+            db.SeedHistory.Remove(await db.SeedHistory.SingleAsync(s => s.SeedId == "0004_creditflow_roles", Ct));
+            var underwriter = await db.Roles.SingleAsync(r => r.Code == RoleCodes.Underwriter, Ct);
+            underwriter.Permissions.Add(new RolePermission { RoleId = underwriter.Id, Permission = "applications.decide" });
+            var officerRole = AddLamsRole(db, "LO", AttributeRule.Required);
+            var headRole = AddLamsRole(db, "HD", AttributeRule.NotAllowed);
             await db.SaveChangesAsync(Ct);
+
+            var vake = await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct);
+            var officer = await AddStaffAsync(sp, "lams.officer", officerRole.ToProfile(), vake);
+            var head = await AddStaffAsync(sp, "lams.head", headRole.ToProfile(), null);
+            return (officer, head);
         });
 
         await RestartAsync();
-        await RestartAsync();
 
-        var limits = await Host.QueryAsync(db => db.AuthorityLimits.ToListAsync(Ct));
-        Assert.DoesNotContain(limits, l => l.LimitType == LimitType.PricingException);
-        Assert.Single(limits); // only the Branch Manager credit limit remains
+        var (codes, underwriterPermissions, officer, head) = await Host.QueryAsync(async db => (
+            await db.Roles.Select(r => r.Code).ToListAsync(Ct),
+            await db.RolePermissions
+                .Where(p => db.Roles.Any(r => r.Id == p.RoleId && r.Code == RoleCodes.Underwriter))
+                .Select(p => p.Permission)
+                .ToListAsync(Ct),
+            await db.UserDirectory.SingleAsync(u => u.Id == officerId.Value, Ct),
+            await db.UserDirectory.SingleAsync(u => u.Id == headId.Value, Ct)));
+
+        Assert.DoesNotContain("LO", codes);
+        Assert.DoesNotContain("HD", codes);
+        Assert.Equal(
+            RoleSeedCatalog.Get(RoleCodes.Underwriter).Permissions.Order(StringComparer.Ordinal),
+            underwriterPermissions.Order(StringComparer.Ordinal));
+
+        Assert.Equal(RoleCodes.Operator, officer.RoleCode);
+        Assert.Equal("Vake", officer.BranchName);
+        Assert.True(officer.IsActive);
+
+        Assert.Equal(RoleCodes.Auditor, head.RoleCode);
+        Assert.False(head.IsActive);
     }
 
     [Fact]
@@ -57,18 +100,18 @@ public sealed class SeedHistoryTests(SqlServerContainer sql) : DatabaseTestBase(
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
             db.Branches.Remove(await db.Branches.SingleAsync(b => b.Code == BranchSeedCatalog.Rustavi, Ct));
-            var fab = await db.Roles.SingleAsync(r => r.Code == RoleCodes.FinancialAnalysis, Ct);
-            db.RolePermissions.RemoveRange(await db.RolePermissions.Where(p => p.RoleId == fab.Id).ToListAsync(Ct));
+            var compliance = await db.Roles.SingleAsync(r => r.Code == RoleCodes.Compliance, Ct);
+            db.RolePermissions.RemoveRange(await db.RolePermissions.Where(p => p.RoleId == compliance.Id).ToListAsync(Ct));
             await db.SaveChangesAsync(Ct);
         });
 
         await RestartAsync();
 
-        var (rustavi, fabPermissions) = await Host.QueryAsync(async db => (
+        var (rustavi, compliancePermissions) = await Host.QueryAsync(async db => (
             await db.Branches.AnyAsync(b => b.Code == BranchSeedCatalog.Rustavi, Ct),
-            await db.RolePermissions.CountAsync(p => db.Roles.Any(r => r.Id == p.RoleId && r.Code == RoleCodes.FinancialAnalysis), Ct)));
+            await db.RolePermissions.CountAsync(p => db.Roles.Any(r => r.Id == p.RoleId && r.Code == RoleCodes.Compliance), Ct)));
         Assert.False(rustavi);
-        Assert.Equal(0, fabPermissions);
+        Assert.Equal(0, compliancePermissions);
     }
 
     [Fact]
@@ -77,21 +120,21 @@ public sealed class SeedHistoryTests(SqlServerContainer sql) : DatabaseTestBase(
         await Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            var bm = await db.Roles.SingleAsync(r => r.Code == RoleCodes.BranchManager, Ct);
-            bm.DataScope = DataScope.Organization;
-            bm.DisplayName = "Tampered";
-            bm.IsAdministrative = true;
-            bm.RequireMfa = true; // administrator-owned: must survive
+            var role = await db.Roles.SingleAsync(r => r.Code == RoleCodes.Operator, Ct);
+            role.DataScope = DataScope.Organization;
+            role.DisplayName = "Tampered";
+            role.Kind = RoleKind.Administrative;
+            role.RequireMfa = true; // administrator-owned: must survive
             await db.SaveChangesAsync(Ct);
         });
 
         await RestartAsync();
 
-        var role = await Host.QueryAsync(db => db.Roles.Include(r => r.Permissions).SingleAsync(r => r.Code == RoleCodes.BranchManager, Ct));
-        var seed = RoleSeedCatalog.Get(RoleCodes.BranchManager);
+        var role = await Host.QueryAsync(db => db.Roles.Include(r => r.Permissions).SingleAsync(r => r.Code == RoleCodes.Operator, Ct));
+        var seed = RoleSeedCatalog.Get(RoleCodes.Operator);
         Assert.Equal(DataScope.Branch, role.DataScope);
         Assert.Equal(seed.DisplayName, role.DisplayName);
-        Assert.False(role.IsAdministrative);
+        Assert.Equal(RoleKind.Business, role.Kind);
         Assert.True(role.RequireMfa);
         Assert.Equal(seed.Permissions.Order(), role.Permissions.Select(p => p.Permission).Order());
     }
@@ -103,20 +146,66 @@ public sealed class SeedHistoryTests(SqlServerContainer sql) : DatabaseTestBase(
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
 
-            await SeedOperations.GrantAsync(db, RoleCodes.Underwriter, [Permissions.Applications.Reassign], Ct);
-            await SeedOperations.GrantAsync(db, RoleCodes.Underwriter, [Permissions.Applications.Reassign], Ct);
+            await SeedOperations.GrantAsync(db, RoleCodes.Underwriter, [Permissions.Reports.Export], Ct);
+            await SeedOperations.GrantAsync(db, RoleCodes.Underwriter, [Permissions.Reports.Export], Ct);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 SeedOperations.GrantAsync(db, RoleCodes.Underwriter, [Permissions.Admin.UsersManage], Ct));
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                SeedOperations.GrantAsync(db, RoleCodes.Auditor, [Permissions.Applications.Create], Ct));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 SeedOperations.GrantAsync(db, RoleCodes.Underwriter, ["applications.unknown"], Ct));
         });
 
-        var count = await Host.QueryAsync(db => db.RolePermissions.CountAsync(p => p.Permission == Permissions.Applications.Reassign, Ct));
+        var count = await Host.QueryAsync(db => db.RolePermissions.CountAsync(
+            p => p.Permission == Permissions.Reports.Export && db.Roles.Any(r => r.Id == p.RoleId && r.Code == RoleCodes.Underwriter),
+            Ct));
         Assert.Equal(1, count);
     }
 
     private Task RestartAsync() => Host.Services.InitializeDatabaseAsync(Ct);
+
+    private static ApplicationRole AddLamsRole(CreditFlowDbContext db, string code, AttributeRule branchRule)
+    {
+        var role = new ApplicationRole
+        {
+            Id = RoleId.New().Value,
+            Name = code,
+            NormalizedName = code,
+            Code = code,
+            DisplayName = code,
+            Description = "LAMS role",
+            Kind = RoleKind.Business,
+            DataScope = DataScope.Organization,
+            Dashboard = DashboardKind.Audit,
+            BranchRule = branchRule,
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+        };
+        role.Permissions.Add(new RolePermission { RoleId = role.Id, Permission = "applications.view-full" });
+        db.Roles.Add(role);
+        return role;
+    }
+
+    private static async Task<UserId> AddStaffAsync(
+        IServiceProvider sp, string userName, RoleProfile role, CreditFlow.Domain.Branches.BranchId? branchId)
+    {
+        var id = UserId.New();
+        var db = sp.GetRequiredService<CreditFlowDbContext>();
+        var identity = sp.GetRequiredService<IIdentityService>();
+        var result = await sp.GetRequiredService<IUnitOfWork>().ExecuteInTransactionAsync(
+            async token =>
+            {
+                await identity.CreateAccountAsync(
+                    new NewAccount(id, userName, $"{userName}@pcb.ge", "Temp!Passw0rd-123", DateTimeOffset.UtcNow.AddDays(1), false),
+                    token);
+                db.StaffMembers.Add(StaffMember.Create(id, userName, role, branchId).Value);
+                await db.SaveChangesAsync(token);
+                return Result.Success();
+            },
+            Ct);
+        Assert.True(result.IsSuccess);
+        return id;
+    }
 }
 
 /// <summary>Rules for the list of seed units (no database needed).</summary>
@@ -134,12 +223,5 @@ public sealed partial class SeedUnitCatalogTests
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(ids.Order(StringComparer.Ordinal), ids);
         Assert.All(ids, id => Assert.True(id.Length <= SeedHistoryEntry.SeedIdMaxLength));
-    }
-
-    [Fact]
-    public void The_first_unit_creates_exactly_the_initial_ten_roles()
-    {
-        Assert.Equal(10, SeedUnits.InitialRoleCodes.Length);
-        Assert.Equal(RoleSeedCatalog.All.Select(r => r.Code).Order(), SeedUnits.InitialRoleCodes.Order());
     }
 }

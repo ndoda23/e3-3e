@@ -10,9 +10,9 @@
         <div class="row">
             <h1 class="page-title">@role.DisplayName</h1>
             <span class="code">@profile.Code.Value</span>
-            @if (profile.IsAdministrative)
+            @if (profile.Kind != RoleKind.Business)
             {
-                <span class="chip">@T["Roles.Administrative"]</span>
+                <span class="chip">@T[$"RoleKind.{profile.Kind}"]</span>
             }
         </div>
         <p class="page-desc">@role.Description</p>
@@ -36,12 +36,12 @@
         </div>
         <div class="card-body">
             <dl class="dl">
+                <dt>@T["Roles.Kind"]</dt>
+                <dd>@T[$"RoleKind.{profile.Kind}"] <div class="small">@T[$"RoleKind.{profile.Kind}.Description"]</div></dd>
                 <dt>@T["Roles.DataScope"]</dt>
                 <dd>@T[$"DataScope.{profile.DataScope}"] <div class="small">@T[$"DataScope.{profile.DataScope}.Description"]</div></dd>
                 <dt>@T["Roles.Dashboard"]</dt><dd>@T[$"Dashboard.{profile.Dashboard}"]</dd>
                 <dt>@T["Field.Branch"]</dt><dd>@T[$"AttributeRule.{profile.BranchRule}"]</dd>
-                <dt>@T["Field.AuthorityLevel"]</dt><dd>@T[$"AttributeRule.{profile.AuthorityLevelRule}"]</dd>
-                <dt>@T["Field.Segment"]</dt><dd>@T[$"AttributeRule.{profile.SegmentRule}"]</dd>
                 <dt>@T["Roles.Users"]</dt><dd class="tnum">@role.UserCount</dd>
             </dl>
         </div>
@@ -76,7 +76,7 @@
     <div asp-validation-summary="All" role="alert"></div>
     <div class="alert info">
         <icon name="shield-check" size="18" />
-        <span>@(profile.IsAdministrative ? T["Roles.SodAdministrative"] : T["Roles.SodBusiness"])</span>
+        <span>@T[$"Roles.Sod{profile.Kind}"]</span>
     </div>
     @foreach (var group in Model.Editor.Groups)
     {

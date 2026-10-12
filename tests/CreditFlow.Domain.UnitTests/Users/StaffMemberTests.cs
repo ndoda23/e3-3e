@@ -15,108 +15,49 @@ public sealed class StaffMemberTests
     // ----- Creation and attribute rules per role -----
 
     [Fact]
-    public void Senior_underwriter_in_a_branch_is_created_active_and_available()
+    public void Operator_in_a_branch_is_created_active_and_available()
     {
-        var result = StaffMember.Create(
-            UserId.New(), " Tamta Tatishvili ", TestRoles.Underwriter, Vake, null, AuthorityLevel.Senior);
+        var result = StaffMember.Create(UserId.New(), " Anna Gelashvili ", TestRoles.Operator, Vake);
 
         Assert.True(result.IsSuccess);
         var staff = result.Value;
-        Assert.Equal("Tamta Tatishvili", staff.FullName);
-        Assert.Equal(TestRoles.Underwriter.Id, staff.RoleId);
+        Assert.Equal("Anna Gelashvili", staff.FullName);
+        Assert.Equal(TestRoles.Operator.Id, staff.RoleId);
         Assert.Equal(Vake, staff.BranchId);
-        Assert.Equal(AuthorityLevel.Senior, staff.AuthorityLevel);
         Assert.True(staff.IsActive);
         Assert.True(staff.IsAvailable);
         Assert.Equal(StaffMember.DefaultCapacity, staff.Capacity);
     }
 
-    [Theory]
-    [MemberData(nameof(RolesRequiringBranchAndLevel))]
-    public void Loan_officer_and_underwriter_require_branch_and_authority_level(RoleProfile role)
-    {
-        var errors = StaffMember.ValidateAssignment(role, branchId: null, segment: null, authorityLevel: null);
-
-        Assert.Equal([UserErrors.BranchRequired, UserErrors.AuthorityLevelRequired], errors);
-    }
-
-    public static TheoryData<RoleProfile> RolesRequiringBranchAndLevel =>
-        [TestRoles.LoanOfficer, TestRoles.Underwriter];
-
     [Fact]
-    public void Create_fails_on_the_first_attribute_error()
+    public void Operator_requires_a_branch()
     {
-        var result = StaffMember.Create(UserId.New(), "Nika Beridze", TestRoles.Underwriter, null, null, null);
-
-        Assert.Equal(UserErrors.BranchRequired, result.Error);
-    }
-
-    [Fact]
-    public void Branch_manager_requires_a_branch_and_has_no_authority_level()
-    {
+        Assert.Equal([UserErrors.BranchRequired], StaffMember.ValidateAssignment(TestRoles.Operator, branchId: null));
         Assert.Equal(
             UserErrors.BranchRequired,
-            StaffMember.Create(UserId.New(), "Mariam Lomidze", TestRoles.BranchManager, null, null, null).Error);
-
-        var staff = Create(TestRoles.BranchManager, Vake, null, AuthorityLevel.Senior);
-        Assert.Null(staff.AuthorityLevel);
+            StaffMember.Create(UserId.New(), "Salome Janelidze", TestRoles.Operator, null).Error);
     }
 
     [Fact]
-    public void Head_requires_a_segment()
+    public void Branch_is_cleared_for_roles_that_do_not_allow_it()
     {
-        var result = StaffMember.Create(UserId.New(), "Irakli Tsereteli", TestRoles.Head, null, null, null);
-
-        Assert.Equal(UserErrors.SegmentRequired, result.Error);
-    }
-
-    [Theory]
-    [InlineData(Segment.Retail)]
-    [InlineData(Segment.Business)]
-    public void Head_with_a_segment_is_valid(Segment segment)
-    {
-        Assert.Equal(segment, Create(TestRoles.Head, null, segment, null).Segment);
-    }
-
-    [Fact]
-    public void Segment_is_cleared_for_roles_that_do_not_allow_it()
-    {
-        Assert.Null(Create(TestRoles.Director, null, Segment.Retail, null).Segment);
+        Assert.Null(Create(TestRoles.Underwriter, Vake).BranchId);
+        Assert.Null(Create(TestRoles.Admin, Vake).BranchId);
     }
 
     [Fact]
     public void Optional_branch_is_kept_when_given_and_may_be_omitted()
     {
-        Assert.Equal(Vake, Create(TestRoles.BackOffice, Vake, null, null).BranchId);
-        Assert.Null(Create(TestRoles.BackOffice, null, null, null).BranchId);
+        Assert.Equal(Vake, Create(TestRoles.OptionalBranch, Vake).BranchId);
+        Assert.Null(Create(TestRoles.OptionalBranch, null).BranchId);
     }
 
     [Fact]
-    public void System_administrator_has_no_branch_segment_or_level()
+    public void Branch_errors_name_the_field_they_belong_to()
     {
-        var staff = Create(TestRoles.SystemAdministrator, Vake, Segment.Business, AuthorityLevel.Senior);
+        var errors = StaffMember.ValidateAssignment(TestRoles.Operator, null);
 
-        Assert.Null(staff.BranchId);
-        Assert.Null(staff.Segment);
-        Assert.Null(staff.AuthorityLevel);
-    }
-
-    [Fact]
-    public void Undefined_enum_values_are_rejected()
-    {
-        Assert.Contains(
-            UserErrors.InvalidSegment, StaffMember.ValidateAssignment(TestRoles.Head, null, (Segment)99, null));
-        Assert.Contains(
-            UserErrors.InvalidAuthorityLevel,
-            StaffMember.ValidateAssignment(TestRoles.Underwriter, Vake, null, (AuthorityLevel)99));
-    }
-
-    [Fact]
-    public void Errors_name_the_field_they_belong_to()
-    {
-        var errors = StaffMember.ValidateAssignment(TestRoles.Underwriter, null, null, null);
-
-        Assert.Equal(["BranchId", "AuthorityLevel"], errors.Select(e => e.Target));
+        Assert.Equal(["BranchId"], errors.Select(e => e.Target));
     }
 
     [Theory]
@@ -124,7 +65,7 @@ public sealed class StaffMemberTests
     [InlineData("  ")]
     public void Full_name_is_required(string? fullName)
     {
-        var result = StaffMember.Create(UserId.New(), fullName, TestRoles.Director, null, null, null);
+        var result = StaffMember.Create(UserId.New(), fullName, TestRoles.Underwriter, null);
 
         Assert.Equal(UserErrors.InvalidFullName, result.Error);
     }
@@ -132,7 +73,7 @@ public sealed class StaffMemberTests
     [Fact]
     public void Full_name_has_a_maximum_length()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
 
         Assert.Equal(
             UserErrors.InvalidFullName, staff.Rename(new string('x', StaffMember.FullNameMaxLength + 1)).Error);
@@ -154,25 +95,24 @@ public sealed class StaffMemberTests
     [Fact]
     public void Assigning_a_role_replaces_the_previous_role_and_reapplies_its_rules()
     {
-        var staff = Create(TestRoles.Underwriter, Vake, null, AuthorityLevel.Standard);
+        var staff = Create(TestRoles.Operator, Vake);
 
-        var result = staff.AssignRole(TestRoles.SystemAdministrator, Vake, null, AuthorityLevel.Standard);
+        var result = staff.AssignRole(TestRoles.Admin, Vake);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(TestRoles.SystemAdministrator.Id, staff.RoleId);
+        Assert.Equal(TestRoles.Admin.Id, staff.RoleId);
         Assert.Null(staff.BranchId);
-        Assert.Null(staff.AuthorityLevel);
     }
 
     [Fact]
     public void A_failed_role_assignment_leaves_the_staff_member_unchanged()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
 
-        var result = staff.AssignRole(TestRoles.Underwriter, null, null, null);
+        var result = staff.AssignRole(TestRoles.Operator, null);
 
         Assert.Equal(UserErrors.BranchRequired, result.Error);
-        Assert.Equal(TestRoles.Director.Id, staff.RoleId);
+        Assert.Equal(TestRoles.Underwriter.Id, staff.RoleId);
     }
 
     // ----- Attribute changes within the current role -----
@@ -180,36 +120,21 @@ public sealed class StaffMemberTests
     [Fact]
     public void Branch_can_be_changed_within_the_role_rules()
     {
-        var staff = Create(TestRoles.Underwriter, Vake, null, AuthorityLevel.Senior);
+        var staff = Create(TestRoles.Operator, Vake);
 
-        Assert.True(staff.ChangeBranch(TestRoles.Underwriter, Saburtalo).IsSuccess);
+        Assert.True(staff.ChangeBranch(TestRoles.Operator, Saburtalo).IsSuccess);
         Assert.Equal(Saburtalo, staff.BranchId);
 
-        Assert.Equal(UserErrors.BranchRequired, staff.ChangeBranch(TestRoles.Underwriter, null).Error);
+        Assert.Equal(UserErrors.BranchRequired, staff.ChangeBranch(TestRoles.Operator, null).Error);
         Assert.Equal(Saburtalo, staff.BranchId);
-    }
-
-    [Fact]
-    public void Segment_and_authority_level_can_be_changed_within_the_role_rules()
-    {
-        var head = Create(TestRoles.Head, null, Segment.Retail, null);
-        Assert.True(head.ChangeSegment(TestRoles.Head, Segment.Business).IsSuccess);
-        Assert.Equal(Segment.Business, head.Segment);
-
-        var underwriter = Create(TestRoles.Underwriter, Vake, null, AuthorityLevel.Junior);
-        Assert.True(underwriter.ChangeAuthorityLevel(TestRoles.Underwriter, AuthorityLevel.Senior).IsSuccess);
-        Assert.Equal(AuthorityLevel.Senior, underwriter.AuthorityLevel);
-        Assert.Equal(
-            UserErrors.AuthorityLevelRequired,
-            underwriter.ChangeAuthorityLevel(TestRoles.Underwriter, null).Error);
     }
 
     [Fact]
     public void Attribute_changes_require_the_current_role_profile()
     {
-        var staff = Create(TestRoles.Underwriter, Vake, null, AuthorityLevel.Senior);
+        var staff = Create(TestRoles.Operator, Vake);
 
-        Assert.Throws<InvalidOperationException>(() => staff.ChangeBranch(TestRoles.BranchManager, Saburtalo));
+        Assert.Throws<InvalidOperationException>(() => staff.ChangeBranch(TestRoles.OptionalBranch, Saburtalo));
     }
 
     // ----- Activation, availability, capacity -----
@@ -217,7 +142,7 @@ public sealed class StaffMemberTests
     [Fact]
     public void Deactivation_also_makes_the_staff_member_unavailable()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
 
         Assert.True(staff.Deactivate().IsSuccess);
 
@@ -228,7 +153,7 @@ public sealed class StaffMemberTests
     [Fact]
     public void An_inactive_staff_member_cannot_be_marked_available()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
         staff.Deactivate();
 
         Assert.Equal(UserErrors.InactiveCannotBeAvailable, staff.SetAvailability(true).Error);
@@ -238,7 +163,7 @@ public sealed class StaffMemberTests
     [Fact]
     public void Reactivated_staff_member_can_be_marked_available_again()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
         staff.Deactivate();
         staff.Activate();
 
@@ -252,7 +177,7 @@ public sealed class StaffMemberTests
     [InlineData(StaffMember.MaxCapacity + 1)]
     public void Capacity_must_be_within_range(int capacity)
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
 
         Assert.Equal(UserErrors.InvalidCapacity, staff.ChangeCapacity(capacity).Error);
         Assert.Equal(StaffMember.DefaultCapacity, staff.Capacity);
@@ -263,22 +188,22 @@ public sealed class StaffMemberTests
     [Fact]
     public void Access_snapshot_changes_only_with_access_relevant_attributes()
     {
-        var staff = Create(TestRoles.Underwriter, Vake, null, AuthorityLevel.Senior);
+        var staff = Create(TestRoles.Operator, Vake);
         var before = staff.Access;
 
-        staff.Rename("Tamta T.");
+        staff.Rename("Anna G.");
         staff.ChangeCapacity(12);
         staff.SetAvailability(false);
         Assert.Equal(before, staff.Access);
 
-        staff.ChangeBranch(TestRoles.Underwriter, Saburtalo);
+        staff.ChangeBranch(TestRoles.Operator, Saburtalo);
         Assert.NotEqual(before, staff.Access);
     }
 
     [Fact]
     public void Deactivation_changes_the_access_snapshot()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
         var before = staff.Access;
 
         staff.Deactivate();
@@ -289,7 +214,7 @@ public sealed class StaffMemberTests
     [Fact]
     public void Audit_stamps_are_set_through_the_audited_entity_interface()
     {
-        var staff = Create(TestRoles.Director, null, null, null);
+        var staff = Create(TestRoles.Underwriter, null);
         var admin = UserId.New();
         var at = new DateTimeOffset(2026, 10, 5, 10, 0, 0, TimeSpan.Zero);
 
@@ -313,7 +238,6 @@ public sealed class StaffMemberTests
         Assert.Empty(publicSetters);
     }
 
-    private static StaffMember Create(
-        RoleProfile role, BranchId? branchId, Segment? segment, AuthorityLevel? authorityLevel) =>
-        StaffMember.Create(UserId.New(), "Test User", role, branchId, segment, authorityLevel).Value;
+    private static StaffMember Create(RoleProfile role, BranchId? branchId) =>
+        StaffMember.Create(UserId.New(), "Test User", role, branchId).Value;
 }

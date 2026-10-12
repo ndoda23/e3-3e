@@ -4,20 +4,14 @@ using P = CreditFlow.Application.Authorization.Permissions;
 
 namespace CreditFlow.Web.Controllers;
 
-// Placeholder pages for the Phase 2+ navigation targets. Each is protected by the same permissions as its menu entry.
+// Placeholder pages for navigation targets built in later steps. Each is protected by the same permission as its
+// menu entry.
 
-[HasAnyPermission(P.Applications.ViewFull, P.Aml.ViewScreening, P.Pricing.ViewExceptions)]
+[HasPermission(P.Applications.View)]
 public sealed class ApplicationsController : Controller
 {
     [HttpGet]
     public IActionResult Index() => View("ComingSoon", "Applications");
-}
-
-[HasPermission(P.Applications.ViewFull)]
-public sealed class PackagesController : Controller
-{
-    [HttpGet]
-    public IActionResult Index() => View("ComingSoon", "Packages");
 }
 
 [HasPermission(P.Reports.View)]

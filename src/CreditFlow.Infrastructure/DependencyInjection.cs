@@ -1,6 +1,5 @@
 using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Authorization;
-using CreditFlow.Application.AuthorityLimits;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
@@ -88,7 +87,6 @@ public static class DependencyInjection
         services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IBranchRepository, BranchRepository>();
-        services.AddScoped<IAuthorityLimitRepository, AuthorityLimitRepository>();
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IAuditLogQueries, AuditLogQueries>();
 

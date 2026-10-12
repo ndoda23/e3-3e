@@ -75,18 +75,18 @@ public sealed class BranchAdministrationTests(SqlServerContainer sql) : WebTestB
     [Fact]
     public async Task A_deactivated_branch_is_no_longer_offered_but_its_users_keep_it()
     {
-        var (_, userId, _) = await CreateUserAsync(RoleCodes.Underwriter, BranchSeedCatalog.Kutaisi, AuthorityLevel.Junior);
+        var (_, userId, _) = await CreateUserAsync(RoleCodes.Operator, BranchSeedCatalog.Kutaisi);
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
         var id = await BranchIdAsync(BranchSeedCatalog.Kutaisi);
-        var uwRole = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
+        var operatorRole = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct));
 
         var modal = await (await browser.HtmxGetAsync($"/Admin/Branches/Confirm/{id}?delete=false")).Content.ReadAsStringAsync(Ct);
         Assert.Contains("1 user(s)", modal, StringComparison.Ordinal);
         await browser.PostWithTokenAsync($"/Admin/Branches/Deactivate/{id}", new Dictionary<string, string>(), WebSession.Token(modal));
 
         Assert.False(await QueryAsync(db => db.Branches.Where(b => b.Id == new BranchId(id)).Select(b => b.IsActive).SingleAsync(Ct)));
-        var newUserFields = await (await browser.HtmxGetAsync($"/Admin/Users/RoleFields?RoleId={uwRole}")).Content.ReadAsStringAsync(Ct);
+        var newUserFields = await (await browser.HtmxGetAsync($"/Admin/Users/RoleFields?RoleId={operatorRole}")).Content.ReadAsStringAsync(Ct);
         Assert.DoesNotContain(id.ToString(), newUserFields, StringComparison.Ordinal);
         var editExisting = await browser.GetPageAsync($"/Admin/Users/Edit/{userId}");
         Assert.Contains($"value=\"{id}\"", editExisting, StringComparison.Ordinal);
@@ -96,7 +96,7 @@ public sealed class BranchAdministrationTests(SqlServerContainer sql) : WebTestB
     [Fact]
     public async Task Only_an_unused_branch_can_be_deleted()
     {
-        await CreateUserAsync(RoleCodes.Underwriter, BranchSeedCatalog.Rustavi, AuthorityLevel.Junior);
+        await CreateUserAsync(RoleCodes.Operator, BranchSeedCatalog.Rustavi);
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
         await CreateBranchAsync(browser, "TMP", "Temporary", "Tbilisi");
@@ -116,9 +116,9 @@ public sealed class BranchAdministrationTests(SqlServerContainer sql) : WebTestB
     }
 
     [Fact]
-    public async Task Underwriters_cannot_open_branches()
+    public async Task Business_users_cannot_open_branches()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 

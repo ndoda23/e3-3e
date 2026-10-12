@@ -14,28 +14,25 @@ public sealed record MenuItem(string Key, string Area, string Controller, string
 
 public sealed record MenuSection(string Key, IReadOnlyList<MenuItem> Items);
 
-/// <summary>The single definition of the sidebar (FRD shell + Phase 1 admin pages).</summary>
+/// <summary>The single definition of the sidebar (workspace and administration).</summary>
 public static class Menu
 {
     public static IReadOnlyList<MenuItem> Workspace { get; } =
     [
         new("Dashboard", "", "Dashboard", "dashboard", p => p.IsActive && p.Dashboard != DashboardKind.Administration),
-        new("Applications", "", "Applications", "files",
-            p => p.HasAnyPermission(P.Applications.ViewFull, P.Aml.ViewScreening, P.Pricing.ViewExceptions)),
-        new("Packages", "", "Packages", "inbox", p => p.HasPermission(P.Applications.ViewFull)),
+        new("Applications", "", "Applications", "files", p => p.HasPermission(P.Applications.View)),
         new("Reports", "", "Reports", "bar-chart", p => p.HasPermission(P.Reports.View)),
+
+        // Read-only roles reach the audit log without an administration permission.
+        new("Audit", "Admin", "AuditLog", "history", p => p.HasPermission(P.Audit.View)),
     ];
 
     public static IReadOnlyList<MenuItem> Administration { get; } =
     [
         new("Users", "Admin", "Users", "users", p => p.HasPermission(P.Admin.UsersView)),
         new("Roles", "Admin", "Roles", "shield-check", p => p.HasPermission(P.Admin.RolesManage)),
-        new("AuthorityLimits", "Admin", "AuthorityLimits", "sliders", p => p.HasPermission(P.Admin.AuthorityLimitsManage)),
         new("Branches", "Admin", "Branches", "building", p => p.HasPermission(P.Admin.BranchesManage)),
         new("AuditLog", "Admin", "AuditLog", "history", p => p.HasPermission(P.Admin.AuditView)),
-        new("CreditPolicy", "Admin", "CreditPolicy", "shield-alert", p => p.HasPermission(P.Admin.CreditPolicyManage)),
-        new("Pricing", "Admin", "Pricing", "wallet", p => p.HasPermission(P.Admin.PricingManage)),
-        new("Settings", "Admin", "Settings", "settings", p => p.HasPermission(P.Admin.SettingsManage)),
     ];
 
     /// <summary>The sections and entries the user may see; sections without visible entries are left out.</summary>

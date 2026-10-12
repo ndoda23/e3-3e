@@ -7,7 +7,7 @@ namespace CreditFlow.Application.Users;
 
 /// <summary>
 /// The single step through which every staff-member edit is saved. When the access-relevant state changed
-/// (role, active flag, branch, segment, authority level), it rotates the security stamp in the same transaction
+/// (role, active flag, branch), it rotates the security stamp in the same transaction
 /// and, after commit, removes the cached access profile. Edits that touch only other fields do neither.
 /// </summary>
 public sealed class StaffAccessChangeStep(

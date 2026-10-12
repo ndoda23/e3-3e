@@ -36,7 +36,7 @@ public sealed class AdminSeedOptions
     public string? Password { get; set; }
 }
 
-/// <summary>Demo users (one per role/level/segment). Created only in the Development environment.</summary>
+/// <summary>Demo users (every role, enough people for four-eyes). Created only in the Development environment.</summary>
 public sealed class DevUserSeedOptions
 {
     public bool Enabled { get; set; }

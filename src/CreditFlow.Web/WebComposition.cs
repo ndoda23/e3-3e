@@ -87,8 +87,6 @@ public static class WebComposition
         services.AddScoped<IAuthorizationHandler, PermissionHandler>();
         services.AddScoped<IAuthorizationHandler, AdministrationHandler>();
         services.AddScoped<IAuthorizationHandler, DataScopeHandler>();
-        services.AddScoped<IAuthorizationHandler, CreditDecisionHandler>();
-        services.AddScoped<IAuthorizationHandler, PricingExceptionApprovalHandler>();
 
         services.AddAuthorizationBuilder()
             // Every endpoint requires a signed-in user unless it is explicitly [AllowAnonymous].

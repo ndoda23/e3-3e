@@ -9,7 +9,7 @@ namespace CreditFlow.Infrastructure.Identity;
 
 /// <summary>
 /// The only claims principal factory. The cookie carries stable identity claims only: user id, user name, security
-/// stamp and the role id. No role names, permissions, branch, segment or level (those come from the cached access
+/// stamp and the role id. No role names, permissions or branch (those come from the cached access
 /// profile on every request). <c>SecurityStampValidator</c> refreshes the principal through this same factory.
 /// </summary>
 public sealed class CreditFlowUserClaimsPrincipalFactory(

@@ -412,21 +412,21 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
             // ----- Hand-written: objects EF Core does not create from the model -----
 
             // Foreign keys between strongly typed id columns and Identity's Guid keys.
-            DatabaseObjects.AddManualForeignKeys(migrationBuilder);
+            InitialCreateObjects.AddManualForeignKeys(migrationBuilder);
 
             // Audit records are append-only, also for anyone with direct SQL access.
             migrationBuilder.Sql(AuditLogTrigger.CreateSql);
 
             // Read model for the user list (staff member + account + role + branch).
-            migrationBuilder.Sql(DatabaseObjects.CreateUserDirectoryView);
+            migrationBuilder.Sql(InitialCreateObjects.CreateUserDirectoryView);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(DatabaseObjects.DropUserDirectoryView);
+            migrationBuilder.Sql(InitialCreateObjects.DropUserDirectoryView);
             migrationBuilder.Sql(AuditLogTrigger.DropSql);
-            DatabaseObjects.DropManualForeignKeys(migrationBuilder);
+            InitialCreateObjects.DropManualForeignKeys(migrationBuilder);
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");

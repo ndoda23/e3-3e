@@ -32,14 +32,6 @@
             <dt>@T["Field.UserName"]</dt><dd class="mono">@d.UserName</dd>
             <dt>@T["Field.Email"]</dt><dd>@d.Email</dd>
             <dt>@T["Field.Role"]</dt><dd>@d.RoleName</dd>
-            @if (d.AuthorityLevel is { } level)
-            {
-                <dt>@T["Field.AuthorityLevel"]</dt><dd>@T[$"AuthorityLevel.{level}"]</dd>
-            }
-            @if (d.Segment is { } segment)
-            {
-                <dt>@T["Field.Segment"]</dt><dd>@T[$"Segment.{segment}"]</dd>
-            }
             @if (d.BranchName is { } branch)
             {
                 <dt>@T["Field.Branch"]</dt><dd>@branch</dd>

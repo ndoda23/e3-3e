@@ -8,8 +8,8 @@ namespace CreditFlow.IntegrationTests.Web;
 
 /// <summary>
 /// The Phase 1 definition of done, end to end through the UI only: the seeded administrator signs in, changes the
-/// password, creates a Senior Underwriter in Vake; that user signs in with the temporary password, chooses their own,
-/// sees only their menu and their authority limit, and is denied the admin area.
+/// password, creates a Senior Underwriter; that user signs in with the temporary password, chooses their own, sees only their
+/// menu and role, and is denied the admin area.
 /// </summary>
 public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebTestBase(sql)
 {
@@ -23,7 +23,7 @@ public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebT
     private static partial Regex NavItemPattern();
 
     [Fact]
-    public async Task Administrator_creates_a_senior_underwriter_in_Vake_who_gets_only_underwriter_access()
+    public async Task Administrator_creates_a_senior_underwriter_who_gets_only_underwriter_access()
     {
         // 1. Seeded administrator: forced password change, then Admin › Users.
         using var admin = NewSession();
@@ -31,18 +31,15 @@ public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebT
         await ChangePasswordAsync(admin, InfrastructureHost.AdminPassword, AdminNewPassword);
         Assert.Equal("/Admin", (await admin.GetAsync("/")).Headers.Location!.OriginalString);
 
-        // 2. Create the Senior Underwriter in Vake through the form; the temporary password is shown once.
-        var (uwRole, vake) = await QueryAsync(async db => (
-            await db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct),
-            (await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct)).Value));
+        // 2. Create the Senior Underwriter through the form; the temporary password is shown once.
+        var seniorRole = await QueryAsync(db =>
+            db.Roles.Where(r => r.Code == RoleCodes.SeniorUnderwriter).Select(r => r.Id).SingleAsync(Ct));
         var created = await admin.PostFormAsync("/Admin/Users/Create", "/Admin/Users/Create", new Dictionary<string, string>
         {
             ["FullName"] = "Tamta Tatishvili",
             ["UserName"] = "tamta.tatishvili",
             ["Email"] = "tamta.t@pcb.ge",
-            ["RoleId"] = uwRole.ToString(),
-            ["BranchId"] = vake.ToString(),
-            ["AuthorityLevel"] = "Senior",
+            ["RoleId"] = seniorRole.ToString(),
             ["Capacity"] = "12",
         });
         Assert.Equal(HttpStatusCode.OK, created.StatusCode);
@@ -57,13 +54,12 @@ public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebT
 
         // 4. Underwriter dashboard: only the underwriter menu, no admin section, no Create Application.
         var dashboard = WebUtility.HtmlDecode(await underwriter.GetPageAsync("/"));
-        Assert.Contains("data-dashboard=\"Underwriter\"", dashboard, StringComparison.Ordinal);
+        Assert.Contains("data-dashboard=\"Underwriting\"", dashboard, StringComparison.Ordinal);
         Assert.Equal(
-            ["Dashboard", "Applications", "Packages", "Reports"],
+            ["Dashboard", "Applications", "Reports"],
             NavItemPattern().Matches(dashboard).Select(m => m.Groups["key"].Value));
         Assert.DoesNotContain("href=\"/Applications/New\"", dashboard, StringComparison.Ordinal);
-        Assert.Contains("data-dashboard-chip>Sr UW · Tamta Tatishvili<", dashboard, StringComparison.Ordinal);
-        Assert.Contains("₾50,000", dashboard, StringComparison.Ordinal);
+        Assert.Contains("data-dashboard-chip>SUW · Tamta Tatishvili<", dashboard, StringComparison.Ordinal);
         Assert.Contains("data-user-role>Senior Underwriter<", dashboard, StringComparison.Ordinal);
 
         // 5. Admin area denied: page request → Access denied page; htmx request → 403 with HX-Redirect.

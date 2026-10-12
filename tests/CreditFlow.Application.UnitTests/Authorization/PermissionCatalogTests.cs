@@ -40,16 +40,43 @@ public sealed class PermissionCatalogTests
     }
 
     [Fact]
-    public void There_are_nine_administration_permissions()
+    public void There_are_ten_administration_permissions()
     {
-        Assert.Equal(9, PermissionCatalog.All.Count(p => p.IsAdministrative));
+        Assert.Equal(10, PermissionCatalog.All.Count(p => p.IsAdministrative));
     }
 
     [Fact]
     public void Lookup_by_code()
     {
-        Assert.True(PermissionCatalog.Contains(Permissions.Applications.Decide));
+        Assert.True(PermissionCatalog.Contains(Permissions.Underwriting.Decide));
         Assert.False(PermissionCatalog.Contains("applications.unknown"));
-        Assert.Equal(PermissionCatalog.ApplicationsModule, PermissionCatalog.Find(Permissions.Applications.Decide)!.Module);
+        Assert.Equal(PermissionCatalog.UnderwritingModule, PermissionCatalog.Find(Permissions.Underwriting.Decide)!.Module);
+    }
+
+    [Fact]
+    public void Read_only_permissions_are_exactly_the_ones_that_only_view_or_export()
+    {
+        // Written out: a permission marked read-only by mistake would let the Auditor change data.
+        string[] expected =
+        [
+            "admin.audit.view", "admin.users.view", "applications.view", "audit.view", "clients.view",
+            "documents.view", "loans.view", "reports.export", "reports.view",
+        ];
+
+        Assert.Equal(
+            expected,
+            PermissionCatalog.All.Where(p => p.IsReadOnly).Select(p => p.Code).Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Read_only_role_set_rejects_any_write_permission_and_unknown_codes()
+    {
+        Assert.True(PermissionCatalog.CreateSet(RoleKind.ReadOnly, [Permissions.Loans.View]).IsSuccess);
+        Assert.Equal(
+            "Role.ReadOnlyRoleCannotHoldWritePermission",
+            PermissionCatalog.CreateSet(RoleKind.ReadOnly, [Permissions.Applications.Create]).Error?.Code);
+        Assert.Equal(
+            "Role.ReadOnlyRoleCannotHoldWritePermission",
+            PermissionCatalog.CreateSet(RoleKind.ReadOnly, ["applications.unknown"]).Error?.Code);
     }
 }

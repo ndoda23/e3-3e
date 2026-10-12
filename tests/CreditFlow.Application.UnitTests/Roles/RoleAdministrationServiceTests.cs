@@ -47,7 +47,7 @@ public sealed class RoleAdministrationServiceTests
         var underwriter = TestReferenceData.RoleId(RoleCodes.Underwriter);
 
         var result = await _service.UpdatePermissionsAsync(
-            new UpdateRolePermissionsCommand(underwriter, [Permissions.Applications.Decide, Permissions.Admin.UsersManage]),
+            new UpdateRolePermissionsCommand(underwriter, [Permissions.Underwriting.Decide, Permissions.Admin.UsersManage]),
             Ct);
 
         Assert.Equal("Role.BusinessRoleCannotHoldAdministrativePermission", result.Error?.Code);
@@ -55,11 +55,11 @@ public sealed class RoleAdministrationServiceTests
     }
 
     [Fact]
-    public async Task System_administrator_cannot_be_given_a_business_permission()
+    public async Task Admin_cannot_be_given_a_business_permission()
     {
-        var admin = TestReferenceData.RoleId(RoleCodes.SystemAdministrator);
-        var permissions = RoleSeedCatalog.Get(RoleCodes.SystemAdministrator).Permissions
-            .Append(Permissions.Applications.ViewFull).ToList();
+        var admin = TestReferenceData.RoleId(RoleCodes.Admin);
+        var permissions = RoleSeedCatalog.Get(RoleCodes.Admin).Permissions
+            .Append(Permissions.Applications.View).ToList();
 
         var result = await _service.UpdatePermissionsAsync(new UpdateRolePermissionsCommand(admin, permissions), Ct);
 
@@ -67,10 +67,10 @@ public sealed class RoleAdministrationServiceTests
     }
 
     [Fact]
-    public async Task System_administrator_must_keep_user_and_role_management()
+    public async Task Admin_must_keep_user_and_role_management()
     {
-        var admin = TestReferenceData.RoleId(RoleCodes.SystemAdministrator);
-        var permissions = RoleSeedCatalog.Get(RoleCodes.SystemAdministrator).Permissions
+        var admin = TestReferenceData.RoleId(RoleCodes.Admin);
+        var permissions = RoleSeedCatalog.Get(RoleCodes.Admin).Permissions
             .Where(p => p != Permissions.Admin.RolesManage).ToList();
 
         var result = await _service.UpdatePermissionsAsync(new UpdateRolePermissionsCommand(admin, permissions), Ct);
@@ -113,7 +113,7 @@ public sealed class RoleAdministrationServiceTests
 
         var items = editor.Groups.SelectMany(g => g.Items).ToList();
         Assert.All(items.Where(i => i.Code.StartsWith("admin.", StringComparison.Ordinal)), i => Assert.False(i.IsAssignable));
-        Assert.True(items.Single(i => i.Code == Permissions.Applications.Decide).IsGranted);
+        Assert.True(items.Single(i => i.Code == Permissions.Underwriting.Decide).IsGranted);
         Assert.DoesNotContain(items, i => i.IsLocked);
     }
 
@@ -121,7 +121,7 @@ public sealed class RoleAdministrationServiceTests
     public async Task Editor_locks_the_permissions_the_administrator_role_must_keep()
     {
         var editor = (await _service.GetPermissionEditorAsync(
-            TestReferenceData.RoleId(RoleCodes.SystemAdministrator), Ct)).Value;
+            TestReferenceData.RoleId(RoleCodes.Admin), Ct)).Value;
 
         var locked = editor.Groups.SelectMany(g => g.Items).Where(i => i.IsLocked).Select(i => i.Code);
         Assert.Equal(RoleRules.RequiredAdministrativePermissions.Order(), locked.Order());
@@ -130,12 +130,12 @@ public sealed class RoleAdministrationServiceTests
     [Fact]
     public async Task Requiring_mfa_for_a_role_invalidates_the_role()
     {
-        var hd = TestReferenceData.RoleId(RoleCodes.Head);
+        var committee = TestReferenceData.RoleId(RoleCodes.CreditCommittee);
 
-        var result = await _service.SetRequireMfaAsync(hd, true, Ct);
+        var result = await _service.SetRequireMfaAsync(committee, true, Ct);
 
         Assert.True(result.IsSuccess);
-        Assert.True((await _roles.GetDetailsAsync(hd, Ct))!.RequireMfa);
-        Assert.Equal([hd], _cache.InvalidatedRoles);
+        Assert.True((await _roles.GetDetailsAsync(committee, Ct))!.RequireMfa);
+        Assert.Equal([committee], _cache.InvalidatedRoles);
     }
 }

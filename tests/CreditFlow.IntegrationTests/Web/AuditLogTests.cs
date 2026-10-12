@@ -49,18 +49,19 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
     [Fact]
     public async Task A_user_change_shows_the_changed_fields_before_and_after()
     {
-        var (userName, id, _) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var uwRole = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
+        var (operatorRole, vake) = await QueryAsync(async db => (
+            await db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct),
+            (await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct)).Value));
         await browser.PostFormAsync($"/Admin/Users/Edit/{id}", $"/Admin/Users/Edit/{id}", new Dictionary<string, string>
         {
-            ["FullName"] = "Renamed Underwriter",
+            ["FullName"] = "Renamed Operator",
             ["UserName"] = userName,
             ["Email"] = $"{userName}@pcb.ge",
-            ["RoleId"] = uwRole.ToString(),
-            ["BranchId"] = (await QueryAsync(db => db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct))).Value.ToString(),
-            ["AuthorityLevel"] = "Senior",
+            ["RoleId"] = operatorRole.ToString(),
+            ["BranchId"] = vake.ToString(),
             ["Capacity"] = "10",
         });
         var recordId = await QueryAsync(db => db.AuditLogs
@@ -69,7 +70,7 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
 
         var html = await browser.GetPageAsync($"/Admin/AuditLog/Details/{recordId.Value}");
 
-        Assert.Matches("data-property=\"FullName\"[\\s\\S]*?Test UW[\\s\\S]*?Renamed Underwriter", html);
+        Assert.Matches("data-property=\"FullName\"[\\s\\S]*?Test OP[\\s\\S]*?Renamed Operator", html);
         Assert.Contains("class=\"changed\" data-property=\"FullName\"", html, StringComparison.Ordinal);
     }
 
@@ -83,7 +84,7 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
         var page = await browser.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
         await browser.PostPairsWithTokenAsync(
             $"/Admin/Roles/Permissions/{roleId}",
-            granted.Where(p => p != Permissions.Reports.View).Append(Permissions.Applications.Tag).Select(p => KeyValuePair.Create("permissions", p)),
+            granted.Where(p => p != Permissions.Reports.View).Append(Permissions.Reports.Export).Select(p => KeyValuePair.Create("permissions", p)),
             WebSession.Token(page));
         var recordId = await QueryAsync(db => db.AuditLogs
             .Where(l => l.Action == AuditActions.RolePermissionsChanged).Select(l => l.Id).SingleAsync(Ct));
@@ -91,7 +92,7 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
         var html = await browser.GetPageAsync($"/Admin/AuditLog/Details/{recordId.Value}");
 
         Assert.Contains($"data-removed=\"{Permissions.Reports.View}\"", html, StringComparison.Ordinal);
-        Assert.Contains($"data-added=\"{Permissions.Applications.Tag}\"", html, StringComparison.Ordinal);
+        Assert.Contains($"data-added=\"{Permissions.Reports.Export}\"", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -127,15 +128,33 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
     }
 
     [Fact]
-    public async Task Underwriters_cannot_open_the_audit_log()
+    public async Task Business_users_without_audit_permission_cannot_open_the_audit_log()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 
         var response = await browser.GetAsync("/Admin/AuditLog");
 
         Assert.Equal("/Account/AccessDenied", response.Headers.Location!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task Auditor_reads_the_audit_log_without_any_administration_access()
+    {
+        var (_, operatorId, _) = await CreateOperatorAsync(); // writes a "User Created" record
+        var (userName, _, password) = await CreateUserAsync(RoleCodes.Auditor);
+        using var browser = NewSession();
+        await browser.LoginAsync(userName, password);
+
+        var dashboard = await browser.GetPageAsync("/");
+        var list = await browser.GetPageAsync("/Admin/AuditLog");
+
+        Assert.Contains("data-nav=\"Audit\"", dashboard, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-nav=\"Users\"", dashboard, StringComparison.Ordinal);
+        Assert.Contains(operatorId.ToString()[..8], list, StringComparison.Ordinal);
+        Assert.DoesNotContain($"/Admin/Users/Details/{operatorId}", list, StringComparison.Ordinal);
+        Assert.Equal("/Account/AccessDenied", (await browser.GetAsync("/Admin/Users")).Headers.Location!.AbsolutePath);
     }
 
     // ----- Before / after preparation (no database) -----

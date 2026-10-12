@@ -24,11 +24,7 @@ public sealed class ApplicationRole : IdentityRole<Guid>
 
     public AttributeRule BranchRule { get; set; }
 
-    public AttributeRule SegmentRule { get; set; }
-
-    public AttributeRule AuthorityLevelRule { get; set; }
-
-    public bool IsAdministrative { get; set; }
+    public RoleKind Kind { get; set; }
 
     /// <summary>Users of this role must enrol in MFA.</summary>
     public bool RequireMfa { get; set; }
@@ -45,8 +41,6 @@ public sealed class ApplicationRole : IdentityRole<Guid>
         DataScope = DataScope,
         Dashboard = Dashboard,
         BranchRule = BranchRule,
-        SegmentRule = SegmentRule,
-        AuthorityLevelRule = AuthorityLevelRule,
-        IsAdministrative = IsAdministrative,
+        Kind = Kind,
     };
 }

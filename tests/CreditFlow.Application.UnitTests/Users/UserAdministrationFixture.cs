@@ -25,7 +25,7 @@ internal sealed class UserAdministrationFixture
         Saburtalo = Reference.AddBranch("SAB", "Saburtalo").Id;
         ClosedBranch = Reference.AddBranch("OLD", "Closed branch", isActive: false).Id;
 
-        Admin = AddMember(TestReferenceData.Staff(RoleCodes.SystemAdministrator, fullName: "Admin One"), "admin1");
+        Admin = AddMember(TestReferenceData.Staff(RoleCodes.Admin, fullName: "Admin One"), "admin1");
         CurrentUser = new FakeCurrentUser { UserId = Admin.Id, UserName = "admin1" };
 
         Service = new UserAdministrationService(
@@ -79,10 +79,8 @@ internal sealed class UserAdministrationFixture
         return member;
     }
 
-    public StaffMember AddSeniorUnderwriter() =>
-        AddMember(
-            TestReferenceData.Staff(RoleCodes.Underwriter, Vake, authorityLevel: AuthorityLevel.Senior, fullName: "Tamta Tatishvili"),
-            "tamta.tatishvili");
+    public StaffMember AddOperator() =>
+        AddMember(TestReferenceData.Staff(RoleCodes.Operator, Vake, fullName: "Anna Gelashvili"), "anna.gelashvili");
 
     /// <summary>An update command that keeps every field of the member as it is.</summary>
     public UpdateUserCommand UnchangedUpdate(StaffMember member)
@@ -96,8 +94,6 @@ internal sealed class UserAdministrationFixture
             FullName = member.FullName,
             RoleId = member.RoleId,
             BranchId = member.BranchId,
-            Segment = member.Segment,
-            AuthorityLevel = member.AuthorityLevel,
             Capacity = member.Capacity,
         };
     }

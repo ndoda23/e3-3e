@@ -21,19 +21,6 @@ public static class UserErrors
 
     public static readonly Error BranchRequired = Error.Validation(
         "User.BranchRequired", "The selected role requires a branch.", "BranchId");
-
-    public static readonly Error SegmentRequired = Error.Validation(
-        "User.SegmentRequired", "The selected role requires a segment.", "Segment");
-
-    public static readonly Error InvalidSegment = Error.Validation(
-        "User.InvalidSegment", "The segment is not valid.", "Segment");
-
-    public static readonly Error AuthorityLevelRequired = Error.Validation(
-        "User.AuthorityLevelRequired", "The selected role requires an authority level.", "AuthorityLevel");
-
-    public static readonly Error InvalidAuthorityLevel = Error.Validation(
-        "User.InvalidAuthorityLevel", "The authority level is not valid.", "AuthorityLevel");
-
     public static readonly Error CannotDeactivateSelf = Error.Forbidden(
         "User.CannotDeactivateSelf", "You cannot deactivate your own account.");
 

@@ -11,22 +11,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace CreditFlow.Web.Areas.Admin.Models;
 
-/// <summary>A role in a drop-down, with the attribute rules that decide which fields the user form shows.</summary>
-public sealed record RoleOption(
-    Guid Id,
-    string Code,
-    string Name,
-    AttributeRule BranchRule,
-    AttributeRule SegmentRule,
-    AttributeRule AuthorityLevelRule,
-    bool IsAdministrative)
+/// <summary>A role in a drop-down, with the branch rule that decides whether the user form shows the branch.</summary>
+public sealed record RoleOption(Guid Id, string Code, string Name, AttributeRule BranchRule, bool IsAdministrative)
 {
     public static RoleOption From(RoleDetails role)
     {
         ArgumentNullException.ThrowIfNull(role);
         var p = role.Profile;
-        return new(p.Id.Value, p.Code.Value, role.DisplayName, p.BranchRule, p.SegmentRule, p.AuthorityLevelRule,
-            p.IsAdministrative);
+        return new(p.Id.Value, p.Code.Value, role.DisplayName, p.BranchRule, p.IsAdministrative);
     }
 }
 
@@ -138,12 +130,6 @@ public sealed class UserFormModel
     [Display(Name = "Field.Branch")]
     public Guid? BranchId { get; set; }
 
-    [Display(Name = "Field.Segment")]
-    public Segment? Segment { get; set; }
-
-    [Display(Name = "Field.AuthorityLevel")]
-    public AuthorityLevel? AuthorityLevel { get; set; }
-
     [Display(Name = "Field.Capacity")]
     public int? Capacity { get; set; } = StaffMember.DefaultCapacity;
 
@@ -173,8 +159,6 @@ public sealed class UserFormModel
         FullName = details.FullName,
         RoleId = details.RoleId.Value,
         BranchId = details.BranchId?.Value,
-        Segment = details.Segment,
-        AuthorityLevel = details.AuthorityLevel,
         Capacity = details.Capacity,
         RequireMfa = details.RequireMfa,
         Existing = details,
@@ -187,8 +171,6 @@ public sealed class UserFormModel
         FullName = FullName ?? string.Empty,
         RoleId = new RoleId(RoleId ?? Guid.Empty),
         BranchId = BranchId is { } branch ? new CreditFlow.Domain.Branches.BranchId(branch) : null,
-        Segment = Segment,
-        AuthorityLevel = AuthorityLevel,
         Capacity = Capacity ?? -1,
         RequireMfa = RequireMfa,
     };
@@ -201,8 +183,6 @@ public sealed class UserFormModel
         FullName = FullName ?? string.Empty,
         RoleId = new RoleId(RoleId ?? Guid.Empty),
         BranchId = BranchId is { } branch ? new CreditFlow.Domain.Branches.BranchId(branch) : null,
-        Segment = Segment,
-        AuthorityLevel = AuthorityLevel,
         Capacity = Capacity ?? -1,
     };
 }

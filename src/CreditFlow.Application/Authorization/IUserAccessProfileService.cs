@@ -30,7 +30,7 @@ public interface IUserAccessProfileService
 public interface IAccessCacheInvalidator
 {
     /// <summary>
-    /// After a change to one user's role, active flag, branch, segment or authority level, or to their account set-up
+    /// After a change to one user's role, active flag or branch, or to their account set-up
     /// state (password changed or reset, MFA enrolled, disabled or required).
     /// </summary>
     Task InvalidateUserAsync(UserId userId, CancellationToken cancellationToken);

@@ -3,7 +3,7 @@ using CreditFlow.Domain.Common;
 namespace CreditFlow.Domain.Roles;
 
 /// <summary>
-/// A permission code such as <c>applications.decide</c>: lowercase segments separated by dots,
+/// A permission code such as <c>underwriting.decide</c>: lowercase segments separated by dots,
 /// each segment made of letters, digits and inner hyphens. Codes starting with <c>admin.</c> are administrative.
 /// </summary>
 public readonly record struct PermissionCode

@@ -45,8 +45,6 @@ public abstract class WebTestBase(SqlServerContainer sql) : IAsyncLifetime
     protected async Task<(string UserName, UserId Id, string Password)> CreateUserAsync(
         string roleCode,
         string? branchCode = null,
-        AuthorityLevel? level = null,
-        Segment? segment = null,
         bool temporary = false)
     {
         await using var scope = Factory.Services.CreateAsyncScope();
@@ -67,8 +65,6 @@ public abstract class WebTestBase(SqlServerContainer sql) : IAsyncLifetime
                 FullName = $"Test {roleCode}",
                 RoleId = new RoleId(roleId),
                 BranchId = branchId,
-                AuthorityLevel = level,
-                Segment = segment,
             },
             Ct);
         Assert.True(created.IsSuccess, created.Error?.Description);
@@ -87,18 +83,19 @@ public abstract class WebTestBase(SqlServerContainer sql) : IAsyncLifetime
         return (userName, created.Value.UserId, UserPassword);
     }
 
-    /// <summary>A signed-in System Administrator (a new account, so tests do not share the seeded one).</summary>
+    /// <summary>A signed-in Admin (a new account, so tests do not share the seeded one).</summary>
     protected async Task<(WebSession Browser, UserId Id)> SignInAsAdministratorAsync()
     {
-        var (userName, id, password) = await CreateUserAsync(RoleCodes.SystemAdministrator);
+        var (userName, id, password) = await CreateUserAsync(RoleCodes.Admin);
         var browser = NewSession();
         var login = await browser.LoginAsync(userName, password);
         Assert.Equal(System.Net.HttpStatusCode.Redirect, login.StatusCode);
         return (browser, id);
     }
 
-    protected Task<(string UserName, UserId Id, string Password)> CreateSeniorUnderwriterAsync() =>
-        CreateUserAsync(RoleCodes.Underwriter, BranchSeedCatalog.Vake, AuthorityLevel.Senior);
+    /// <summary>An Operator in Vake: a business user with a branch.</summary>
+    protected Task<(string UserName, UserId Id, string Password)> CreateOperatorAsync() =>
+        CreateUserAsync(RoleCodes.Operator, BranchSeedCatalog.Vake);
 
     protected async Task<T> QueryAsync<T>(Func<CreditFlowDbContext, Task<T>> query)
     {

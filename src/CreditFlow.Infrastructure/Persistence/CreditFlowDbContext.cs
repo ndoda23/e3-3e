@@ -1,6 +1,6 @@
 using CreditFlow.Domain.Auditing;
-using CreditFlow.Domain.AuthorityLimits;
 using CreditFlow.Domain.Branches;
+using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Users;
 using CreditFlow.Infrastructure.Identity;
@@ -18,8 +18,6 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
     public DbSet<StaffMember> StaffMembers => Set<StaffMember>();
 
     public DbSet<Branch> Branches => Set<Branch>();
-
-    public DbSet<AuthorityLimit> AuthorityLimits => Set<AuthorityLimit>();
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -44,16 +42,13 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
         configurationBuilder.Properties<UserId>().HaveConversion<UserIdConverter>();
         configurationBuilder.Properties<RoleId>().HaveConversion<RoleIdConverter>();
         configurationBuilder.Properties<BranchId>().HaveConversion<BranchIdConverter>();
-        configurationBuilder.Properties<AuthorityLimitId>().HaveConversion<AuthorityLimitIdConverter>();
         configurationBuilder.Properties<AuditLogId>().HaveConversion<AuditLogIdConverter>();
 
         // Enums are stored as readable strings.
         configurationBuilder.Properties<DataScope>().HaveConversion<string>().HaveMaxLength(20);
         configurationBuilder.Properties<DashboardKind>().HaveConversion<string>().HaveMaxLength(30);
         configurationBuilder.Properties<AttributeRule>().HaveConversion<string>().HaveMaxLength(20);
-        configurationBuilder.Properties<Segment>().HaveConversion<string>().HaveMaxLength(20);
-        configurationBuilder.Properties<AuthorityLevel>().HaveConversion<string>().HaveMaxLength(20);
-        configurationBuilder.Properties<LimitType>().HaveConversion<string>().HaveMaxLength(30);
+        configurationBuilder.Properties<RoleKind>().HaveConversion<string>().HaveMaxLength(20);
         configurationBuilder.Properties<Currency>().HaveConversion<string>().HaveMaxLength(3);
     }
 }

@@ -22,12 +22,10 @@ internal static class TestReferenceData
         {
             Id = RoleIds[code],
             Code = RoleCode.Create(seed.Code).Value,
+            Kind = seed.Kind,
             DataScope = seed.DataScope,
             Dashboard = seed.Dashboard,
             BranchRule = seed.BranchRule,
-            SegmentRule = seed.SegmentRule,
-            AuthorityLevelRule = seed.AuthorityLevelRule,
-            IsAdministrative = seed.IsAdministrative,
         };
     }
 
@@ -49,10 +47,8 @@ internal static class TestReferenceData
     public static StaffMember Staff(
         string roleCode,
         BranchId? branchId = null,
-        Segment? segment = null,
-        AuthorityLevel? authorityLevel = null,
         string fullName = "Test User") =>
-        StaffMember.Create(UserId.New(), fullName, Profile(roleCode), branchId, segment, authorityLevel).Value;
+        StaffMember.Create(UserId.New(), fullName, Profile(roleCode), branchId).Value;
 
     public static UserAccessProfile AccessProfile(StaffMember staff)
     {

@@ -20,7 +20,7 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
 
         var html = await browser.GetPageAsync("/Admin/Roles");
 
-        Assert.Equal(10, Regex.Matches(html, "<tr data-role=\"").Count);
+        Assert.Equal(7, Regex.Matches(html, "<tr data-role=\"").Count);
         Assert.Equal(grants, Regex.Matches(html, "class=\"cell granted\"").Count);
     }
 
@@ -31,11 +31,11 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
         using var _browser = browser;
 
         var underwriter = await browser.GetPageAsync($"/Admin/Roles/Permissions/{await RoleIdAsync(RoleCodes.Underwriter)}");
-        var administrator = await browser.GetPageAsync($"/Admin/Roles/Permissions/{await RoleIdAsync(RoleCodes.SystemAdministrator)}");
+        var administrator = await browser.GetPageAsync($"/Admin/Roles/Permissions/{await RoleIdAsync(RoleCodes.Admin)}");
 
         Assert.Matches("value=\"admin.users.view\"[^>]*disabled", underwriter);
-        Assert.Matches(@"value=""applications.decide""\s+checked=""checked""", underwriter);
-        Assert.Matches("value=\"applications.view-full\"[^>]*disabled", administrator);
+        Assert.Matches(@"value=""underwriting.decide""\s+checked=""checked""", underwriter);
+        Assert.Matches("value=\"applications.view\"[^>]*disabled", administrator);
         Assert.Contains("<input type=\"hidden\" name=\"permissions\" value=\"admin.users.manage\" />", administrator, StringComparison.Ordinal);
         Assert.Contains("<input type=\"hidden\" name=\"permissions\" value=\"admin.roles.manage\" />", administrator, StringComparison.Ordinal);
     }
@@ -43,14 +43,14 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
     [Fact]
     public async Task Removing_a_permission_applies_on_the_next_request_without_signing_out()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
-        using var underwriter = NewSession();
-        await underwriter.LoginAsync(userName, password);
-        Assert.Contains("data-nav=\"Reports\"", await underwriter.GetPageAsync("/"), StringComparison.Ordinal);
+        var (userName, _, password) = await CreateOperatorAsync();
+        using var user = NewSession();
+        await user.LoginAsync(userName, password);
+        Assert.Contains("data-nav=\"Reports\"", await user.GetPageAsync("/"), StringComparison.Ordinal);
 
         var (admin, _) = await SignInAsAdministratorAsync();
         using var _admin = admin;
-        var roleId = await RoleIdAsync(RoleCodes.Underwriter);
+        var roleId = await RoleIdAsync(RoleCodes.Operator);
         var granted = await QueryAsync(db => db.RolePermissions
             .Where(p => p.RoleId == roleId).Select(p => p.Permission).ToListAsync(Ct));
         var page = await admin.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
@@ -61,11 +61,11 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
             WebSession.Token(page));
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        var dashboard = await underwriter.GetPageAsync("/");
+        var dashboard = await user.GetPageAsync("/");
         Assert.DoesNotContain("data-nav=\"Reports\"", dashboard, StringComparison.Ordinal);
-        Assert.Equal(HttpStatusCode.Redirect, (await underwriter.GetAsync("/Reports")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await user.GetAsync("/Reports")).StatusCode);
         Assert.True(await QueryAsync(db => db.AuditLogs.AnyAsync(
-            l => l.Action == AuditActions.RolePermissionsChanged && l.EntityId == RoleCodes.Underwriter, Ct)));
+            l => l.Action == AuditActions.RolePermissionsChanged && l.EntityId == RoleCodes.Operator, Ct)));
     }
 
     [Fact]
@@ -84,11 +84,11 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("validation-summary-errors", html, StringComparison.Ordinal);
-        Assert.DoesNotMatch(@"value=""applications.decide""\s+checked", html);
+        Assert.DoesNotMatch(@"value=""underwriting.decide""\s+checked", html);
         Assert.False(await QueryAsync(db => db.RolePermissions.AnyAsync(
             p => p.RoleId == roleId && p.Permission == Permissions.Admin.UsersView, Ct)));
         Assert.True(await QueryAsync(db => db.RolePermissions.AnyAsync(
-            p => p.RoleId == roleId && p.Permission == Permissions.Applications.Decide, Ct)));
+            p => p.RoleId == roleId && p.Permission == Permissions.Underwriting.Decide, Ct)));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
     {
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var roleId = await RoleIdAsync(RoleCodes.SystemAdministrator);
+        var roleId = await RoleIdAsync(RoleCodes.Admin);
         var page = await browser.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
 
         var response = await browser.PostPairsWithTokenAsync(
@@ -113,25 +113,25 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
     [Fact]
     public async Task Requiring_mfa_for_a_role_sends_its_users_to_authenticator_setup()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
-        using var underwriter = NewSession();
-        await underwriter.LoginAsync(userName, password);
+        var (userName, _, password) = await CreateOperatorAsync();
+        using var user = NewSession();
+        await user.LoginAsync(userName, password);
 
         var (admin, _) = await SignInAsAdministratorAsync();
         using var _admin = admin;
-        var roleId = await RoleIdAsync(RoleCodes.Underwriter);
+        var roleId = await RoleIdAsync(RoleCodes.Operator);
         var page = await admin.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
         await admin.PostWithTokenAsync(
             $"/Admin/Roles/RequireMfa/{roleId}", new Dictionary<string, string> { ["require"] = "true" }, WebSession.Token(page));
 
         Assert.True(await QueryAsync(db => db.Roles.Where(r => r.Id == roleId).Select(r => r.RequireMfa).SingleAsync(Ct)));
-        Assert.Equal("/Account/EnableAuthenticator", (await underwriter.GetAsync("/")).Headers.Location!.OriginalString);
+        Assert.Equal("/Account/EnableAuthenticator", (await user.GetAsync("/")).Headers.Location!.OriginalString);
     }
 
     [Fact]
-    public async Task Underwriters_cannot_open_the_role_editor()
+    public async Task Business_users_cannot_open_the_role_editor()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 

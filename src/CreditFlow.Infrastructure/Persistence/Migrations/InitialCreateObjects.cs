@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace CreditFlow.Infrastructure.Persistence;
+namespace CreditFlow.Infrastructure.Persistence.Migrations;
 
 /// <summary>
-/// Database objects EF Core does not create from the model: the user directory view and the foreign keys between
-/// strongly typed id columns and Identity's Guid keys. Used by migrations.
+/// The hand-written database objects exactly as <see cref="InitialCreate"/> created them (frozen: an applied migration
+/// must never change). Later migrations change these objects with their own SQL in their own migration files.
 /// </summary>
-internal static class DatabaseObjects
+internal static class InitialCreateObjects
 {
-    public const string CreateUserDirectoryView = $"""
-        CREATE VIEW [dbo].[{UserDirectoryRow.ViewName}] AS
+    public const string CreateUserDirectoryView = """
+        CREATE VIEW [dbo].[vw_UserDirectory] AS
         SELECT
             s.[Id],
             s.[FullName],
@@ -41,7 +41,7 @@ internal static class DatabaseObjects
         LEFT JOIN [dbo].[Branches] b ON b.[Id] = s.[BranchId];
         """;
 
-    public const string DropUserDirectoryView = $"DROP VIEW IF EXISTS [dbo].[{UserDirectoryRow.ViewName}];";
+    public const string DropUserDirectoryView = "DROP VIEW IF EXISTS [dbo].[vw_UserDirectory];";
 
     /// <summary>Adds the foreign keys EF Core cannot model (different CLR key types).</summary>
     public static void AddManualForeignKeys(MigrationBuilder migrationBuilder)

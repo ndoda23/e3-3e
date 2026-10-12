@@ -5,92 +5,64 @@ using CreditFlow.Domain.Users;
 
 namespace CreditFlow.Application.UnitTests.Authorization;
 
-/// <summary>Data scope checks against fake resources (Phase 2 will pass real applications).</summary>
+/// <summary>Data scope checks for a single record (lists apply the same rules in SQL).</summary>
 public sealed class DataScopeEvaluatorTests
 {
     private static readonly BranchId Vake = BranchId.New();
     private static readonly BranchId Batumi = BranchId.New();
     private readonly DataScopeEvaluator _evaluator = new();
 
-    private sealed record FakeResource(
-        UserId? OwnerUserId = null,
-        UserId? AssignedUserId = null,
-        BranchId? BranchId = null,
-        Segment? Segment = null) : IScopedResource;
+    private sealed record FakeResource(BranchId? BranchId = null) : IScopedResource;
 
     [Fact]
-    public void Own_scope_sees_only_records_the_user_owns()
+    public void Branch_scope_sees_all_records_of_the_users_branch_only()
     {
-        var officer = Profile(TestReferenceData.Staff(RoleCodes.LoanOfficer, Vake, authorityLevel: AuthorityLevel.Junior));
+        var operatorInVake = Profile(TestReferenceData.Staff(RoleCodes.Operator, Vake));
 
-        Assert.True(_evaluator.IsInScope(officer, new FakeResource(OwnerUserId: officer.UserId)));
-        Assert.False(_evaluator.IsInScope(officer, new FakeResource(OwnerUserId: UserId.New(), BranchId: Vake)));
-        Assert.False(_evaluator.IsInScope(officer, new FakeResource(AssignedUserId: officer.UserId)));
+        Assert.True(_evaluator.IsInScope(operatorInVake, new FakeResource(Vake)));
+        Assert.False(_evaluator.IsInScope(operatorInVake, new FakeResource(Batumi)));
+        Assert.False(_evaluator.IsInScope(operatorInVake, new FakeResource()));
+    }
+
+    [Theory]
+    [InlineData(RoleCodes.Underwriter)]
+    [InlineData(RoleCodes.SeniorUnderwriter)]
+    [InlineData(RoleCodes.CreditCommittee)]
+    [InlineData(RoleCodes.Compliance)]
+    [InlineData(RoleCodes.Auditor)]
+    public void Organization_scope_sees_every_branch(string roleCode)
+    {
+        var profile = Profile(TestReferenceData.Staff(roleCode));
+
+        Assert.True(_evaluator.IsInScope(profile, new FakeResource(Batumi)));
+        Assert.True(_evaluator.IsInScope(profile, new FakeResource()));
     }
 
     [Fact]
-    public void Assigned_scope_sees_only_records_assigned_to_the_user()
+    public void Admin_sees_no_business_data()
     {
-        var underwriter = Profile(TestReferenceData.Staff(RoleCodes.Underwriter, Vake, authorityLevel: AuthorityLevel.Senior));
+        var admin = Profile(TestReferenceData.Staff(RoleCodes.Admin));
 
-        Assert.True(_evaluator.IsInScope(underwriter, new FakeResource(AssignedUserId: underwriter.UserId)));
-        Assert.False(_evaluator.IsInScope(underwriter, new FakeResource(AssignedUserId: UserId.New(), BranchId: Vake)));
-    }
-
-    [Fact]
-    public void Branch_scope_sees_all_records_of_the_users_branch()
-    {
-        var manager = Profile(TestReferenceData.Staff(RoleCodes.BranchManager, Vake));
-
-        Assert.True(_evaluator.IsInScope(manager, new FakeResource(OwnerUserId: UserId.New(), BranchId: Vake)));
-        Assert.False(_evaluator.IsInScope(manager, new FakeResource(BranchId: Batumi)));
-        Assert.False(_evaluator.IsInScope(manager, new FakeResource()));
-    }
-
-    [Fact]
-    public void Segment_scope_sees_only_the_users_segment()
-    {
-        var headOfRetail = Profile(TestReferenceData.Staff(RoleCodes.Head, segment: Segment.Retail));
-
-        Assert.True(_evaluator.IsInScope(headOfRetail, new FakeResource(Segment: Segment.Retail)));
-        Assert.False(_evaluator.IsInScope(headOfRetail, new FakeResource(Segment: Segment.Business)));
-        Assert.False(_evaluator.IsInScope(headOfRetail, new FakeResource()));
-    }
-
-    [Fact]
-    public void Organization_scope_sees_everything()
-    {
-        var director = Profile(TestReferenceData.Staff(RoleCodes.Director));
-
-        Assert.True(_evaluator.IsInScope(director, new FakeResource(BranchId: Batumi, Segment: Segment.Business)));
-    }
-
-    [Fact]
-    public void System_administrator_sees_no_business_data()
-    {
-        var admin = Profile(TestReferenceData.Staff(RoleCodes.SystemAdministrator));
-
-        Assert.False(_evaluator.IsInScope(admin, new FakeResource(OwnerUserId: admin.UserId)));
+        Assert.False(_evaluator.IsInScope(admin, new FakeResource(Vake)));
+        Assert.False(_evaluator.IsInScope(admin, new FakeResource()));
     }
 
     [Fact]
     public void Inactive_user_sees_nothing()
     {
-        var staff = TestReferenceData.Staff(RoleCodes.Director);
+        var staff = TestReferenceData.Staff(RoleCodes.Auditor);
         staff.Deactivate();
 
         Assert.False(_evaluator.IsInScope(Profile(staff), new FakeResource()));
     }
 
     [Fact]
-    public void Scope_with_a_missing_user_attribute_fails_closed()
+    public void Branch_scope_without_a_branch_fails_closed()
     {
         // A branch-scoped profile without a branch must never match records that also have no branch.
-        var manager = Profile(TestReferenceData.Staff(RoleCodes.BranchManager, Vake)) with { BranchId = null };
-        var head = Profile(TestReferenceData.Staff(RoleCodes.Head, segment: Segment.Retail)) with { Segment = null };
+        var operatorWithoutBranch = Profile(TestReferenceData.Staff(RoleCodes.Operator, Vake)) with { BranchId = null };
 
-        Assert.False(_evaluator.IsInScope(manager, new FakeResource()));
-        Assert.False(_evaluator.IsInScope(head, new FakeResource()));
+        Assert.False(_evaluator.IsInScope(operatorWithoutBranch, new FakeResource()));
     }
 
     private static UserAccessProfile Profile(StaffMember staff) => TestReferenceData.AccessProfile(staff);

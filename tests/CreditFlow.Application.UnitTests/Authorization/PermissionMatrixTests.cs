@@ -4,71 +4,57 @@ using CreditFlow.Application.ReferenceData;
 namespace CreditFlow.Application.UnitTests.Authorization;
 
 /// <summary>
-/// Verifies every row of the seeded permission matrix for every role. The expected matrix below is written out
-/// independently of <see cref="RoleSeedCatalog"/> (transcribed from the Phase 1 brief, FRD 5.2, 5.3 and 6.4).
+/// Verifies every cell of the seeded permission matrix for every role. The expected matrix below is written out
+/// independently of <see cref="RoleSeedCatalog"/> (transcribed from PLAN.md §P.2.1, the approved role matrix).
 /// </summary>
 public sealed class PermissionMatrixTests
 {
-    private const string LO = RoleCodes.LoanOfficer;
+    private const string OP = RoleCodes.Operator;
     private const string UW = RoleCodes.Underwriter;
-    private const string BM = RoleCodes.BranchManager;
-    private const string BDM = RoleCodes.BusinessDevelopmentManager;
-    private const string BO = RoleCodes.BackOffice;
-    private const string AML = RoleCodes.AmlAnalyst;
-    private const string FAB = RoleCodes.FinancialAnalysis;
-    private const string HD = RoleCodes.Head;
-    private const string DIR = RoleCodes.Director;
-    private const string SYSADMIN = RoleCodes.SystemAdministrator;
+    private const string SUW = RoleCodes.SeniorUnderwriter;
+    private const string CC = RoleCodes.CreditCommittee;
+    private const string COMP = RoleCodes.Compliance;
+    private const string AUD = RoleCodes.Auditor;
+    private const string ADMIN = RoleCodes.Admin;
 
-    private static readonly string[] AllRoles = [LO, UW, BM, BDM, BO, AML, FAB, HD, DIR, SYSADMIN];
-    private static readonly string[] BusinessRoles = [LO, UW, BM, BDM, BO, AML, FAB, HD, DIR];
+    private static readonly string[] AllRoles = [OP, UW, SUW, CC, COMP, AUD, ADMIN];
 
     /// <summary>Permission → roles that hold it. Every catalog permission must appear here.</summary>
     private static readonly Dictionary<string, string[]> Expected = new()
     {
-        ["applications.view-full"] = [LO, UW, BM, BDM, BO],
-        ["aml.view-screening"] = [AML],
-        ["pricing.view-exceptions"] = [FAB, HD, DIR],
-        ["applications.create"] = [LO],
-        ["applications.edit-terms"] = [LO, UW],
-        ["applications.send-to-aml"] = [LO, UW, BM],
-        ["applications.recommend"] = [LO],
-        ["applications.decide"] = [UW, BM],
-        ["applications.escalate"] = [UW, BM],
-        ["applications.request-info"] = [LO, UW, BM],
-        ["applications.refer-to-committee"] = [LO, UW, BM],
-        ["applications.add-portfolio-note"] = [BDM],
-        ["committee.vote"] = [UW, BM, HD, DIR],
-        ["aml.record-outcome"] = [AML],
-        ["pricing.confirm-roae"] = [FAB],
-        ["pricing.approve-exception"] = [HD, DIR],
-        ["backoffice.book-or-return"] = [BO],
-        ["documents.view"] = [LO, UW, BM, BDM, BO, AML],
-        ["documents.upload"] = [LO, UW, BM, BDM, BO, AML],
-        ["documents.delete-own-new"] = [LO, UW, BM, BDM, BO, AML],
-        ["documents.request-from-customer"] = [LO, UW, BM],
-        ["reports.view"] = BusinessRoles,
+        ["clients.view"] = [OP, UW, SUW, CC, COMP, AUD],
+        ["clients.manage"] = [OP],
+        ["applications.view"] = [OP, UW, SUW, CC, COMP, AUD],
+        ["applications.create"] = [OP],
+        ["applications.cancel"] = [OP],
+        ["applications.record-client-response"] = [OP],
+        ["documents.view"] = [OP, UW, SUW, CC, COMP, AUD],
+        ["documents.upload"] = [OP],
+        ["compliance.review"] = [COMP],
+        ["underwriting.decide"] = [UW, SUW],
+        ["underwriting.decide-senior"] = [SUW],
+        ["underwriting.counter-offer"] = [UW, SUW],
+        ["scoring.override"] = [SUW],
+        ["committee.vote"] = [CC],
+        ["contracts.manage"] = [OP],
+        ["loans.view"] = [OP, UW, SUW, CC, AUD],
+        ["loans.disburse"] = [OP],
+        ["loans.record-repayment"] = [OP],
+        ["reports.view"] = [OP, UW, SUW, CC, AUD],
+        ["reports.export"] = [SUW, AUD],
+        ["audit.view"] = [AUD],
 
-        // Open questions 3 and 4: defined, granted to nobody.
-        ["applications.reassign"] = [],
-        ["applications.mark-priority"] = [],
-        ["applications.tag"] = [],
-        ["applications.add-internal-note"] = [],
-        ["applications.repull-credit-data"] = [],
-        ["applications.reverify-income"] = [],
-        ["applications.print"] = [],
-        ["applications.archive"] = [],
-
-        // Administration: System Administrator only.
-        ["admin.users.view"] = [SYSADMIN],
-        ["admin.users.manage"] = [SYSADMIN],
-        ["admin.roles.manage"] = [SYSADMIN],
-        ["admin.authority-limits.manage"] = [SYSADMIN],
-        ["admin.branches.manage"] = [SYSADMIN],
-        ["admin.audit.view"] = [SYSADMIN],
-        ["admin.credit-policy.manage"] = [SYSADMIN],
-        ["admin.pricing.manage"] = [SYSADMIN],
-        ["admin.settings.manage"] = [SYSADMIN],
+        // Administration: Admin only.
+        ["admin.users.view"] = [ADMIN],
+        ["admin.users.manage"] = [ADMIN],
+        ["admin.roles.manage"] = [ADMIN],
+        ["admin.branches.manage"] = [ADMIN],
+        ["admin.audit.view"] = [ADMIN],
+        ["admin.products.manage"] = [ADMIN],
+        ["admin.scoring-rules.manage"] = [ADMIN],
+        ["admin.approval-thresholds.manage"] = [ADMIN],
+        ["admin.fx-rates.manage"] = [ADMIN],
+        ["admin.holidays.manage"] = [ADMIN],
     };
 
     public static TheoryData<string, string, bool> Cells()
@@ -113,37 +99,26 @@ public sealed class PermissionMatrixTests
     }
 
     [Fact]
-    public void Open_question_permissions_are_defined_but_granted_to_no_role()
+    public void No_role_that_creates_applications_also_decides_them()
     {
-        string[] openQuestion =
+        // Four-eyes starts with the matrix: nobody who decides (underwriters, committee, compliance) creates.
+        string[] deciding =
         [
-            Permissions.Applications.Reassign, Permissions.Applications.MarkPriority, Permissions.Applications.Tag,
-            Permissions.Applications.AddInternalNote, Permissions.Applications.RepullCreditData,
-            Permissions.Applications.ReverifyIncome, Permissions.Applications.Print, Permissions.Applications.Archive,
+            Permissions.Underwriting.Decide, Permissions.Underwriting.DecideSenior, Permissions.Committee.Vote,
+            Permissions.Compliance.Review,
         ];
 
-        Assert.All(openQuestion, p => Assert.True(PermissionCatalog.Contains(p)));
-        Assert.DoesNotContain(RoleSeedCatalog.All.SelectMany(r => r.Permissions), openQuestion.Contains);
+        foreach (var role in RoleSeedCatalog.All.Where(r => r.Permissions.Contains(Permissions.Applications.Create)))
+        {
+            Assert.DoesNotContain(role.Permissions, deciding.Contains);
+        }
     }
 
     [Fact]
-    public void Head_and_Director_never_take_the_single_loan_credit_decision()
+    public void Auditor_holds_every_non_administrative_read_permission_and_nothing_else()
     {
-        // FRD 5.3 wins over the prototype (which sets canDecide = true for them).
-        Assert.DoesNotContain(Permissions.Applications.Decide, RoleSeedCatalog.Get(HD).Permissions);
-        Assert.DoesNotContain(Permissions.Applications.Decide, RoleSeedCatalog.Get(DIR).Permissions);
-    }
+        var expected = PermissionCatalog.All.Where(p => p.IsReadOnly && !p.IsAdministrative).Select(p => p.Code);
 
-    [Fact]
-    public void Business_development_manager_has_no_write_permission_apart_from_notes_and_documents()
-    {
-        string[] allowed =
-        [
-            Permissions.Applications.ViewFull, Permissions.Applications.AddPortfolioNote,
-            Permissions.Documents.View, Permissions.Documents.Upload, Permissions.Documents.DeleteOwnNew,
-            Permissions.Reports.View,
-        ];
-
-        Assert.Equal(allowed.Order(), RoleSeedCatalog.Get(BDM).Permissions.Order());
+        Assert.Equal(expected.Order(), RoleSeedCatalog.Get(AUD).Permissions.Order());
     }
 }

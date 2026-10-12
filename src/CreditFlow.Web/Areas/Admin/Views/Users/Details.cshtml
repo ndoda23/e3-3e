@@ -45,14 +45,6 @@
         <div class="card-body">
             <dl class="dl">
                 <dt>@T["Field.Role"]</dt><dd>@u.RoleName <span class="code">@u.RoleCode</span></dd>
-                @if (u.AuthorityLevel is { } level)
-                {
-                    <dt>@T["Field.AuthorityLevel"]</dt><dd>@T[$"AuthorityLevel.{level}"]</dd>
-                }
-                @if (u.Segment is { } segment)
-                {
-                    <dt>@T["Field.Segment"]</dt><dd>@T[$"Segment.{segment}"]</dd>
-                }
                 <dt>@T["Field.Branch"]</dt><dd>@(u.BranchName ?? DisplayFormat.Empty)</dd>
                 <dt>@T["Field.Capacity"]</dt><dd class="tnum">@u.Capacity</dd>
                 <dt>@T["Users.Column.Working"]</dt>

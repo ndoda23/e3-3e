@@ -31,6 +31,7 @@ public sealed class RoleAdministrationService(
         }
 
         var granted = role.Permissions.ToHashSet(StringComparer.Ordinal);
+        var kind = role.Profile.Kind;
         var isAdministrative = role.Profile.IsAdministrative;
 
         var groups = PermissionCatalog.All
@@ -44,7 +45,7 @@ public sealed class RoleAdministrationService(
                         p.DisplayName,
                         p.Description,
                         IsGranted: granted.Contains(p.Code),
-                        IsAssignable: p.IsAdministrative == isAdministrative,
+                        IsAssignable: PermissionCatalog.CreateSet(kind, [p.Code]).IsSuccess,
                         IsLocked: isAdministrative && RoleRules.RequiredAdministrativePermissions.Contains(p.Code)))
                     .ToList()))
             .ToList();
@@ -71,7 +72,7 @@ public sealed class RoleAdministrationService(
             return Result.Failure(RoleAdministrationErrors.UnknownPermission(unknown));
         }
 
-        var permissionSet = PermissionSet.Create(role.Profile.IsAdministrative, requested);
+        var permissionSet = PermissionCatalog.CreateSet(role.Profile.Kind, requested);
         if (permissionSet.IsFailure)
         {
             return Result.Failure(permissionSet.Error!);

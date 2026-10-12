@@ -13,20 +13,13 @@ public sealed class MenuTests
 {
     public static TheoryData<string, string[], bool> Expectations => new()
     {
-        { RoleCodes.LoanOfficer, ["Dashboard", "Applications", "Packages", "Reports"], true },
-        { RoleCodes.Underwriter, ["Dashboard", "Applications", "Packages", "Reports"], false },
-        { RoleCodes.BranchManager, ["Dashboard", "Applications", "Packages", "Reports"], false },
-        { RoleCodes.BusinessDevelopmentManager, ["Dashboard", "Applications", "Packages", "Reports"], false },
-        { RoleCodes.BackOffice, ["Dashboard", "Applications", "Packages", "Reports"], false },
-        { RoleCodes.AmlAnalyst, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.FinancialAnalysis, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.Head, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.Director, ["Dashboard", "Applications", "Reports"], false },
-        {
-            RoleCodes.SystemAdministrator,
-            ["Users", "Roles", "AuthorityLimits", "Branches", "AuditLog", "CreditPolicy", "Pricing", "Settings"],
-            false
-        },
+        { RoleCodes.Operator, ["Dashboard", "Applications", "Reports"], true },
+        { RoleCodes.Underwriter, ["Dashboard", "Applications", "Reports"], false },
+        { RoleCodes.SeniorUnderwriter, ["Dashboard", "Applications", "Reports"], false },
+        { RoleCodes.CreditCommittee, ["Dashboard", "Applications", "Reports"], false },
+        { RoleCodes.Compliance, ["Dashboard", "Applications"], false },
+        { RoleCodes.Auditor, ["Dashboard", "Applications", "Reports", "Audit"], false },
+        { RoleCodes.Admin, ["Users", "Roles", "Branches", "AuditLog"], false },
     };
 
     [Theory]
@@ -45,13 +38,13 @@ public sealed class MenuTests
     public void Administration_section_appears_only_with_admin_permissions()
     {
         Assert.DoesNotContain(Menu.For(ProfileFor(RoleCodes.Underwriter)), s => s.Key == "Administration");
-        Assert.DoesNotContain(Menu.For(ProfileFor(RoleCodes.SystemAdministrator)), s => s.Key == "Workspace");
+        Assert.DoesNotContain(Menu.For(ProfileFor(RoleCodes.Admin)), s => s.Key == "Workspace");
     }
 
     [Fact]
     public void An_inactive_user_sees_nothing()
     {
-        var profile = ProfileFor(RoleCodes.LoanOfficer) with { IsActive = false, Permissions = new HashSet<string>() };
+        var profile = ProfileFor(RoleCodes.Operator) with { IsActive = false, Permissions = new HashSet<string>() };
 
         Assert.Empty(Menu.For(profile));
         Assert.False(Menu.CanCreateApplication(profile));
@@ -82,19 +75,15 @@ public sealed class MenuTests
         {
             Id = RoleId.New(),
             Code = RoleCode.Create(seed.Code).Value,
+            Kind = seed.Kind,
             DataScope = seed.DataScope,
             Dashboard = seed.Dashboard,
             BranchRule = seed.BranchRule,
-            SegmentRule = seed.SegmentRule,
-            AuthorityLevelRule = seed.AuthorityLevelRule,
-            IsAdministrative = seed.IsAdministrative,
         };
 
         return UserAccessProfile.FromParts(
             UserId.New(), "Test User", role, seed.DisplayName, seed.Permissions,
             seed.BranchRule == AttributeRule.Required ? BranchId.New() : null, "Vake",
-            seed.SegmentRule == AttributeRule.Required ? Segment.Retail : null,
-            seed.AuthorityLevelRule == AttributeRule.Required ? AuthorityLevel.Senior : null,
             isActive: true);
     }
 }

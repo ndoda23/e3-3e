@@ -20,50 +20,35 @@
   <data name="Nav.Section.Administration" xml:space="preserve"><value>Administration</value></data>
   <data name="Nav.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
   <data name="Nav.Applications" xml:space="preserve"><value>Applications</value></data>
-  <data name="Nav.Packages" xml:space="preserve"><value>Packages</value></data>
   <data name="Nav.Reports" xml:space="preserve"><value>Reports</value></data>
   <data name="Nav.NewApplication" xml:space="preserve"><value>Create Application</value></data>
   <data name="Nav.Users" xml:space="preserve"><value>Users</value></data>
   <data name="Nav.Roles" xml:space="preserve"><value>Roles &amp; permissions</value></data>
-  <data name="Nav.AuthorityLimits" xml:space="preserve"><value>Authority limits</value></data>
   <data name="Nav.Branches" xml:space="preserve"><value>Branches</value></data>
   <data name="Nav.AuditLog" xml:space="preserve"><value>Audit log</value></data>
-  <data name="Nav.CreditPolicy" xml:space="preserve"><value>Credit policy</value></data>
-  <data name="Nav.Pricing" xml:space="preserve"><value>Risk-based pricing</value></data>
-  <data name="Nav.Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Nav.Audit" xml:space="preserve"><value>Audit log</value></data>
 
-  <!-- Dashboards (FRD M1) -->
-  <data name="Dashboard.Officer" xml:space="preserve"><value>Officer dashboard</value></data>
-  <data name="Dashboard.Officer.Description" xml:space="preserve"><value>Your applications and packages, with status and ageing.</value></data>
-  <data name="Dashboard.Underwriter" xml:space="preserve"><value>Underwriter dashboard</value></data>
-  <data name="Dashboard.Underwriter.Description" xml:space="preserve"><value>Applications awaiting your decision.</value></data>
-  <data name="Dashboard.Branch" xml:space="preserve"><value>Branch dashboard</value></data>
-  <data name="Dashboard.Branch.Description" xml:space="preserve"><value>Branch overview: team performance and items waiting for approval.</value></data>
-  <data name="Dashboard.BusinessDevelopment" xml:space="preserve"><value>BDM dashboard</value></data>
-  <data name="Dashboard.BusinessDevelopment.Description" xml:space="preserve"><value>Pipeline: acquisition funnel, channels and monthly targets.</value></data>
-  <data name="Dashboard.BackOffice" xml:space="preserve"><value>Back office dashboard</value></data>
-  <data name="Dashboard.BackOffice.Description" xml:space="preserve"><value>Booking queue of approved applications.</value></data>
-  <data name="Dashboard.AmlScreening" xml:space="preserve"><value>AML screening dashboard</value></data>
-  <data name="Dashboard.AmlScreening.Description" xml:space="preserve"><value>Screening queue of files sent for AML check.</value></data>
-  <data name="Dashboard.Fab" xml:space="preserve"><value>FAB dashboard</value></data>
-  <data name="Dashboard.Fab.Description" xml:space="preserve"><value>ROAE analysis queue of pricing exceptions.</value></data>
-  <data name="Dashboard.Exceptions" xml:space="preserve"><value>Exceptions dashboard</value></data>
-  <data name="Dashboard.Exceptions.Description" xml:space="preserve"><value>Pricing exceptions waiting for your approval.</value></data>
+  <!-- Dashboards (one per role kind of work) -->
+  <data name="Dashboard.Operator" xml:space="preserve"><value>Branch workspace</value></data>
+  <data name="Dashboard.Operator.Description" xml:space="preserve"><value>Clients, applications, contracts and disbursements of your branch.</value></data>
+  <data name="Dashboard.Underwriting" xml:space="preserve"><value>Underwriting</value></data>
+  <data name="Dashboard.Underwriting.Description" xml:space="preserve"><value>Applications waiting for your credit decision.</value></data>
+  <data name="Dashboard.Committee" xml:space="preserve"><value>Credit committee</value></data>
+  <data name="Dashboard.Committee.Description" xml:space="preserve"><value>Applications above the Senior Underwriter threshold waiting for your vote.</value></data>
+  <data name="Dashboard.Compliance" xml:space="preserve"><value>Compliance review</value></data>
+  <data name="Dashboard.Compliance.Description" xml:space="preserve"><value>Applications held for a sanctions or PEP match.</value></data>
+  <data name="Dashboard.Audit" xml:space="preserve"><value>Audit</value></data>
+  <data name="Dashboard.Audit.Description" xml:space="preserve"><value>Read-only access to applications, loans, reports and the audit log.</value></data>
   <data name="Dashboard.Administration" xml:space="preserve"><value>Administration</value></data>
-  <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, limits and branches.</value></data>
-  <data name="Dashboard.Placeholder.Title" xml:space="preserve"><value>Your work queue arrives in Phase 2</value></data>
-  <data name="Dashboard.Placeholder.Description" xml:space="preserve"><value>Application intake and case management are built in the next phase. Your access is already set up.</value></data>
+  <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, branches and reference data.</value></data>
+  <data name="Dashboard.Placeholder.Title" xml:space="preserve"><value>Your work queue is on its way</value></data>
+  <data name="Dashboard.Placeholder.Description" xml:space="preserve"><value>Your queues and shortcuts appear here as the loan process screens are added. Your access is already set up.</value></data>
 
   <!-- Placeholders -->
-  <data name="ComingSoon.Title" xml:space="preserve"><value>Coming in a later phase</value></data>
-  <data name="ComingSoon.Description" xml:space="preserve"><value>This page is part of the navigation but is built in a later phase.</value></data>
+  <data name="ComingSoon.Title" xml:space="preserve"><value>Coming soon</value></data>
+  <data name="ComingSoon.Description" xml:space="preserve"><value>This page is part of the navigation and is being built.</value></data>
 
   <!-- User attributes -->
-  <data name="AuthorityLevel.Junior" xml:space="preserve"><value>Junior</value></data>
-  <data name="AuthorityLevel.Standard" xml:space="preserve"><value>Standard</value></data>
-  <data name="AuthorityLevel.Senior" xml:space="preserve"><value>Senior</value></data>
-  <data name="Segment.Retail" xml:space="preserve"><value>Retail</value></data>
-  <data name="Segment.Business" xml:space="preserve"><value>Business</value></data>
 
   <!-- Error pages -->
   <data name="Error.NotFound.Title" xml:space="preserve"><value>Page not found</value></data>
@@ -150,8 +135,6 @@
   <data name="Field.UserName" xml:space="preserve"><value>User name</value></data>
   <data name="Field.Email" xml:space="preserve"><value>Email</value></data>
   <data name="Field.Role" xml:space="preserve"><value>Role</value></data>
-  <data name="Field.AuthorityLevel" xml:space="preserve"><value>Authority level</value></data>
-  <data name="Field.Segment" xml:space="preserve"><value>Segment</value></data>
   <data name="Field.Branch" xml:space="preserve"><value>Branch</value></data>
   <data name="Field.TwoFactor" xml:space="preserve"><value>Two-factor authentication</value></data>
   <data name="Field.LastLogin" xml:space="preserve"><value>Last sign-in</value></data>
@@ -180,12 +163,6 @@
   <data name="Field.RequireMfa" xml:space="preserve"><value>Require two-factor authentication</value></data>
   <data name="Field.Status" xml:space="preserve"><value>Status</value></data>
   <data name="Field.FullName" xml:space="preserve"><value>Full name</value></data>
-  <data name="UserCard.RoleWithLevel" xml:space="preserve"><value>{1} {0}</value></data>
-  <data name="AuthorityLevel.Junior.Short" xml:space="preserve"><value>Jr</value></data>
-  <data name="AuthorityLevel.Standard.Short" xml:space="preserve"><value>Std</value></data>
-  <data name="AuthorityLevel.Senior.Short" xml:space="preserve"><value>Sr</value></data>
-  <data name="Dashboard.AuthorityLimit" xml:space="preserve"><value>Authority limit:</value></data>
-  <data name="Dashboard.AuthorityLimitNone" xml:space="preserve"><value>Authority limit: none set, so every decision is escalated.</value></data>
   <data name="Audit.When" xml:space="preserve"><value>When</value></data>
   <data name="Audit.Action" xml:space="preserve"><value>Action</value></data>
   <data name="Audit.By" xml:space="preserve"><value>By</value></data>
@@ -221,20 +198,15 @@
   <data name="Users.Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Users.EditTitle" xml:space="preserve"><value>Edit {0}</value></data>
   <data name="Users.EditHint" xml:space="preserve"><value>Account details, role and the attributes the role requires.</value></data>
-  <data name="Users.AccessChangeWarning" xml:space="preserve"><value>Changing the role, branch, segment or authority level signs the user out of their open sessions within a minute.</value></data>
+  <data name="Users.AccessChangeWarning" xml:space="preserve"><value>Changing the role or the branch signs the user out of their open sessions within a minute.</value></data>
   <data name="Users.UserNameHint" xml:space="preserve"><value>3–64 letters, digits, dots, hyphens or underscores, e.g. tamta.tatishvili.</value></data>
   <data name="Users.CapacityHint" xml:space="preserve"><value>Maximum number of open files at once (0–100).</value></data>
   <data name="Users.ChooseRole" xml:space="preserve"><value>Choose a role</value></data>
-  <data name="Users.ChooseRoleFirst" xml:space="preserve"><value>Choose a role to see the branch, segment and authority level fields it requires.</value></data>
-  <data name="Users.RoleHasNoAttributes" xml:space="preserve"><value>This role has no branch, segment or authority level.</value></data>
+  <data name="Users.ChooseRoleFirst" xml:space="preserve"><value>Choose a role to see whether it requires a branch.</value></data>
+  <data name="Users.RoleHasNoAttributes" xml:space="preserve"><value>This role is not tied to a branch.</value></data>
   <data name="Users.ChooseBranch" xml:space="preserve"><value>Choose a branch</value></data>
   <data name="Users.NoBranch" xml:space="preserve"><value>No branch</value></data>
   <data name="Users.InactiveBranch" xml:space="preserve"><value>{0} (inactive)</value></data>
-  <data name="Users.ChooseLevel" xml:space="preserve"><value>Choose a level</value></data>
-  <data name="Users.NoLevel" xml:space="preserve"><value>No level</value></data>
-  <data name="Users.LevelHint" xml:space="preserve"><value>Sets the credit decision limit (Admin › Authority limits).</value></data>
-  <data name="Users.ChooseSegment" xml:space="preserve"><value>Choose a segment</value></data>
-  <data name="Users.NoSegment" xml:space="preserve"><value>No segment</value></data>
   <data name="Users.RequireMfaHint" xml:space="preserve"><value>The user must set up an authenticator app at first sign-in, even if the role does not require it.</value></data>
   <data name="Users.Saved" xml:space="preserve"><value>The user has been saved.</value></data>
   <data name="Users.BackToList" xml:space="preserve"><value>All users</value></data>
@@ -296,9 +268,6 @@
   <data name="AuditAction.Branch.Created" xml:space="preserve"><value>Branch created</value></data>
   <data name="AuditAction.Branch.Updated" xml:space="preserve"><value>Branch changed</value></data>
   <data name="AuditAction.Branch.Deleted" xml:space="preserve"><value>Branch deleted</value></data>
-  <data name="AuditAction.AuthorityLimit.Created" xml:space="preserve"><value>Authority limit created</value></data>
-  <data name="AuditAction.AuthorityLimit.Updated" xml:space="preserve"><value>Authority limit changed</value></data>
-  <data name="AuditAction.AuthorityLimit.Deleted" xml:space="preserve"><value>Authority limit deleted</value></data>
   <data name="AuditAction.LoginSucceeded" xml:space="preserve"><value>Signed in</value></data>
   <data name="AuditAction.LoginFailed" xml:space="preserve"><value>Sign-in failed</value></data>
   <data name="AuditAction.LoginFailed:TemporaryPasswordExpired" xml:space="preserve"><value>Sign-in failed: temporary password expired</value></data>
@@ -324,7 +293,6 @@
   <data name="Roles.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
   <data name="Roles.Users" xml:space="preserve"><value>Users</value></data>
   <data name="Roles.PermissionCount" xml:space="preserve"><value>Permissions</value></data>
-  <data name="Roles.Administrative" xml:space="preserve"><value>Administrative</value></data>
   <data name="Roles.MfaOptional" xml:space="preserve"><value>Optional</value></data>
   <data name="Roles.EditPermissions" xml:space="preserve"><value>Edit permissions</value></data>
   <data name="Roles.Matrix" xml:space="preserve"><value>Permission matrix</value></data>
@@ -341,6 +309,8 @@
   <data name="Roles.StopRequiringMfa" xml:space="preserve"><value>Stop requiring for this role</value></data>
   <data name="Roles.MfaRequired" xml:space="preserve"><value>Two-factor authentication is now required for this role.</value></data>
   <data name="Roles.MfaNotRequired" xml:space="preserve"><value>Two-factor authentication is no longer required for this role.</value></data>
+  <data name="Roles.Kind" xml:space="preserve"><value>Kind</value></data>
+  <data name="Roles.SodReadOnly" xml:space="preserve"><value>Segregation of duties: a read-only role can hold only read permissions, never one that changes data.</value></data>
   <data name="Roles.SodBusiness" xml:space="preserve"><value>Segregation of duties: a business role cannot hold administration permissions.</value></data>
   <data name="Roles.SodAdministrative" xml:space="preserve"><value>Segregation of duties: the administrator role holds only administration permissions and must keep "Manage users" and "Manage roles".</value></data>
   <data name="Roles.ModuleCount" xml:space="preserve"><value>{0} of {1} granted</value></data>
@@ -350,16 +320,16 @@
   <data name="Roles.Discard" xml:space="preserve"><value>Discard changes</value></data>
   <data name="Roles.SavePermissions" xml:space="preserve"><value>Save permissions</value></data>
   <data name="Roles.Saved" xml:space="preserve"><value>The role's permissions have been saved.</value></data>
+  <data name="RoleKind.Business" xml:space="preserve"><value>Business</value></data>
+  <data name="RoleKind.Business.Description" xml:space="preserve"><value>Works with loan data; cannot hold administration permissions.</value></data>
+  <data name="RoleKind.ReadOnly" xml:space="preserve"><value>Read-only</value></data>
+  <data name="RoleKind.ReadOnly.Description" xml:space="preserve"><value>Reads loan data and the audit log; cannot hold any permission that changes data.</value></data>
+  <data name="RoleKind.Administrative" xml:space="preserve"><value>Administrative</value></data>
+  <data name="RoleKind.Administrative.Description" xml:space="preserve"><value>Administers the system; holds only administration permissions and sees no loan data.</value></data>
   <data name="DataScope.None" xml:space="preserve"><value>None</value></data>
   <data name="DataScope.None.Description" xml:space="preserve"><value>Sees no business records (administration only).</value></data>
-  <data name="DataScope.Own" xml:space="preserve"><value>Own</value></data>
-  <data name="DataScope.Own.Description" xml:space="preserve"><value>Records the user created or owns.</value></data>
-  <data name="DataScope.Assigned" xml:space="preserve"><value>Assigned</value></data>
-  <data name="DataScope.Assigned.Description" xml:space="preserve"><value>Records assigned to the user.</value></data>
   <data name="DataScope.Branch" xml:space="preserve"><value>Branch</value></data>
   <data name="DataScope.Branch.Description" xml:space="preserve"><value>All records of the user's branch.</value></data>
-  <data name="DataScope.Segment" xml:space="preserve"><value>Segment</value></data>
-  <data name="DataScope.Segment.Description" xml:space="preserve"><value>All records of the user's segment (Retail or Business).</value></data>
   <data name="DataScope.Organization" xml:space="preserve"><value>Organization</value></data>
   <data name="DataScope.Organization.Description" xml:space="preserve"><value>All records in the bank.</value></data>
   <data name="AttributeRule.NotAllowed" xml:space="preserve"><value>Not used</value></data>
@@ -370,37 +340,6 @@
   <data name="Field.MaxAmount" xml:space="preserve"><value>Maximum amount</value></data>
   <data name="Field.MaxRateGapPp" xml:space="preserve"><value>Maximum rate gap (pp)</value></data>
   <data name="Field.MinCustomerRoaePct" xml:space="preserve"><value>Minimum customer ROAE (%)</value></data>
-  <data name="AuthorityLimits.Description" xml:space="preserve"><value>How far each role may decide on its own. Changes apply to the next decision, immediately.</value></data>
-  <data name="AuthorityLimits.Credit" xml:space="preserve"><value>Credit decision limits</value></data>
-  <data name="AuthorityLimits.CreditHint" xml:space="preserve"><value>The largest loan a decider may approve, per role, level and currency. Above the limit, or when no row matches (for example another currency), the file is escalated.</value></data>
-  <data name="AuthorityLimits.NewCredit" xml:space="preserve"><value>New credit decision limit</value></data>
-  <data name="AuthorityLimits.EditCredit" xml:space="preserve"><value>Edit credit decision limit</value></data>
-  <data name="AuthorityLimits.CreditFormHint" xml:space="preserve"><value>A row applies to one role, one authority level (if the role has levels) and one currency.</value></data>
-  <data name="AuthorityLimits.AnyLevel" xml:space="preserve"><value>All users of the role</value></data>
-  <data name="AuthorityLimits.ByLevel" xml:space="preserve"><value> — by level</value></data>
-  <data name="AuthorityLimits.NoLevelOption" xml:space="preserve"><value>No level (role without levels)</value></data>
-  <data name="AuthorityLimits.LevelHint" xml:space="preserve"><value>Roles marked "by level" need a level; other roles must leave it empty.</value></data>
-  <data name="AuthorityLimits.MaxAmountHint" xml:space="preserve"><value>Loans up to and including this amount can be approved.</value></data>
-  <data name="AuthorityLimits.NoCredit" xml:space="preserve"><value>No credit decision limits: every decision is escalated.</value></data>
-  <data name="AuthorityLimits.Pricing" xml:space="preserve"><value>Pricing exception limits</value></data>
-  <data name="AuthorityLimits.PricingHint" xml:space="preserve"><value>Which pricing exceptions a role may approve. An exception outside the limit, or for a role without a row, goes to the Director. Heads approve only their own segment.</value></data>
-  <data name="AuthorityLimits.NewPricing" xml:space="preserve"><value>New pricing exception limit</value></data>
-  <data name="AuthorityLimits.EditPricing" xml:space="preserve"><value>Edit pricing exception limit</value></data>
-  <data name="AuthorityLimits.PricingFormHint" xml:space="preserve"><value>Leave a threshold empty for no limit on it. A row with both empty approves every exception.</value></data>
-  <data name="AuthorityLimits.GapHint" xml:space="preserve"><value>Approvable when the rate is less than this many percentage points below the policy floor (the value itself is not).</value></data>
-  <data name="AuthorityLimits.RoaeHint" xml:space="preserve"><value>Approvable when the customer ROAE is at least this value.</value></data>
-  <data name="AuthorityLimits.GapBelow" xml:space="preserve"><value>Below {0} pp</value></data>
-  <data name="AuthorityLimits.RoaeAtLeast" xml:space="preserve"><value>At least {0}%</value></data>
-  <data name="AuthorityLimits.NoLimit" xml:space="preserve"><value>No limit</value></data>
-  <data name="AuthorityLimits.NoPricing" xml:space="preserve"><value>No pricing exception limits: every exception goes to the Director.</value></data>
-  <data name="AuthorityLimits.RoleRequired" xml:space="preserve"><value>Choose a role.</value></data>
-  <data name="AuthorityLimits.Created" xml:space="preserve"><value>The limit has been added.</value></data>
-  <data name="AuthorityLimits.Saved" xml:space="preserve"><value>The limit has been saved.</value></data>
-  <data name="AuthorityLimits.Deleted" xml:space="preserve"><value>The limit has been deleted.</value></data>
-  <data name="AuthorityLimits.Delete.Title" xml:space="preserve"><value>Delete this limit?</value></data>
-  <data name="AuthorityLimits.Delete.CreditDescription" xml:space="preserve"><value>Without this row, decisions for this role, level and currency are escalated. The change is audited.</value></data>
-  <data name="AuthorityLimits.Delete.PricingDescription" xml:space="preserve"><value>Without this row, every pricing exception of this role goes to the Director. The change is audited.</value></data>
-  <data name="AuthorityLimits.Delete.Button" xml:space="preserve"><value>Delete limit</value></data>
   <data name="Field.BranchCode" xml:space="preserve"><value>Code</value></data>
   <data name="Field.BranchName" xml:space="preserve"><value>Name</value></data>
   <data name="Field.City" xml:space="preserve"><value>City</value></data>
@@ -459,5 +398,4 @@
   <data name="AuditEntity.User" xml:space="preserve"><value>User</value></data>
   <data name="AuditEntity.Role" xml:space="preserve"><value>Role</value></data>
   <data name="AuditEntity.Branch" xml:space="preserve"><value>Branch</value></data>
-  <data name="AuditEntity.AuthorityLimit" xml:space="preserve"><value>Authority limit</value></data>
 </root>

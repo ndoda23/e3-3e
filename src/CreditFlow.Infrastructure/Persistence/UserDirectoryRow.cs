@@ -1,5 +1,3 @@
-using CreditFlow.Domain.Users;
-
 namespace CreditFlow.Infrastructure.Persistence;
 
 /// <summary>
@@ -31,10 +29,6 @@ public sealed class UserDirectoryRow
     public Guid? BranchId { get; set; }
 
     public string? BranchName { get; set; }
-
-    public Segment? Segment { get; set; }
-
-    public AuthorityLevel? AuthorityLevel { get; set; }
 
     public bool IsActive { get; set; }
 

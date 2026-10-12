@@ -10,6 +10,4 @@ namespace CreditFlow.Domain.Users;
 public sealed record StaffAccess(
     RoleId RoleId,
     BranchId? BranchId,
-    Segment? Segment,
-    AuthorityLevel? AuthorityLevel,
     bool IsActive);

@@ -20,9 +20,9 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     // ----- Sign-in -----
 
     [Fact]
-    public async Task Senior_underwriter_signs_in_with_user_name_and_lands_on_the_underwriter_dashboard()
+    public async Task Operator_signs_in_with_user_name_and_lands_on_the_operator_dashboard()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         var login = await browser.LoginAsync(userName, password);
@@ -30,14 +30,14 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
         Assert.Equal("/", login.Headers.Location!.OriginalString);
 
         var dashboard = await browser.GetPageAsync("/");
-        Assert.Contains("data-dashboard=\"Underwriter\"", dashboard, StringComparison.Ordinal);
-        Assert.Contains("Underwriter dashboard", dashboard, StringComparison.Ordinal);
+        Assert.Contains("data-dashboard=\"Operator\"", dashboard, StringComparison.Ordinal);
+        Assert.Contains("Branch workspace", dashboard, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task Users_can_sign_in_with_their_email()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         var login = await browser.LoginAsync($"{userName}@pcb.ge", password);
@@ -48,7 +48,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Sign_in_records_success_and_last_login()
     {
-        var (userName, id, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, password) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         await browser.LoginAsync(userName, password);
@@ -63,7 +63,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Wrong_password_and_unknown_user_get_the_same_generic_message_and_are_audited()
     {
-        var (userName, id, _) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, _) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         var wrongPassword = await (await browser.LoginAsync(userName, "Wrong!Passw0rd-xx")).Content.ReadAsStringAsync(Ct);
@@ -83,7 +83,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Inactive_users_cannot_sign_in_and_get_the_generic_message()
     {
-        var (userName, id, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, password) = await CreateOperatorAsync();
         await DeactivateAsync(id);
         using var browser = NewSession();
 
@@ -98,7 +98,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Five_failures_lock_the_account_and_even_the_correct_password_shows_the_lockout_page()
     {
-        var (userName, id, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, password) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         for (var attempt = 1; attempt <= 4; attempt++)
@@ -151,7 +151,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Changing_the_password_rejects_reuse_and_wrong_current_password()
     {
-        var (userName, _, password) = await CreateUserAsync(RoleCodes.Director, temporary: true);
+        var (userName, _, password) = await CreateUserAsync(RoleCodes.Auditor, temporary: true);
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 
@@ -175,7 +175,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task An_expired_temporary_password_cannot_be_used_until_an_administrator_issues_a_new_one()
     {
-        var (userName, id, temporaryPassword) = await CreateUserAsync(RoleCodes.Director, temporary: true);
+        var (userName, id, temporaryPassword) = await CreateUserAsync(RoleCodes.Auditor, temporary: true);
         Factory.Clock.Advance(TimeSpan.FromHours(72) + TimeSpan.FromMinutes(1));
         using var browser = NewSession();
 
@@ -199,7 +199,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Local_return_urls_are_followed_and_external_ones_ignored()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
 
         using (var browser = NewSession())
         {
@@ -225,7 +225,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Logout_is_post_only_needs_a_token_and_ends_the_session()
     {
-        var (userName, id, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, id, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
         var dashboard = await browser.GetPageAsync("/");
@@ -247,7 +247,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Auth_cookie_is_host_prefixed_http_only_secure_strict_and_not_persistent()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
 
         var login = await browser.LoginAsync(userName, password);
@@ -266,7 +266,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Underwriter_is_denied_the_admin_area_and_sees_no_admin_menu_or_create_button()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateUserAsync(RoleCodes.Underwriter);
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 
@@ -286,8 +286,8 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task Role_requiring_mfa_forces_enrolment_and_then_a_second_step_at_every_sign_in()
     {
-        await RequireMfaForRoleAsync(RoleCodes.Director);
-        var (userName, id, password) = await CreateUserAsync(RoleCodes.Director);
+        await RequireMfaForRoleAsync(RoleCodes.Auditor);
+        var (userName, id, password) = await CreateUserAsync(RoleCodes.Auditor);
         using var browser = NewSession();
 
         // First sign-in: no MFA yet → everything leads to the set-up page.
@@ -321,8 +321,8 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task A_user_whose_mfa_is_required_cannot_turn_it_off()
     {
-        await RequireMfaForRoleAsync(RoleCodes.Director);
-        var (userName, _, password) = await CreateUserAsync(RoleCodes.Director);
+        await RequireMfaForRoleAsync(RoleCodes.Auditor);
+        var (userName, _, password) = await CreateUserAsync(RoleCodes.Auditor);
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
         var setup = await browser.GetPageAsync("/Account/EnableAuthenticator");
@@ -340,7 +340,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
     [Fact]
     public async Task My_account_shows_the_profile()
     {
-        var (userName, _, password) = await CreateSeniorUnderwriterAsync();
+        var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
 
@@ -348,7 +348,7 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
 
         Assert.Contains(userName, page, StringComparison.Ordinal);
         Assert.Contains("Vake", page, StringComparison.Ordinal);
-        Assert.Contains("Senior", page, StringComparison.Ordinal);
+        Assert.Contains("Operator", page, StringComparison.Ordinal);
     }
 
     private async Task RequireMfaForRoleAsync(string roleCode)

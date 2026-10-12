@@ -9,16 +9,14 @@ public sealed record RoleProfile
 
     public required RoleCode Code { get; init; }
 
+    public required RoleKind Kind { get; init; }
+
     public required DataScope DataScope { get; init; }
 
     public required DashboardKind Dashboard { get; init; }
 
     public required AttributeRule BranchRule { get; init; }
 
-    public required AttributeRule SegmentRule { get; init; }
-
-    public required AttributeRule AuthorityLevelRule { get; init; }
-
     /// <summary>Administrative roles hold only <c>admin.*</c> permissions and see no business data.</summary>
-    public required bool IsAdministrative { get; init; }
+    public bool IsAdministrative => Kind == RoleKind.Administrative;
 }

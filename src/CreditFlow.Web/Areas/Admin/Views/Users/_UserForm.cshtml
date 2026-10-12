@@ -19,10 +19,10 @@
     </div>
     <div class="field">
         <label asp-for="RoleId" class="required"></label>
-        @* Changing the role reloads the branch / segment / level fields that the role governs (htmx). *@
+        @* Changing the role reloads the branch field that the role governs (htmx). *@
         <select asp-for="RoleId" class="inp"
                 hx-get="@Url.Action("RoleFields")" hx-target="#role-fields" hx-swap="outerHTML"
-                hx-include="#BranchId, #Segment, #AuthorityLevel">
+                hx-include="#BranchId">
             <option value="">@T["Users.ChooseRole"]</option>
             @foreach (var role in Model.Roles)
             {

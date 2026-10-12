@@ -30,10 +30,6 @@ public sealed record UserAccessProfile
 
     public string? BranchName { get; init; }
 
-    public Segment? Segment { get; init; }
-
-    public AuthorityLevel? AuthorityLevel { get; init; }
-
     public required bool IsActive { get; init; }
 
     public required IReadOnlySet<string> Permissions { get; init; }
@@ -86,8 +82,6 @@ public sealed record UserAccessProfile
             permissions,
             staff.BranchId,
             branchName,
-            staff.Segment,
-            staff.AuthorityLevel,
             staff.IsActive);
     }
 
@@ -100,8 +94,6 @@ public sealed record UserAccessProfile
         IEnumerable<string> permissions,
         BranchId? branchId,
         string? branchName,
-        Segment? segment,
-        AuthorityLevel? authorityLevel,
         bool isActive)
     {
         ArgumentNullException.ThrowIfNull(role);
@@ -119,8 +111,6 @@ public sealed record UserAccessProfile
             Dashboard = role.Dashboard,
             BranchId = branchId,
             BranchName = branchId is null ? null : branchName,
-            Segment = segment,
-            AuthorityLevel = authorityLevel,
             IsActive = isActive,
 
             // Fail closed: an inactive user carries no permissions at all.

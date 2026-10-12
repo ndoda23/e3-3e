@@ -22,22 +22,21 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
     [Fact]
     public async Task Creating_a_user_writes_account_staff_member_and_one_user_role()
     {
-        var issued = await CreateSeniorUnderwriterInVakeAsync();
+        var issued = await CreateOperatorInVakeAsync();
 
-        var (account, staff, userRoles, uwRoleId) = await Host.QueryAsync(async db => (
+        var (account, staff, userRoles, operatorRoleId) = await Host.QueryAsync(async db => (
             await db.Users.SingleOrDefaultAsync(u => u.Id == issued.UserId.Value, Ct),
             await db.StaffMembers.SingleOrDefaultAsync(s => s.Id == issued.UserId, Ct),
             await db.UserRoles.Where(ur => ur.UserId == issued.UserId.Value).ToListAsync(Ct),
-            await db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct)));
+            await db.Roles.Where(r => r.Code == RoleCodes.Operator).Select(r => r.Id).SingleAsync(Ct)));
 
         Assert.NotNull(account);
         Assert.True(account.MustChangePassword);
         Assert.NotNull(account.TemporaryPasswordExpiresAt);
         Assert.NotNull(staff);
-        Assert.Equal(new RoleId(uwRoleId), staff.RoleId);
-        Assert.Equal(AuthorityLevel.Senior, staff.AuthorityLevel);
+        Assert.Equal(new RoleId(operatorRoleId), staff.RoleId);
         var userRole = Assert.Single(userRoles);
-        Assert.Equal(uwRoleId, userRole.RoleId);
+        Assert.Equal(operatorRoleId, userRole.RoleId);
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
         var admin = await AdminIdAsync();
         Host.CurrentUser.UserId = admin;
 
-        var issued = await CreateSeniorUnderwriterInVakeAsync();
+        var issued = await CreateOperatorInVakeAsync();
 
         var staff = await Host.QueryAsync(db => db.StaffMembers.SingleAsync(s => s.Id == issued.UserId, Ct));
         Assert.Equal(admin, staff.CreatedBy);
@@ -104,14 +103,12 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
                     {
                         Id = RoleId.New(),
                         Code = RoleCode.Create("GHOST").Value,
+                        Kind = RoleKind.Business,
                         DataScope = DataScope.Organization,
-                        Dashboard = DashboardKind.Fab,
+                        Dashboard = DashboardKind.Audit,
                         BranchRule = AttributeRule.Optional,
-                        SegmentRule = AttributeRule.NotAllowed,
-                        AuthorityLevelRule = AttributeRule.NotAllowed,
-                        IsAdministrative = false,
                     };
-                    db.StaffMembers.Add(StaffMember.Create(id, "Broken User", ghostRole, null, null, null).Value);
+                    db.StaffMembers.Add(StaffMember.Create(id, "Broken User", ghostRole, null).Value);
                     await db.SaveChangesAsync(token);
                     return Result.Success();
                 },
@@ -125,12 +122,12 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
     [Fact]
     public async Task A_staff_member_cannot_exist_without_an_account()
     {
-        var role = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.Director, Ct));
+        var role = await Host.QueryAsync(db => db.Roles.SingleAsync(r => r.Code == RoleCodes.Auditor, Ct));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            db.StaffMembers.Add(StaffMember.Create(UserId.New(), "Orphan", role.ToProfile(), null, null, null).Value);
+            db.StaffMembers.Add(StaffMember.Create(UserId.New(), "Orphan", role.ToProfile(), null).Value);
             await db.SaveChangesAsync(Ct);
         }));
     }
@@ -139,8 +136,8 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
     public async Task Changing_the_role_leaves_exactly_one_matching_user_role_row()
     {
         Host.CurrentUser.UserId = await AdminIdAsync();
-        var issued = await CreateSeniorUnderwriterInVakeAsync();
-        var bmRoleId = await Host.QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.BranchManager).Select(r => r.Id).SingleAsync(Ct));
+        var issued = await CreateOperatorInVakeAsync();
+        var underwriterRoleId = await Host.QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
 
         var result = await Host.InScopeAsync(async sp =>
         {
@@ -153,27 +150,26 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
                     UserName = details.UserName,
                     Email = details.Email,
                     FullName = details.FullName,
-                    RoleId = new RoleId(bmRoleId),
-                    BranchId = details.BranchId,
+                    RoleId = new RoleId(underwriterRoleId),
                 },
                 Ct);
         });
 
         Assert.True(result.IsSuccess, result.Error?.Description);
         var userRoles = await Host.QueryAsync(db => db.UserRoles.Where(ur => ur.UserId == issued.UserId.Value).ToListAsync(Ct));
-        Assert.Equal(bmRoleId, Assert.Single(userRoles).RoleId);
+        Assert.Equal(underwriterRoleId, Assert.Single(userRoles).RoleId);
     }
 
     [Fact]
     public async Task Identity_role_membership_reflects_the_staff_role()
     {
-        var issued = await CreateSeniorUnderwriterInVakeAsync();
+        var issued = await CreateOperatorInVakeAsync();
 
         await Host.InScopeAsync(async sp =>
         {
             var userManager = sp.GetRequiredService<UserManager<CreditFlow.Infrastructure.Identity.ApplicationUser>>();
             var user = await userManager.FindByIdAsync(issued.UserId.ToString());
-            Assert.Equal([RoleCodes.Underwriter], await userManager.GetRolesAsync(user!));
+            Assert.Equal([RoleCodes.Operator], await userManager.GetRolesAsync(user!));
         });
     }
 
@@ -184,22 +180,21 @@ public sealed class UserModelPersistenceTests(SqlServerContainer sql) : Database
         return new UserId(id);
     }
 
-    private Task<IssuedTemporaryPassword> CreateSeniorUnderwriterInVakeAsync() =>
+    private Task<IssuedTemporaryPassword> CreateOperatorInVakeAsync() =>
         Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            var uw = await db.Roles.SingleAsync(r => r.Code == RoleCodes.Underwriter, Ct);
+            var operatorRole = await db.Roles.SingleAsync(r => r.Code == RoleCodes.Operator, Ct);
             var vake = await db.Branches.SingleAsync(b => b.Code == BranchSeedCatalog.Vake, Ct);
 
             var result = await sp.GetRequiredService<UserAdministrationService>().CreateAsync(
                 new CreateUserCommand
                 {
-                    UserName = $"uw.{Guid.NewGuid():N}"[..20],
+                    UserName = $"op.{Guid.NewGuid():N}"[..20],
                     Email = $"{Guid.NewGuid():N}@pcb.ge",
-                    FullName = "Tamta Tatishvili",
-                    RoleId = new RoleId(uw.Id),
+                    FullName = "Anna Gelashvili",
+                    RoleId = new RoleId(operatorRole.Id),
                     BranchId = vake.Id,
-                    AuthorityLevel = AuthorityLevel.Senior,
                 },
                 Ct);
 

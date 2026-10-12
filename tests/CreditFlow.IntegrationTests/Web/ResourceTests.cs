@@ -39,9 +39,7 @@ public sealed partial class ResourceTests
         var keys = new List<string> { "Nav.Section.Workspace", "Nav.Section.Administration" };
         keys.AddRange(Menu.Workspace.Concat(Menu.Administration).Select(i => $"Nav.{i.Key}"));
         keys.AddRange(Enum.GetNames<DashboardKind>().SelectMany(d => new[] { $"Dashboard.{d}", $"Dashboard.{d}.Description" }));
-        keys.AddRange(Enum.GetNames<AuthorityLevel>().Select(l => $"AuthorityLevel.{l}"));
-        keys.AddRange(Enum.GetNames<Segment>().Select(s => $"Segment.{s}"));
-        keys.AddRange(Enum.GetNames<AuthorityLevel>().Select(l => $"AuthorityLevel.{l}.Short"));
+        keys.AddRange(Enum.GetNames<RoleKind>().SelectMany(k => new[] { $"RoleKind.{k}", $"RoleKind.{k}.Description", $"Roles.Sod{k}" }));
         keys.AddRange(Enum.GetNames<DataScope>().SelectMany(d => new[] { $"DataScope.{d}", $"DataScope.{d}.Description" }));
         keys.AddRange(Enum.GetNames<AttributeRule>().Select(r => $"AttributeRule.{r}"));
         keys.AddRange(Enum.GetNames<UserStatusFilter>().Select(s => $"Users.Status.{s}"));

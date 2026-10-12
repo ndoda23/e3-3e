@@ -30,7 +30,7 @@ public sealed class AuthorizationComponentTests
 
         var single = await provider.GetPolicyAsync(Policies.PermissionPrefix + Permissions.Admin.UsersManage);
         var any = await provider.GetPolicyAsync(
-            Policies.AnyPermissionPrefix + Permissions.Aml.ViewScreening + "," + Permissions.Pricing.ViewExceptions);
+            Policies.AnyPermissionPrefix + Permissions.Compliance.Review + "," + Permissions.Committee.Vote);
 
         Assert.Equal([Permissions.Admin.UsersManage], single!.Requirements.OfType<PermissionRequirement>().Single().Permissions);
         Assert.Equal(2, any!.Requirements.OfType<PermissionRequirement>().Single().Permissions.Count);
@@ -57,7 +57,7 @@ public sealed class AuthorizationComponentTests
     }
 
     [Theory]
-    [InlineData(RoleCodes.SystemAdministrator, true)]
+    [InlineData(RoleCodes.Admin, true)]
     [InlineData(RoleCodes.Underwriter, false)]
     public async Task Permission_handler_succeeds_only_with_the_permission(string roleCode, bool expected)
     {
@@ -85,7 +85,7 @@ public sealed class AuthorizationComponentTests
     }
 
     [Theory]
-    [InlineData(RoleCodes.LoanOfficer, "applications.create", null, true)]
+    [InlineData(RoleCodes.Operator, "applications.create", null, true)]
     [InlineData(RoleCodes.Underwriter, "applications.create", null, false)]
     [InlineData(RoleCodes.Underwriter, null, "admin.users.view,reports.view", true)]
     [InlineData(RoleCodes.Underwriter, null, "admin.users.view,admin.roles.manage", false)]

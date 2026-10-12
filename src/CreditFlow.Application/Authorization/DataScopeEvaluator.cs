@@ -9,8 +9,8 @@ public interface IDataScopeEvaluator
 }
 
 /// <summary>
-/// Data scope check. Fails closed: an inactive user, scope <see cref="DataScope.None"/>, or a scope whose user
-/// attribute is missing (no branch for Branch scope, no segment for Segment scope) sees nothing.
+/// Data scope check for a single loaded record (lists filter in SQL with the same rules). Fails closed: an inactive
+/// user, scope <see cref="DataScope.None"/>, or Branch scope without a branch sees nothing.
 /// </summary>
 public sealed class DataScopeEvaluator : IDataScopeEvaluator
 {
@@ -26,10 +26,7 @@ public sealed class DataScopeEvaluator : IDataScopeEvaluator
 
         return user.DataScope switch
         {
-            DataScope.Own => resource.OwnerUserId == user.UserId,
-            DataScope.Assigned => resource.AssignedUserId == user.UserId,
             DataScope.Branch => user.BranchId is { } branch && resource.BranchId == branch,
-            DataScope.Segment => user.Segment is { } segment && resource.Segment == segment,
             DataScope.Organization => true,
             _ => false,
         };

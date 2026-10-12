@@ -89,50 +89,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
-            modelBuilder.Entity("CreditFlow.Domain.AuthorityLimits.AuthorityLimit", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AuthorityLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Currency")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("LimitType")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<decimal?>("MaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("MaxRateGapPp")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("MinCustomerRoaePct")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId", "LimitType", "AuthorityLevel", "Currency")
-                        .IsUnique();
-
-                    b.ToTable("AuthorityLimits", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_AuthorityLimits_CreditDecision", "[LimitType] <> 'CreditDecision' OR ([Currency] IS NOT NULL AND [MaxAmount] > 0)");
-                        });
-                });
-
             modelBuilder.Entity("CreditFlow.Domain.Branches.Branch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -169,10 +125,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AuthorityLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<Guid?>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
@@ -199,10 +151,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Segment")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -223,11 +171,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AuthorityLevelRule")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("BranchRule")
                         .IsRequired()
@@ -263,11 +206,13 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("IsAdministrative")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsSystem")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -279,11 +224,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("RequireMfa")
                         .HasColumnType("bit");
-
-                    b.Property<string>("SegmentRule")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -431,10 +371,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.UserDirectoryRow", b =>
                 {
-                    b.Property<string>("AuthorityLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<Guid?>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
@@ -492,10 +428,6 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("RoleRequiresMfa")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Segment")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTimeOffset?>("TemporaryPasswordExpiresAt")
                         .HasColumnType("datetimeoffset");

@@ -1085,7 +1085,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   variable `CREDITFLOW_DESIGN_CONNECTION`, docker container / volume `creditflow-sqlserver` / `creditflow-sqldata`.
   Kept: `UserSecretsId` (local secrets survive), migration ids, `docs/`, and the Phase 1 sections of this file
   (history, old names on purpose).
-- [ ] **P2** Roles & permissions: remove LAMS-only concepts, `RoleKind`, new catalog/matrix/dashboards, seed unit
+- [x] **P2** Roles & permissions: remove LAMS-only concepts, `RoleKind`, new catalog/matrix/dashboards, seed unit
   `0004`, migration, dev personas for 7 roles (≥2 UW, ≥2 Senior UW, 3 committee, 1 Compliance, 1 Auditor,
   Operators in 2 branches); ported tests.
 - [ ] **P3** Repository interfaces to Domain, query interfaces in Application, architecture tests.
@@ -1133,4 +1133,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 |---|---|---|
 | A — Plan | approved 2026-10-12 | `395c343` |
 | P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | `5c99de0` |
-| P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | (this commit) |
+| P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | `efa0d9f` |
+| P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | (this commit) |

@@ -54,15 +54,6 @@
             @foreach (var user in page.Items)
             {
                 var detailsUrl = Url.Action("Details", new { id = user.Id.Value });
-                var attributes = new List<string>();
-                if (user.AuthorityLevel is { } level)
-                {
-                    attributes.Add(T[$"AuthorityLevel.{level}"].Value);
-                }
-                if (user.Segment is { } segment)
-                {
-                    attributes.Add(T[$"Segment.{segment}"].Value);
-                }
                 <tr class="@(user.IsActive ? null : "inactive")" data-user="@user.UserName">
                     <td>
                         <div class="person">
@@ -79,13 +70,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>
-                        <div>@user.RoleName</div>
-                        @if (attributes.Count > 0)
-                        {
-                            <div class="person-sub">@string.Join(" · ", attributes)</div>
-                        }
-                    </td>
+                    <td>@user.RoleName</td>
                     <td>@(user.BranchName ?? DisplayFormat.Empty)</td>
                     <td><partial name="_UserState" model="(user.IsActive, user.IsLockedOut)" /></td>
                     <td>

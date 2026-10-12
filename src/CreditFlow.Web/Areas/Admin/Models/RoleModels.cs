@@ -16,7 +16,7 @@ public sealed record RoleIndexViewModel(IReadOnlyList<RoleDetails> Roles, IReadO
         ArgumentNullException.ThrowIfNull(roles);
 
         // Business roles first, the administrator last (as in the sidebar: workspace, then administration).
-        var ordered = roles.OrderBy(r => r.Profile.IsAdministrative).ThenBy(r => r.Profile.Dashboard).ToList();
+        var ordered = roles.OrderBy(r => r.Profile.Kind).ThenBy(r => r.Profile.Dashboard).ToList();
         var matrix = PermissionCatalog.All
             .GroupBy(p => p.Module)
             .OrderBy(g => g.Key.Order)

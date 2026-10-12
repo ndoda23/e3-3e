@@ -1,6 +1,6 @@
 namespace CreditFlow.Domain.Roles;
 
-/// <summary>Whether a user attribute (branch, segment, authority level) is required, optional or not allowed for a role.</summary>
+/// <summary>Whether a user attribute (the branch) is required, optional or not allowed for a role.</summary>
 public enum AttributeRule
 {
     /// <summary>The attribute is cleared for users of the role.</summary>

@@ -17,17 +17,16 @@ public sealed class UserAdministrationServiceTests
     // ----- Create -----
 
     [Fact]
-    public async Task Creating_a_senior_underwriter_in_Vake_issues_a_temporary_password()
+    public async Task Creating_an_operator_in_Vake_issues_a_temporary_password()
     {
-        var result = await _fixture.Service.CreateAsync(NewUnderwriter(), Ct);
+        var result = await _fixture.Service.CreateAsync(NewOperator(), Ct);
 
         Assert.True(result.IsSuccess, result.Error?.Description);
         var issued = result.Value;
 
         var member = _fixture.Staff.Members[issued.UserId];
-        Assert.Equal(TestReferenceData.RoleId(RoleCodes.Underwriter), member.RoleId);
+        Assert.Equal(TestReferenceData.RoleId(RoleCodes.Operator), member.RoleId);
         Assert.Equal(_fixture.Vake, member.BranchId);
-        Assert.Equal(AuthorityLevel.Senior, member.AuthorityLevel);
 
         var account = Assert.Single(_fixture.Identity.CreatedAccounts);
         Assert.Equal(issued.UserId, account.Id);
@@ -39,22 +38,18 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Account_and_staff_member_are_created_in_one_transaction()
     {
-        await _fixture.Service.CreateAsync(NewUnderwriter(), Ct);
+        await _fixture.Service.CreateAsync(NewOperator(), Ct);
 
         Assert.Equal(1, _fixture.UnitOfWork.Commits);
         Assert.False(_fixture.Identity.WroteOutsideTransaction);
     }
 
     [Fact]
-    public async Task Create_reports_every_missing_attribute_of_the_role_at_once()
+    public async Task Create_reports_the_branch_the_role_requires()
     {
-        var result = await _fixture.Service.CreateAsync(
-            NewUnderwriter() with { BranchId = null, AuthorityLevel = null }, Ct);
+        var result = await _fixture.Service.CreateAsync(NewOperator() with { BranchId = null }, Ct);
 
-        Assert.Equal(Error.ValidationFailedCode, result.Error?.Code);
-        Assert.Equal(
-            [UserErrors.BranchRequired.Code, UserErrors.AuthorityLevelRequired.Code],
-            result.Error!.Details.Select(d => d.Code));
+        Assert.Equal(UserErrors.BranchRequired, result.Error);
         Assert.Empty(_fixture.Identity.CreatedAccounts);
     }
 
@@ -62,17 +57,17 @@ public sealed class UserAdministrationServiceTests
     public async Task Create_reports_field_errors_and_role_attribute_errors_together()
     {
         var result = await _fixture.Service.CreateAsync(
-            NewUnderwriter() with { UserName = "x", BranchId = null, AuthorityLevel = null }, Ct);
+            NewOperator() with { UserName = "x", BranchId = null }, Ct);
 
         Assert.Equal(
-            [UserFieldRules.InvalidUserNameCode, UserErrors.BranchRequired.Code, UserErrors.AuthorityLevelRequired.Code],
+            [UserFieldRules.InvalidUserNameCode, UserErrors.BranchRequired.Code],
             result.Error!.Details.Select(d => d.Code));
     }
 
     [Fact]
     public async Task Create_rejects_an_inactive_branch()
     {
-        var result = await _fixture.Service.CreateAsync(NewUnderwriter() with { BranchId = _fixture.ClosedBranch }, Ct);
+        var result = await _fixture.Service.CreateAsync(NewOperator() with { BranchId = _fixture.ClosedBranch }, Ct);
 
         Assert.Equal(BranchErrors.Inactive, result.Error);
     }
@@ -81,7 +76,7 @@ public sealed class UserAdministrationServiceTests
     public async Task Create_rejects_a_taken_user_name_or_email()
     {
         var result = await _fixture.Service.CreateAsync(
-            NewUnderwriter() with { UserName = "ADMIN1", Email = "admin1@pcb.ge" }, Ct);
+            NewOperator() with { UserName = "ADMIN1", Email = "admin1@pcb.ge" }, Ct);
 
         Assert.Equal(
             [UserAdministrationErrors.UserNameTaken.Code, UserAdministrationErrors.EmailTaken.Code],
@@ -89,15 +84,14 @@ public sealed class UserAdministrationServiceTests
     }
 
     [Fact]
-    public async Task Creating_a_system_administrator_clears_business_attributes()
+    public async Task Creating_an_admin_clears_the_branch()
     {
         var result = await _fixture.Service.CreateAsync(
-            NewUnderwriter() with { RoleId = TestReferenceData.RoleId(RoleCodes.SystemAdministrator), UserName = "admin2", Email = "admin2@pcb.ge" },
+            NewOperator() with { RoleId = TestReferenceData.RoleId(RoleCodes.Admin), UserName = "admin2", Email = "admin2@pcb.ge" },
             Ct);
 
         var member = _fixture.Staff.Members[result.Value.UserId];
         Assert.Null(member.BranchId);
-        Assert.Null(member.AuthorityLevel);
     }
 
     // ----- Guard rails -----
@@ -105,7 +99,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Administrator_cannot_deactivate_themselves()
     {
-        _fixture.AddMember(TestReferenceData.Staff(RoleCodes.SystemAdministrator), "admin2");
+        _fixture.AddMember(TestReferenceData.Staff(RoleCodes.Admin), "admin2");
 
         var result = await _fixture.Service.DeactivateAsync(_fixture.Admin.Id, Ct);
 
@@ -126,23 +120,23 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Administrator_cannot_demote_themselves()
     {
-        _fixture.AddMember(TestReferenceData.Staff(RoleCodes.SystemAdministrator), "admin2");
+        _fixture.AddMember(TestReferenceData.Staff(RoleCodes.Admin), "admin2");
         var command = _fixture.UnchangedUpdate(_fixture.Admin) with
         {
-            RoleId = TestReferenceData.RoleId(RoleCodes.Director),
+            RoleId = TestReferenceData.RoleId(RoleCodes.Auditor),
         };
 
         var result = await _fixture.Service.UpdateAsync(command, Ct);
 
         Assert.Equal(UserErrors.CannotDemoteSelf, result.Error);
-        Assert.Equal(TestReferenceData.RoleId(RoleCodes.SystemAdministrator), _fixture.Admin.RoleId);
+        Assert.Equal(TestReferenceData.RoleId(RoleCodes.Admin), _fixture.Admin.RoleId);
     }
 
     [Fact]
     public async Task Another_administrator_can_be_demoted_while_one_remains()
     {
-        var second = _fixture.AddMember(TestReferenceData.Staff(RoleCodes.SystemAdministrator), "admin2");
-        var command = _fixture.UnchangedUpdate(second) with { RoleId = TestReferenceData.RoleId(RoleCodes.Director) };
+        var second = _fixture.AddMember(TestReferenceData.Staff(RoleCodes.Admin), "admin2");
+        var command = _fixture.UnchangedUpdate(second) with { RoleId = TestReferenceData.RoleId(RoleCodes.Auditor) };
 
         var result = await _fixture.Service.UpdateAsync(command, Ct);
 
@@ -152,7 +146,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Actions_need_a_signed_in_administrator()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
         _fixture.CurrentUser.UserId = null;
 
         Assert.Equal(CommonErrors.NotAuthenticated, (await _fixture.Service.DeactivateAsync(member.Id, Ct)).Error);
@@ -173,7 +167,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Reset_password_issues_a_new_temporary_password_and_is_audited()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
 
         var result = await _fixture.Service.ResetPasswordAsync(member.Id, Ct);
 
@@ -188,7 +182,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Force_sign_out_rotates_the_security_stamp_and_is_audited()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
 
         var result = await _fixture.Service.ForceSignOutAsync(member.Id, Ct);
 
@@ -200,7 +194,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Unlock_and_require_mfa_are_audited()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
 
         await _fixture.Service.UnlockAsync(member.Id, Ct);
         await _fixture.Service.SetRequireMfaAsync(member.Id, true, Ct);
@@ -215,7 +209,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Reset_password_and_mfa_requirement_refresh_the_cached_account_state_after_commit()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
 
         await _fixture.Service.ResetPasswordAsync(member.Id, Ct);
         await _fixture.Service.SetRequireMfaAsync(member.Id, true, Ct);
@@ -227,7 +221,7 @@ public sealed class UserAdministrationServiceTests
     [Fact]
     public async Task Inactive_user_cannot_be_marked_available()
     {
-        var member = _fixture.AddSeniorUnderwriter();
+        var member = _fixture.AddOperator();
         member.Deactivate();
 
         var result = await _fixture.Service.SetAvailabilityAsync(member.Id, true, Ct);
@@ -235,13 +229,12 @@ public sealed class UserAdministrationServiceTests
         Assert.Equal(UserErrors.InactiveCannotBeAvailable, result.Error);
     }
 
-    private CreateUserCommand NewUnderwriter() => new()
+    private CreateUserCommand NewOperator() => new()
     {
-        UserName = "tamta.tatishvili",
-        Email = "tamta.t@pcb.ge",
-        FullName = "Tamta Tatishvili",
-        RoleId = TestReferenceData.RoleId(RoleCodes.Underwriter),
+        UserName = "salome.janelidze",
+        Email = "salome.j@pcb.ge",
+        FullName = "Salome Janelidze",
+        RoleId = TestReferenceData.RoleId(RoleCodes.Operator),
         BranchId = _fixture.Vake,
-        AuthorityLevel = AuthorityLevel.Senior,
     };
 }

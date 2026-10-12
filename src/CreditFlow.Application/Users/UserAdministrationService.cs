@@ -53,7 +53,7 @@ public sealed class UserAdministrationService(
         // Every field error at once: the role-driven attributes are checked even when other fields are invalid.
         var errors = await createValidator.ValidateToErrorsAsync(command, cancellationToken);
         var role = await CheckAssignmentAsync(
-            errors, command.RoleId, command.BranchId, command.Segment, command.AuthorityLevel, null, cancellationToken);
+            errors, command.RoleId, command.BranchId, null, cancellationToken);
         if (errors.Count == 0)
         {
             await CheckUniquenessAsync(errors, command.UserName, command.Email, null, cancellationToken);
@@ -65,8 +65,7 @@ public sealed class UserAdministrationService(
         }
 
         var created = StaffMember.Create(
-            UserId.New(), command.FullName, role!, command.BranchId, command.Segment, command.AuthorityLevel,
-            command.Capacity);
+            UserId.New(), command.FullName, role!, command.BranchId, command.Capacity);
         if (created.IsFailure)
         {
             return Result.Failure<IssuedTemporaryPassword>(created.Error!);
@@ -119,8 +118,7 @@ public sealed class UserAdministrationService(
 
         var errors = await updateValidator.ValidateToErrorsAsync(command, cancellationToken);
         var newRole = await CheckAssignmentAsync(
-            errors, command.RoleId, command.BranchId, command.Segment, command.AuthorityLevel, member.BranchId,
-            cancellationToken);
+            errors, command.RoleId, command.BranchId, member.BranchId, cancellationToken);
         if (errors.Count == 0)
         {
             await CheckUniquenessAsync(errors, command.UserName, command.Email, member.Id, cancellationToken);
@@ -155,7 +153,7 @@ public sealed class UserAdministrationService(
 
         if (edit.IsSuccess)
         {
-            edit = member.AssignRole(newRole, command.BranchId, command.Segment, command.AuthorityLevel);
+            edit = member.AssignRole(newRole, command.BranchId);
         }
 
         if (edit.IsFailure)
@@ -339,8 +337,6 @@ public sealed class UserAdministrationService(
         List<Error> errors,
         RoleId roleId,
         BranchId? branchId,
-        Segment? segment,
-        AuthorityLevel? authorityLevel,
         BranchId? currentBranchId,
         CancellationToken cancellationToken)
     {
@@ -356,7 +352,7 @@ public sealed class UserAdministrationService(
             return null;
         }
 
-        errors.AddRange(StaffMember.ValidateAssignment(role, branchId, segment, authorityLevel));
+        errors.AddRange(StaffMember.ValidateAssignment(role, branchId));
 
         // A new branch must exist and be active; keeping a branch that was deactivated later is allowed.
         if (branchId is { } id && role.BranchRule != AttributeRule.NotAllowed && id != currentBranchId)

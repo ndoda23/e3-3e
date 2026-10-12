@@ -36,7 +36,7 @@ internal sealed partial class AccountSeeder(
         }
 
         await CreateAsync(
-            admin.UserName, admin.Email!, admin.FullName, RoleCodes.SystemAdministrator, null, null, null,
+            admin.UserName, admin.Email!, admin.FullName, RoleCodes.Admin, null,
             admin.Password!, mustChangePassword: true, cancellationToken);
         LogAdministratorCreated(admin.UserName);
     }
@@ -58,8 +58,8 @@ internal sealed partial class AccountSeeder(
             }
 
             await CreateAsync(
-                persona.UserName, persona.Email, persona.FullName, persona.RoleCode, branchId, persona.Segment,
-                persona.AuthorityLevel, password, mustChangePassword: false, cancellationToken);
+                persona.UserName, persona.Email, persona.FullName, persona.RoleCode, branchId, password,
+                mustChangePassword: false, cancellationToken);
         }
     }
 
@@ -69,8 +69,6 @@ internal sealed partial class AccountSeeder(
         string fullName,
         string roleCode,
         BranchId? branchId,
-        Segment? segment,
-        AuthorityLevel? authorityLevel,
         string password,
         bool mustChangePassword,
         CancellationToken cancellationToken)
@@ -96,7 +94,7 @@ internal sealed partial class AccountSeeder(
                 $"Seeding account '{userName}' failed: {string.Join("; ", created.Errors.Select(e => e.Description))}");
         }
 
-        var staff = StaffMember.Create(new UserId(user.Id), fullName, role.ToProfile(), branchId, segment, authorityLevel);
+        var staff = StaffMember.Create(new UserId(user.Id), fullName, role.ToProfile(), branchId);
         if (staff.IsFailure)
         {
             throw new InvalidOperationException($"Seeding staff member '{userName}' failed: {staff.Error!.Description}");
