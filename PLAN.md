@@ -1036,6 +1036,18 @@ threshold and a human reason ("PTI 52.3% > 45% for income 1,000–3,000 GEL").
 26. **Notification recipients** — status changes → the creating operator and the client (SMS/email rows);
     escalation → active Senior Underwriters; offer expiry → operator + client.
 
+Decisions taken during implementation:
+
+27. **Product amount limits are in GEL** — a USD/EUR loan is checked by its GEL equivalent at the submission-date
+    rate (same convention as the approval thresholds).
+28. **Fees** — upfront fee as % of the principal (deducted at disbursement, counts in the EIR); monthly service fee as %
+    of the original principal per month (currency-neutral, so one product version serves GEL, USD and EUR).
+29. **Regulatory LTV ceilings are code** (mortgage 80 %, auto 70 %); a product version may be stricter, never looser.
+30. **Optimistic concurrency** — `rowversion` is an EF Core shadow property on each aggregate root (mapped in P8), so
+    the domain model stays free of persistence details.
+31. **Bank time** — business dates (age, document validity, holidays, working days, contract year) are dates in
+    Asia/Tbilisi (UTC+4); instants are stored in UTC.
+
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
   cancel rules, four-eyes; each scoring rule at its boundaries (17y364d / 18, 75 at maturity, PTI band edges and FX
@@ -1090,7 +1102,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   Operators in 2 branches); ported tests.
 - [x] **P3** Repository interfaces to Domain, query interfaces in Application, architecture tests.
 - [x] **P4** Logging to SQL + masking (logs and audit) + tests.
-- [ ] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
+- [x] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
   `LoanProduct` (versions) + unit tests.
 - [ ] **P6** `LoanApplication` aggregate and state machine + transition tests.
 - [ ] **P7** Scoring engine + rules, approval authority, schedule/EIR/early-repayment calculators + unit tests.
@@ -1118,6 +1130,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [ ] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
 - [ ] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
   mocks, accounts, ambiguities, licences); final verification.
+  Also replace the "(this commit)" placeholders in the Phase 1 history table (§0 Progress) with the real commit hashes.
 
 **Cut first if time runs short** (in this order): FX CSV import (manual edit stays) → scoring-rule-set editing UI
 (versions seeded + read-only view) → holiday admin UI (seeded only) → Excel export (CSV stays) → the rename (UI title
@@ -1137,16 +1150,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | `9f2042a` |
 | P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | `beb50a6` |
 | P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | `3e4dc87` |
+| P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | (this commit) |
 
-## Resume notes (2026-10-12)
-- **Current step:** P5 (domain primitives: `Money`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
-  `LoanProduct` with versions; unit tests). Not started; no files mid-edit; the working tree is clean apart from the
-  untracked `lams.zip` (the user's, never committed).
-- **Done:** P0–P4, all committed and green (557 tests, 0 warnings).
-- **Left:** P5–P17 as listed in §P.7 (2-day plan, UI pages in P10/P11, cut list unchanged).
-- **Integration tests:** each test gets its own database; the per-test connection string sets `ConnectRetryCount = 0`
-  (SqlClient 6.1 otherwise waits 10 s for the not-yet-created database). Full run ≈ 4 minutes.
-- **Local set-up after P1/P2:** connection string key `ConnectionStrings:CreditFlow`, database `CreditFlow`, docker
-  container/volume `creditflow-sqlserver` / `creditflow-sqldata`; a fresh database is recommended (new roles).
-- **Open questions for the user:** none.
-- Remove this section in the next step's commit.
