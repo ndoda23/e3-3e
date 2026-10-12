@@ -356,7 +356,7 @@ public sealed class LoanApplication : IHasDomainEvents
             return Result.Failure(ApplicationErrors.ReasonRequired);
         }
 
-        _decisions.Add(ApplicationDecision.Create(clear ? DecisionKind.ComplianceClear : DecisionKind.ComplianceReject, by, at, why));
+        AddDecision(ApplicationDecision.Create(clear ? DecisionKind.ComplianceClear : DecisionKind.ComplianceReject, by, at, why));
         return MoveTo(clear ? ApplicationStatus.DocumentsPending : ApplicationStatus.Rejected, at, by, why);
     }
 
@@ -395,6 +395,7 @@ public sealed class LoanApplication : IHasDomainEvents
         }
 
         _scoringRuns.Add(run);
+        _events.Add(new ApplicationScored(Id, run, at));
         Rate = rate;
         AmountGel = rate.ToGel(Terms.Amount).Amount;
         Tier = tier;
@@ -453,7 +454,7 @@ public sealed class LoanApplication : IHasDomainEvents
             requested.Add(ApplicationCondition.Create(condition.Type, text));
         }
 
-        _decisions.Add(ApplicationDecision.Create(DecisionKind.Approve, by, at, null, why));
+        AddDecision(ApplicationDecision.Create(DecisionKind.Approve, by, at, null, why));
         return CompleteApproval(requested, by, at, why);
     }
 
@@ -470,7 +471,7 @@ public sealed class LoanApplication : IHasDomainEvents
             return Result.Failure(ApplicationErrors.ReasonRequired);
         }
 
-        _decisions.Add(ApplicationDecision.Create(DecisionKind.Reject, by, at, why));
+        AddDecision(ApplicationDecision.Create(DecisionKind.Reject, by, at, why));
         return MoveTo(ApplicationStatus.Rejected, at, by, why);
     }
 
@@ -496,7 +497,7 @@ public sealed class LoanApplication : IHasDomainEvents
         }
 
         var why = NormalizeReason(reason);
-        _decisions.Add(ApplicationDecision.Create(DecisionKind.CounterOffer, by, at, why));
+        AddDecision(ApplicationDecision.Create(DecisionKind.CounterOffer, by, at, why));
         ProposedTerms = terms;
         OfferExpiresAt = at.AddDays(LendingPolicy.OfferValidityDays);
         return MoveTo(ApplicationStatus.CounterOffered, at, by, why);
@@ -573,7 +574,7 @@ public sealed class LoanApplication : IHasDomainEvents
         }
 
         var kind = approve ? DecisionKind.VoteApprove : DecisionKind.VoteReject;
-        _decisions.Add(ApplicationDecision.Create(kind, by, at, why));
+        AddDecision(ApplicationDecision.Create(kind, by, at, why));
 
         if (_decisions.Count(d => d.Kind == kind) < requiredVotes)
         {
@@ -851,6 +852,13 @@ public sealed class LoanApplication : IHasDomainEvents
                 yield return ApplicationErrors.IdentityDocumentInvalid(client.FullName);
             }
         }
+    }
+
+    private void AddDecision(ApplicationDecision decision)
+    {
+        _decisions.Add(decision);
+        _events.Add(new ApplicationDecisionRecorded(
+            Id, decision.Kind, decision.DecidedBy, decision.Reason, decision.OverrideReason, decision.DecidedAt));
     }
 
     private Result MoveTo(ApplicationStatus to, DateTimeOffset at, UserId? by, string? reason)

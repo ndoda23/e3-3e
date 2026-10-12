@@ -27,4 +27,11 @@ public static class AuditActions
     public const string UserDeactivated = "UserDeactivated";
     public const string ForcedSignOut = "ForcedSignOut";
     public const string RolePermissionsChanged = "RolePermissionsChanged";
+
+    // Loan applications (written from domain events in the same transaction)
+    public const string ApplicationStatusChanged = "Application.StatusChanged";
+    public const string ApplicationScored = "Application.Scored";
+    public const string ApplicationDecision = "Application.Decision";
+    public const string ApplicationOverride = "Application.Override";
+    public const string ApplicationEscalated = "Application.Escalated";
 }

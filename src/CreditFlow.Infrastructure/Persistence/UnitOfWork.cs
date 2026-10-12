@@ -1,11 +1,22 @@
 using CreditFlow.Application.Common;
 using CreditFlow.Domain.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.Infrastructure.Persistence;
 
 internal sealed class UnitOfWork(CreditFlowDbContext db) : IUnitOfWork
 {
-    public Task SaveChangesAsync(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConcurrencyConflictException("The data was changed by someone else.", exception);
+        }
+    }
 
     public async Task<TResult> ExecuteInTransactionAsync<TResult>(
         Func<CancellationToken, Task<TResult>> work, CancellationToken cancellationToken)

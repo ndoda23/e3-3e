@@ -127,7 +127,7 @@ internal sealed class NotifyStatusChangeHandler(
             return;
         }
 
-        var reference = ShortReference(application.Id);
+        var reference = application.Id.Reference;
         var subject = $"Application {reference}: {domainEvent.To}";
 
         if (domainEvent.By != application.CreatedBy
@@ -145,6 +145,4 @@ internal sealed class NotifyStatusChangeHandler(
             await sender.SendAsync(new Notification(NotificationChannel.Sms, borrower.Phone, subject, body, application.Id), cancellationToken);
         }
     }
-
-    internal static string ShortReference(LoanApplicationId id) => id.Value.ToString("N")[..8].ToUpperInvariant();
 }

@@ -27,6 +27,27 @@ public sealed class TestCurrentUser : ICurrentUser
 }
 
 /// <summary>
+/// The current user of one DI scope: the user set by <see cref="InfrastructureHost.InScopeAsAsync{T}"/>, otherwise
+/// the host-wide <see cref="TestCurrentUser"/>. Parallel scopes can act as different users.
+/// </summary>
+public sealed class ScopedTestCurrentUser(TestCurrentUser hostUser) : ICurrentUser
+{
+    private UserId? _user;
+
+    public UserId? UserId => _user ?? hostUser.UserId;
+
+    public string? UserName => _user is null ? hostUser.UserName : null;
+
+    public string? IpAddress => hostUser.IpAddress;
+
+    public string? UserAgent => hostUser.UserAgent;
+
+    public string? CorrelationId => hostUser.CorrelationId;
+
+    internal void ActAs(UserId user) => _user = user;
+}
+
+/// <summary>
 /// The Application and Infrastructure layers wired exactly as in production, against a fresh database:
 /// migrated and seeded on <see cref="StartAsync"/>.
 /// </summary>
@@ -83,7 +104,8 @@ public sealed class InfrastructureHost : IAsyncDisposable
         services.AddInfrastructure(configuration);
 
         services.AddSingleton<TestCurrentUser>();
-        services.Replace(ServiceDescriptor.Scoped<ICurrentUser>(sp => sp.GetRequiredService<TestCurrentUser>()));
+        services.AddScoped<ScopedTestCurrentUser>();
+        services.Replace(ServiceDescriptor.Scoped<ICurrentUser>(sp => sp.GetRequiredService<ScopedTestCurrentUser>()));
 
         var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         await provider.InitializeDatabaseAsync(TestContext.Current.CancellationToken);
@@ -102,6 +124,14 @@ public sealed class InfrastructureHost : IAsyncDisposable
         {
             await action(sp);
             return true;
+        });
+
+    /// <summary>Runs <paramref name="action"/> in a new DI scope signed in as <paramref name="user"/>.</summary>
+    public Task<T> InScopeAsAsync<T>(UserId user, Func<IServiceProvider, Task<T>> action) =>
+        InScopeAsync(sp =>
+        {
+            sp.GetRequiredService<ScopedTestCurrentUser>().ActAs(user);
+            return action(sp);
         });
 
     /// <summary>Reads with a fresh context (no tracked state).</summary>

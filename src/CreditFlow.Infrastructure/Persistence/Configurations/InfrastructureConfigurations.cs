@@ -72,3 +72,14 @@ internal sealed class NotificationRecordConfiguration : IEntityTypeConfiguration
         builder.HasIndex(n => new { n.ApplicationId, n.CreatedAt });
     }
 }
+
+internal sealed class DocumentContentRecordConfiguration : IEntityTypeConfiguration<Queries.DocumentContentRecord>
+{
+    public void Configure(EntityTypeBuilder<Queries.DocumentContentRecord> builder)
+    {
+        builder.ToTable("DocumentContents");
+        builder.HasKey(d => d.Id);
+        builder.Property(d => d.Id).ValueGeneratedNever();
+        builder.HasOne<ApplicationDocument>().WithOne().HasForeignKey<Queries.DocumentContentRecord>(d => d.Id).OnDelete(DeleteBehavior.Cascade);
+    }
+}

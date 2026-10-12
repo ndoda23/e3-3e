@@ -1,6 +1,12 @@
 using System.Text.Json;
 using CreditFlow.Application.Common;
+using CreditFlow.Domain.Approval;
 using CreditFlow.Domain.Auditing;
+using CreditFlow.Domain.Calendar;
+using CreditFlow.Domain.Clients;
+using CreditFlow.Domain.Fx;
+using CreditFlow.Domain.Products;
+using CreditFlow.Domain.Scoring;
 using CreditFlow.Domain.Branches;
 using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Users;
@@ -26,6 +32,13 @@ public sealed class AuditTrailInterceptor(ICurrentUser currentUser, TimeProvider
         [typeof(StaffMember)] = "User",
         [typeof(ApplicationRole)] = "Role",
         [typeof(Branch)] = "Branch",
+        [typeof(Client)] = "Client",
+        [typeof(LoanProduct)] = "LoanProduct",
+        [typeof(LoanProductVersion)] = "LoanProductVersion",
+        [typeof(ScoringRuleSet)] = "ScoringRuleSet",
+        [typeof(ApprovalThresholds)] = "ApprovalThresholds",
+        [typeof(FxRate)] = "FxRate",
+        [typeof(Holiday)] = "Holiday",
     };
 
     /// <summary>Properties never written to the log.</summary>

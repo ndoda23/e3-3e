@@ -10,6 +10,9 @@ public readonly record struct LoanApplicationId(Guid Value)
 {
     public static LoanApplicationId New() => new(IdGenerator.NewGuid());
 
+    /// <summary>A short reference for people (the first 8 hex digits).</summary>
+    public string Reference => Value.ToString("N")[..8].ToUpperInvariant();
+
     public override string ToString() => Value.ToString();
 }
 
@@ -324,3 +327,11 @@ public sealed record ApplicationStatusChanged(
 
 /// <summary>The application stayed too long in Underwriting and now needs a Senior Underwriter.</summary>
 public sealed record ApplicationEscalated(LoanApplicationId ApplicationId, DateTimeOffset OccurredAt) : IDomainEvent;
+
+/// <summary>A scoring run completed (audited with every rule result).</summary>
+public sealed record ApplicationScored(LoanApplicationId ApplicationId, Scoring.ScoringRun Run, DateTimeOffset OccurredAt) : IDomainEvent;
+
+/// <summary>A person took a decision (audited: approvals, rejections, overrides, counter-offers, votes, compliance).</summary>
+public sealed record ApplicationDecisionRecorded(
+    LoanApplicationId ApplicationId, DecisionKind Kind, UserId DecidedBy, string? Reason, string? OverrideReason,
+    DateTimeOffset OccurredAt) : IDomainEvent;

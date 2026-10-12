@@ -1270,6 +1270,20 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("ProcessedMessages", (string)null);
                 });
 
+            modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.Queries.DocumentContentRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentContents", (string)null);
+                });
+
             modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.Seeding.SeedHistoryEntry", b =>
                 {
                     b.Property<string>("SeedId")
@@ -1628,6 +1642,15 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.HasOne("CreditFlow.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.Queries.DocumentContentRecord", b =>
+                {
+                    b.HasOne("CreditFlow.Domain.Applications.ApplicationDocument", null)
+                        .WithOne()
+                        .HasForeignKey("CreditFlow.Infrastructure.Persistence.Queries.DocumentContentRecord", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

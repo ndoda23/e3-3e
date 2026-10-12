@@ -52,6 +52,8 @@ public static class OutboxEventTypes
     {
         ["ApplicationStatusChanged"] = typeof(ApplicationStatusChanged),
         ["ApplicationEscalated"] = typeof(ApplicationEscalated),
+        ["ApplicationScored"] = typeof(ApplicationScored),
+        ["ApplicationDecisionRecorded"] = typeof(ApplicationDecisionRecorded),
     };
 
     private static readonly Dictionary<Type, string> ByType = ByKey.ToDictionary(p => p.Value, p => p.Key);

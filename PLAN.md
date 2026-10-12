@@ -1179,6 +1179,7 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P7 — Scoring, approval thresholds, schedule, EIR, early repayment | done; build 0 warnings, 1,102 tests green (Domain 630, Application 328, Architecture 13, Integration 131) | `621054e` |
 | P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | `ba77864` |
 | P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | `be84877` |
+| P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | (this commit) |
 
 
 ## Resume notes (2026-10-12, evening)

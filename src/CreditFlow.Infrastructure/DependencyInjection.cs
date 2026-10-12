@@ -1,6 +1,8 @@
+using CreditFlow.Application.Applications;
 using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
+using CreditFlow.Application.Clients;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
@@ -95,6 +97,7 @@ public static class DependencyInjection
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<DomainEventAuditInterceptor>();
         services.AddSingleton<OutboxInterceptor>();
         services.AddScoped<ConsistencyInterceptor>();
         services.AddScoped<AuditTrailInterceptor>();
@@ -110,6 +113,7 @@ public static class DependencyInjection
 
             options.UseSqlServer(connectionString);
             options.AddInterceptors(
+                provider.GetRequiredService<DomainEventAuditInterceptor>(),
                 provider.GetRequiredService<OutboxInterceptor>(),
                 provider.GetRequiredService<ConsistencyInterceptor>(),
                 provider.GetRequiredService<AuditTrailInterceptor>());
@@ -129,6 +133,10 @@ public static class DependencyInjection
         services.AddScoped<IApprovalThresholdsRepository, ApprovalThresholdsRepository>();
         services.AddScoped<IFxRateRepository, FxRateRepository>();
         services.AddScoped<IHolidayRepository, HolidayRepository>();
+        services.AddScoped<IApplicationQueries, ApplicationQueries>();
+        services.AddScoped<IClientQueries, ClientQueries>();
+        services.AddScoped<IExposureQueries, ExposureQueries>();
+        services.AddScoped<IDocumentStore, DocumentStore>();
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IAuditLogQueries, AuditLogQueries>();
 

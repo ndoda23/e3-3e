@@ -286,6 +286,14 @@
   <data name="AuditAction.UserDeactivated" xml:space="preserve"><value>User deactivated</value></data>
   <data name="AuditAction.ForcedSignOut" xml:space="preserve"><value>Signed out by administrator</value></data>
   <data name="AuditAction.RolePermissionsChanged" xml:space="preserve"><value>Role permissions changed</value></data>
+  <data name="AuditAction.Application.StatusChanged" xml:space="preserve"><value>Application status changed</value></data>
+  <data name="AuditAction.Application.Scored" xml:space="preserve"><value>Application scored</value></data>
+  <data name="AuditAction.Application.Decision" xml:space="preserve"><value>Decision on application</value></data>
+  <data name="AuditAction.Application.Override" xml:space="preserve"><value>Scoring rule overridden</value></data>
+  <data name="AuditAction.Application.Escalated" xml:space="preserve"><value>Application escalated</value></data>
+  <data name="AuditEntity.Application" xml:space="preserve"><value>Application</value></data>
+  <data name="AuditEntity.Client" xml:space="preserve"><value>Client</value></data>
+  <data name="AuditEntity.LoanProduct" xml:space="preserve"><value>Loan product</value></data>
   <data name="Roles.Description" xml:space="preserve"><value>Each user has exactly one role. A role's permissions decide what its users can see and do.</value></data>
   <data name="Roles.Roles" xml:space="preserve"><value>Roles</value></data>
   <data name="Roles.RolesHint" xml:space="preserve"><value>Data scope, dashboard and field rules are fixed per role; permissions and the two-factor requirement are editable.</value></data>
