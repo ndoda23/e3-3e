@@ -948,7 +948,7 @@ notification). Escalation is a flag on the application (`EscalatedAt`), not a st
   filtered on unprocessed; reports `ApplicationStatusHistory (ToStatus, ChangedAt)`, `Loans (ProductId, Status)`.
 
 ### P.3.4 Scoring rules (version 1, seeded; parameters editable as a new version)
-`AGE_MIN` (≥18 at application, hard), `AGE_MAX_AT_MATURITY` (≤75 at last installment, hard), `BUREAU_DPD30_12M`
+`BUREAU_DPD30_12M`
 (hard), `PTI` (bands, FX stress, **overridable**), `LTV` (per product type, hard), `VALUATION_AGE` (≤6 months, hard),
 `FX_INCOME_CURRENCY` (below threshold, hard), `EXPOSURE_LIMIT` (hard), `PRODUCT_LIMITS` (hard). The DB stores which
 rules are active, their parameters, severity and version; the logic of each rule code is code (`IScoringRule`), so a
@@ -1045,8 +1045,13 @@ Decisions taken during implementation:
 29. **Regulatory LTV ceilings are code** (mortgage 80 %, auto 70 %); a product version may be stricter, never looser.
 30. **Optimistic concurrency** — `rowversion` is an EF Core shadow property on each aggregate root (mapped in P8), so
     the domain model stays free of persistence details.
-31. **Bank time** — business dates (age, document validity, holidays, working days, contract year) are dates in
-    Asia/Tbilisi (UTC+4); instants are stored in UTC.
+. **Age rules are fixed policy, not scoring parameters** — at least 18 at application and at most 75 at the last
+    installment are checked for every party at submission (all errors at once) and again at disbursement; they are not
+    in the scoring rule set (`AGE_MIN` / `AGE_MAX_AT_MATURITY` dropped from §P.3.4).
+33. **Committee approvals** carry the product's standard conditions only; a committee vote is Approve or Reject
+    (reason required), refining #12.
+34. **Counter-offer** keeps currency and schedule type; amount, term and rate must fit the snapshot. Accepting it needs
+    the checklist for the new amount (documents may be added while the offer is pending).
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1104,7 +1109,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [x] **P4** Logging to SQL + masking (logs and audit) + tests.
 - [x] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
   `LoanProduct` (versions) + unit tests.
-- [ ] **P6** `LoanApplication` aggregate and state machine + transition tests.
+- [x] **P6** `LoanApplication` aggregate and state machine + transition tests.
 - [ ] **P7** Scoring engine + rules, approval authority, schedule/EIR/early-repayment calculators + unit tests.
 
 - [ ] **P8** EF mappings, migration, repositories (rowversion), reference seed (products v1/v2, rule set, thresholds,
@@ -1150,5 +1155,6 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | `9f2042a` |
 | P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | `beb50a6` |
 | P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | `3e4dc87` |
-| P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | (this commit) |
+| P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | `a7d9b79` |
+| P6 — LoanApplication aggregate and state machine | done; build 0 warnings, 1,036 tests green (Domain 574 incl. all 361 status pairs, Application 318, Architecture 13, Integration 131) | (this commit) |
 
