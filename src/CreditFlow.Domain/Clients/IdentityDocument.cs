@@ -16,6 +16,12 @@ public sealed record IdentityDocument
 {
     public const int NumberMaxLength = 20;
 
+    /// <summary>For materialization by the persistence layer only.</summary>
+    private IdentityDocument()
+    {
+        Number = string.Empty;
+    }
+
     private IdentityDocument(IdentityDocumentType type, string number, DateOnly issuedOn, DateOnly expiresOn)
     {
         Type = type;

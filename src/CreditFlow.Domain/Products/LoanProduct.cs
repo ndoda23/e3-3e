@@ -60,7 +60,8 @@ public sealed class LoanProduct : IAuditedEntity
 
     public IReadOnlyList<LoanProductVersion> Versions => _versions;
 
-    public LoanProductVersion CurrentVersion => _versions[^1];
+    /// <summary>The newest version (the highest number; independent of load order).</summary>
+    public LoanProductVersion CurrentVersion => _versions.MaxBy(v => v.Number)!;
 
     public DateTimeOffset CreatedAt { get; private set; }
 

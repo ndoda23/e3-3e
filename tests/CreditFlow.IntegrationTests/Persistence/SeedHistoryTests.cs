@@ -29,7 +29,7 @@ public sealed class SeedHistoryTests(SqlServerContainer sql) : DatabaseTestBase(
         Assert.Equal(
             [
                 "0001_initial_roles_permissions", "0002_initial_branches", "0003_initial_authority_limits",
-                "0004_creditflow_roles",
+                "0004_creditflow_roles", "0005_lending_reference_data",
             ],
             applied);
     }

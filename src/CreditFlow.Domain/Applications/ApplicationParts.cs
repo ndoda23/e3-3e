@@ -69,6 +69,11 @@ public enum DecisionKind
 /// <summary>The requested (or counter-offered) loan terms.</summary>
 public sealed record LoanTerms
 {
+    /// <summary>For materialization by the persistence layer only.</summary>
+    private LoanTerms()
+    {
+    }
+
     private LoanTerms(Money amount, int termMonths, decimal annualRate, ScheduleType scheduleType)
     {
         Amount = amount;

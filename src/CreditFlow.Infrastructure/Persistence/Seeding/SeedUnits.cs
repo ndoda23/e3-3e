@@ -1,7 +1,12 @@
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.ReferenceData;
+using CreditFlow.Domain.Approval;
 using CreditFlow.Domain.Branches;
+using CreditFlow.Domain.Calendar;
+using CreditFlow.Domain.Fx;
+using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Roles;
+using CreditFlow.Domain.Scoring;
 using CreditFlow.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +39,7 @@ internal static class SeedUnits
         new InitialBranches(),
         new RetiredUnit("0003_initial_authority_limits"),
         new CreditFlowRoles(),
+        new LendingReferenceData(),
     ];
 
     /// <summary>
@@ -122,6 +128,64 @@ internal static class SeedUnits
                 {
                     member.Deactivate();
                 }
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// The lending reference data: products with versions, scoring rule set version 1, approval thresholds, FX rates
+    /// and holidays. Each part is skipped when it already exists (idempotent).
+    /// </summary>
+    private sealed class LendingReferenceData : ISeedUnit
+    {
+        /// <summary>Fixed publication times, so that seeded data is the same on every database.</summary>
+        private static readonly DateTimeOffset FirstPublished = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        public string Id => "0005_lending_reference_data";
+
+        public async Task ApplyAsync(CreditFlowDbContext db, CancellationToken cancellationToken)
+        {
+            foreach (var seed in LendingSeedCatalog.Products)
+            {
+                if (await db.LoanProducts.AnyAsync(p => p.Code == seed.Code, cancellationToken))
+                {
+                    continue;
+                }
+
+                var product = LoanProduct.Create(seed.Code, seed.Name, seed.Type, seed.Versions[0], FirstPublished).Value;
+                for (var v = 1; v < seed.Versions.Count; v++)
+                {
+                    product.PublishVersion(seed.Versions[v], FirstPublished.AddMonths(8 + v));
+                }
+
+                db.LoanProducts.Add(product);
+            }
+
+            if (!await db.ScoringRuleSets.AnyAsync(cancellationToken))
+            {
+                db.ScoringRuleSets.Add(
+                    ScoringRuleSet.Create(1, ScoringRuleSetSeed.Version1, ScoringEngine.Standard(), FirstPublished).Value);
+            }
+
+            if (!await db.ApprovalThresholds.AnyAsync(cancellationToken))
+            {
+                db.ApprovalThresholds.Add(ApprovalThresholds.Default());
+            }
+
+            foreach (var (currency, date, rate) in LendingSeedCatalog.FxRates)
+            {
+                if (!await db.FxRates.AnyAsync(r => r.Currency == currency && r.EffectiveDate == date, cancellationToken))
+                {
+                    db.FxRates.Add(FxRate.Create(currency, date, rate).Value);
+                }
+            }
+
+            var existingHolidays = await db.Holidays.Select(h => h.Date).ToListAsync(cancellationToken);
+            foreach (var (date, name) in LendingSeedCatalog.Holidays.Where(h => !existingHolidays.Contains(h.Date)))
+            {
+                db.Holidays.Add(Holiday.Create(date, name).Value);
             }
 
             await db.SaveChangesAsync(cancellationToken);
