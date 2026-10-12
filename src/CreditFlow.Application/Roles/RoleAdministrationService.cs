@@ -11,12 +11,13 @@ namespace CreditFlow.Application.Roles;
 /// <summary>Role administration: list roles, edit role permissions (permission matrix) and MFA requirement.</summary>
 public sealed class RoleAdministrationService(
     IRoleRepository roles,
+    IRoleQueries roleQueries,
     IAccessCacheInvalidator accessCache,
     IAuditWriter audit,
     IUnitOfWork unitOfWork)
 {
     public Task<IReadOnlyList<RoleDetails>> ListAsync(CancellationToken cancellationToken) =>
-        roles.ListAsync(cancellationToken);
+        roleQueries.ListAsync(cancellationToken);
 
     public Task<RoleProfile?> GetProfileAsync(RoleId roleId, CancellationToken cancellationToken) =>
         roles.GetProfileAsync(roleId, cancellationToken);
@@ -24,7 +25,7 @@ public sealed class RoleAdministrationService(
     public async Task<Result<RolePermissionEditor>> GetPermissionEditorAsync(
         RoleId roleId, CancellationToken cancellationToken)
     {
-        var role = await roles.GetDetailsAsync(roleId, cancellationToken);
+        var role = await roleQueries.GetDetailsAsync(roleId, cancellationToken);
         if (role is null)
         {
             return Result.Failure<RolePermissionEditor>(RoleAdministrationErrors.NotFound);
@@ -58,7 +59,7 @@ public sealed class RoleAdministrationService(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var role = await roles.GetDetailsAsync(command.RoleId, cancellationToken);
+        var role = await roleQueries.GetDetailsAsync(command.RoleId, cancellationToken);
         if (role is null)
         {
             return Result.Failure(RoleAdministrationErrors.NotFound);
@@ -123,7 +124,7 @@ public sealed class RoleAdministrationService(
 
     public async Task<Result> SetRequireMfaAsync(RoleId roleId, bool requireMfa, CancellationToken cancellationToken)
     {
-        var role = await roles.GetDetailsAsync(roleId, cancellationToken);
+        var role = await roleQueries.GetDetailsAsync(roleId, cancellationToken);
         if (role is null)
         {
             return Result.Failure(RoleAdministrationErrors.NotFound);

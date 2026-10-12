@@ -24,16 +24,10 @@ public sealed record RoleDetails
     public RoleId Id => Profile.Id;
 }
 
-public interface IRoleRepository
+/// <summary>Read side of role administration (roles with their texts, permissions and user counts).</summary>
+public interface IRoleQueries
 {
-    Task<RoleProfile?> GetProfileAsync(RoleId roleId, CancellationToken cancellationToken);
-
     Task<RoleDetails?> GetDetailsAsync(RoleId roleId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<RoleDetails>> ListAsync(CancellationToken cancellationToken);
-
-    /// <summary>Replaces the role's permissions (saved with the unit of work).</summary>
-    Task SetPermissionsAsync(RoleId roleId, PermissionSet permissions, CancellationToken cancellationToken);
-
-    Task SetRequireMfaAsync(RoleId roleId, bool requireMfa, CancellationToken cancellationToken);
 }

@@ -8,12 +8,13 @@ namespace CreditFlow.Application.Branches;
 /// <summary>Branch administration. Branches with assigned users are deactivated, never deleted.</summary>
 public sealed class BranchAdministrationService(
     IBranchRepository branches,
+    IBranchQueries branchQueries,
     IUnitOfWork unitOfWork,
     IValidator<CreateBranchCommand> createValidator,
     IValidator<UpdateBranchCommand> updateValidator)
 {
     public Task<IReadOnlyList<BranchSummary>> ListAsync(bool includeInactive, CancellationToken cancellationToken) =>
-        branches.ListAsync(includeInactive, cancellationToken);
+        branchQueries.ListAsync(includeInactive, cancellationToken);
 
     public Task<Branch?> GetAsync(BranchId id, CancellationToken cancellationToken) =>
         branches.GetAsync(id, cancellationToken);

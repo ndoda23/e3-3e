@@ -13,7 +13,7 @@ public sealed class BranchAdministrationServiceTests
     public BranchAdministrationServiceTests()
     {
         _service = new BranchAdministrationService(
-            _branches, _unitOfWork, new CreateBranchCommandValidator(), new UpdateBranchCommandValidator());
+            _branches, _branches, _unitOfWork, new CreateBranchCommandValidator(), new UpdateBranchCommandValidator());
     }
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;

@@ -1,4 +1,3 @@
-using CreditFlow.Application.Users;
 using CreditFlow.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 

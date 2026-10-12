@@ -5,7 +5,7 @@ using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.Infrastructure.Persistence.Repositories;
+namespace CreditFlow.Infrastructure.Persistence.Queries;
 
 /// <summary>Read side of user administration, over the <c>vw_UserDirectory</c> view.</summary>
 internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) : IUserDirectory

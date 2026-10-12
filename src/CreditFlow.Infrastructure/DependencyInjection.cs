@@ -4,12 +4,16 @@ using CreditFlow.Application.Branches;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
+using CreditFlow.Domain.Branches;
+using CreditFlow.Domain.Roles;
+using CreditFlow.Domain.Users;
 using CreditFlow.Infrastructure.Auditing;
 using CreditFlow.Infrastructure.Authorization;
 using CreditFlow.Infrastructure.Identity;
 using CreditFlow.Infrastructure.Options;
 using CreditFlow.Infrastructure.Persistence;
 using CreditFlow.Infrastructure.Persistence.Interceptors;
+using CreditFlow.Infrastructure.Persistence.Queries;
 using CreditFlow.Infrastructure.Persistence.Repositories;
 using CreditFlow.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.DataProtection;
@@ -86,7 +90,9 @@ public static class DependencyInjection
         services.AddScoped<IStaffRepository, StaffRepository>();
         services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRoleQueries, RoleQueries>();
         services.AddScoped<IBranchRepository, BranchRepository>();
+        services.AddScoped<IBranchQueries, BranchQueries>();
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IAuditLogQueries, AuditLogQueries>();
 

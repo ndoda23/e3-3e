@@ -205,8 +205,8 @@ internal sealed class FakeStaffRepository(FakeReferenceRepositories reference) :
     public void Add(StaffMember staffMember) => Members[staffMember.Id] = staffMember;
 }
 
-/// <summary>Roles (from the seed catalog) and branches held in memory.</summary>
-internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchRepository
+/// <summary>Roles (from the seed catalog) and branches held in memory, for both the write and the read side.</summary>
+internal sealed class FakeReferenceRepositories : IRoleRepository, IRoleQueries, IBranchRepository, IBranchQueries
 {
     private readonly Dictionary<RoleId, RoleDetails> _roles =
         CreditFlow.Application.ReferenceData.RoleSeedCatalog.All
@@ -236,7 +236,7 @@ internal sealed class FakeReferenceRepositories : IRoleRepository, IBranchReposi
     public Task<RoleDetails?> GetDetailsAsync(RoleId roleId, CancellationToken cancellationToken) =>
         Task.FromResult(_roles.GetValueOrDefault(roleId));
 
-    Task<IReadOnlyList<RoleDetails>> IRoleRepository.ListAsync(CancellationToken cancellationToken) =>
+    Task<IReadOnlyList<RoleDetails>> IRoleQueries.ListAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<RoleDetails>>(_roles.Values.ToList());
 
     public Task SetPermissionsAsync(RoleId roleId, PermissionSet permissions, CancellationToken cancellationToken)

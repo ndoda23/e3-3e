@@ -21,6 +21,12 @@ MFA, permission-based authorization and the Admin area). The implementation plan
    cannot hold `admin.*` permissions, the Admin role holds only `admin.*` permissions, and a read-only role (Auditor)
    holds only permissions the catalog marks read-only — enforced by the domain for seeds and for every edit in the role
    editor, so the Auditor cannot be given a write permission even by mistake.
+4. **CQRS-lite: repositories in the Domain, query services in Application.** As the task requires, every aggregate
+   root has one repository interface, declared in the Domain next to the aggregate (`IStaffRepository`,
+   `IRoleRepository`, `IBranchRepository`, …) and implemented with EF Core in Infrastructure; repositories load and
+   save aggregates only. Lists, inboxes and reports do not go through aggregates: they are query services declared in
+   Application (`IRoleQueries`, `IBranchQueries`, `IUserDirectory`, `IAuditLogQueries`, …) that return read models
+   from `AsNoTracking` projections. Architecture tests enforce both placements.
 
 ### Roles
 

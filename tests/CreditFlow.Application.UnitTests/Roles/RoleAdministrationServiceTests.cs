@@ -16,7 +16,7 @@ public sealed class RoleAdministrationServiceTests
     public RoleAdministrationServiceTests()
     {
         _cache = new FakeAccessCacheInvalidator(_unitOfWork);
-        _service = new RoleAdministrationService(_roles, _cache, _audit, _unitOfWork);
+        _service = new RoleAdministrationService(_roles, _roles, _cache, _audit, _unitOfWork);
     }
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
