@@ -14,7 +14,10 @@ using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Scoring;
 using CreditFlow.Domain.Users;
+using CreditFlow.Application.External;
 using CreditFlow.Infrastructure.Auditing;
+using CreditFlow.Infrastructure.ExternalServices;
+using CreditFlow.Infrastructure.Outbox;
 using CreditFlow.Infrastructure.Authorization;
 using CreditFlow.Infrastructure.Identity;
 using CreditFlow.Infrastructure.Options;
@@ -52,6 +55,7 @@ public static class DependencyInjection
         AddPersistence(services, configuration);
         AddIdentity(services);
         AddAccessCaching(services);
+        AddOutboxAndExternalServices(services, configuration);
 
         services.AddDataProtection()
             .SetApplicationName("CreditFlow")
@@ -60,6 +64,22 @@ public static class DependencyInjection
         services.AddHealthChecks().AddDbContextCheck<CreditFlowDbContext>("database");
 
         return services;
+    }
+
+    /// <summary>The transactional outbox with its background dispatcher, and the mock external services.</summary>
+    private static void AddOutboxAndExternalServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<OutboxOptions>().Bind(configuration.GetSection(OutboxOptions.SectionName));
+        services.AddSingleton<OutboxProcessor>();
+        services.AddHostedService<OutboxDispatcher>();
+
+        services.AddOptions<MockOptions>().Bind(configuration.GetSection(MockOptions.SectionName));
+        services.AddSingleton<MockScenarios>();
+        services.AddScoped<ISanctionsScreeningService, MockSanctionsScreeningService>();
+        services.AddScoped<IIdentityVerificationService, MockIdentityVerificationService>();
+        services.AddSingleton<ICreditBureauClient, MockCreditBureauClient>();
+        services.AddScoped<IBureauReportStore, BureauReportStore>();
+        services.AddScoped<INotificationSender, DatabaseNotificationSender>();
     }
 
     private static void AddOptions(IServiceCollection services, IConfiguration configuration)
@@ -75,6 +95,7 @@ public static class DependencyInjection
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<OutboxInterceptor>();
         services.AddScoped<ConsistencyInterceptor>();
         services.AddScoped<AuditTrailInterceptor>();
 
@@ -89,6 +110,7 @@ public static class DependencyInjection
 
             options.UseSqlServer(connectionString);
             options.AddInterceptors(
+                provider.GetRequiredService<OutboxInterceptor>(),
                 provider.GetRequiredService<ConsistencyInterceptor>(),
                 provider.GetRequiredService<AuditTrailInterceptor>());
         });

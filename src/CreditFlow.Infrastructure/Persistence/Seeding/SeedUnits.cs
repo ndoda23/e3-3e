@@ -7,6 +7,7 @@ using CreditFlow.Domain.Fx;
 using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Scoring;
+using CreditFlow.Infrastructure.ExternalServices;
 using CreditFlow.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +41,7 @@ internal static class SeedUnits
         new RetiredUnit("0003_initial_authority_limits"),
         new CreditFlowRoles(),
         new LendingReferenceData(),
+        new MockSanctionsList(),
     ];
 
     /// <summary>
@@ -186,6 +188,36 @@ internal static class SeedUnits
             foreach (var (date, name) in LendingSeedCatalog.Holidays.Where(h => !existingHolidays.Contains(h.Date)))
             {
                 db.Holidays.Add(Holiday.Create(date, name).Value);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// The mock sanctions and PEP list: the test personal numbers of the screening scenarios, plus a name-only entry
+    /// that shows matching by full name.
+    /// </summary>
+    private sealed class MockSanctionsList : ISeedUnit
+    {
+        public string Id => "0006_mock_sanctions_list";
+
+        public async Task ApplyAsync(CreditFlowDbContext db, CancellationToken cancellationToken)
+        {
+            SanctionsListEntry[] entries =
+            [
+                new() { PersonalNumber = MockPersonalNumbers.Sanctioned, FullName = "Sanctioned Test Person", Kind = SanctionsListKind.Sanctions, ListName = "UN Security Council" },
+                new() { PersonalNumber = MockPersonalNumbers.Pep, FullName = "Exposed Test Person", Kind = SanctionsListKind.Pep, ListName = "National PEP register" },
+                new() { FullName = "Ivan Petrov", Kind = SanctionsListKind.Sanctions, ListName = "OFAC SDN" },
+            ];
+
+            var set = db.Set<SanctionsListEntry>();
+            foreach (var entry in entries)
+            {
+                if (!await set.AnyAsync(e => e.FullName == entry.FullName, cancellationToken))
+                {
+                    set.Add(entry);
+                }
             }
 
             await db.SaveChangesAsync(cancellationToken);

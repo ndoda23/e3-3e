@@ -1065,6 +1065,12 @@ Decisions taken during implementation:
 38. **Persistence of value objects** — required value objects with plain columns are EF complex types (identity
     document, loan terms, money); optional or list-shaped ones are JSON columns (product terms, snapshot, exchange rate,
     counter-offered terms, scoring runs, rule definitions), read and written as a whole and never queried in SQL.
+39. **Outbox** — events become `OutboxMessages` in the same SaveChanges (interceptor). The dispatcher claims due
+    messages in a short transaction (`UPDLOCK, READPAST`, claim expiry 5 min) and runs every handler in its own
+    transaction that also inserts `ProcessedMessages (MessageId, Handler)`, so retries never repeat a handler. Failures
+    retry with backoff 1, 2, 4 … minutes (max 1 h); the bureau retry of decision #19 is this backoff.
+40. **Mocks** — scenarios by personal number (seeded catalog, overridable in `Mocks:Scenarios`); timeouts are real
+    (a hanging call cancelled after `Mocks:BureauTimeout`). Notifications are rows in `Notifications` plus a log line.
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1127,7 +1133,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 
 - [x] **P8** EF mappings, migration, repositories (rowversion), reference seed (products v1/v2, rule set, thresholds,
   FX, holidays, sanctions list) + repository integration tests.
-- [ ] **P9** Outbox + dispatcher + mocks + PreCheck (bureau retry) + notifications + tests.
+- [x] **P9** Outbox + dispatcher + mocks + PreCheck (bureau retry) + notifications + tests.
 
 **Day 2 — flow in the browser, concurrency, breadth**
 - [ ] **P10** Application services for intake → scoring → underwriting/committee/compliance/counter-offer, access
@@ -1171,5 +1177,6 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | `a7d9b79` |
 | P6 — LoanApplication aggregate and state machine | done; build 0 warnings, 1,036 tests green (Domain 574 incl. all 361 status pairs, Application 318, Architecture 13, Integration 131) | `d35133f` |
 | P7 — Scoring, approval thresholds, schedule, EIR, early repayment | done; build 0 warnings, 1,102 tests green (Domain 630, Application 328, Architecture 13, Integration 131) | `621054e` |
-| P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | (this commit) |
+| P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | `ba77864` |
+| P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | (this commit) |
 

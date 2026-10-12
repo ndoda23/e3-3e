@@ -44,8 +44,17 @@ public sealed class InfrastructureHost : IAsyncDisposable
 
     public TestCurrentUser CurrentUser => _provider.GetRequiredService<TestCurrentUser>();
 
+    /// <param name="connectionString">The test database.</param>
+    /// <param name="environment">Host environment name.</param>
+    /// <param name="seedDevUsers">Seed the demo personas.</param>
+    /// <param name="clock">A controllable clock (default: the system clock).</param>
+    /// <param name="settings">Extra configuration (e.g. mock timeouts).</param>
     public static async Task<InfrastructureHost> StartAsync(
-        string connectionString, string environment = "Testing", bool seedDevUsers = false)
+        string connectionString,
+        string environment = "Testing",
+        bool seedDevUsers = false,
+        TimeProvider? clock = null,
+        IReadOnlyDictionary<string, string?>? settings = null)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -58,12 +67,18 @@ public sealed class InfrastructureHost : IAsyncDisposable
                 ["Seed:DevUsers:Enabled"] = seedDevUsers ? "true" : "false",
                 ["Seed:DevUsers:Password"] = DevPassword,
             })
+            .AddInMemoryCollection(settings ?? new Dictionary<string, string?>())
             .Build();
 
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment(environment));
+        if (clock is not null)
+        {
+            services.AddSingleton(clock);
+        }
+
         services.AddApplication();
         services.AddInfrastructure(configuration);
 

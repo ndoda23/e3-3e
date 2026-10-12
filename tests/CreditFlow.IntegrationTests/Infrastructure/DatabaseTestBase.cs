@@ -12,8 +12,13 @@ public abstract class DatabaseTestBase(SqlServerContainer sql) : IAsyncLifetime
 
     protected virtual bool SeedDevUsers => false;
 
+    /// <summary>A controllable clock for the host, or <c>null</c> for the system clock.</summary>
+    protected virtual TimeProvider? Clock => null;
+
+    protected virtual IReadOnlyDictionary<string, string?>? Settings => null;
+
     public async ValueTask InitializeAsync() =>
-        Host = await InfrastructureHost.StartAsync(sql.NewDatabaseConnectionString(), Environment, SeedDevUsers);
+        Host = await InfrastructureHost.StartAsync(sql.NewDatabaseConnectionString(), Environment, SeedDevUsers, Clock, Settings);
 
     public async ValueTask DisposeAsync()
     {
