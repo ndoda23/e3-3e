@@ -34,4 +34,12 @@ public static class AuditActions
     public const string ApplicationDecision = "Application.Decision";
     public const string ApplicationOverride = "Application.Override";
     public const string ApplicationEscalated = "Application.Escalated";
+
+    // Disbursement and loans
+    public const string DisbursementRequested = "Disbursement.Requested";
+    public const string DisbursementSucceeded = "Disbursement.Succeeded";
+    public const string DisbursementFailed = "Disbursement.Failed";
+    public const string DisbursementTimedOut = "Disbursement.TimedOut";
+    public const string LoanRepayment = "Loan.Repayment";
+    public const string LoanClosed = "Loan.Closed";
 }

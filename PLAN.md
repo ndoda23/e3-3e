@@ -1071,6 +1071,17 @@ Decisions taken during implementation:
     retry with backoff 1, 2, 4 … minutes (max 1 h); the bureau retry of decision #19 is this backoff.
 40. **Mocks** — scenarios by personal number (seeded catalog, overridable in `Mocks:Scenarios`); timeouts are real
     (a hanging call cancelled after `Mocks:BureauTimeout`). Notifications are rows in `Notifications` plus a log line.
+41. **Exposure at disbursement counts committed money only** — the re-check under the per-party `sp_getapplock` adds
+    payouts that are Pending or done and the outstanding principal of active loans (in GEL at each application's
+    scoring rate) to the new loan; approvals that were never paid out do not block a payout (scoring still counts them,
+    conservatively). The limit is the `EXPOSURE_LIMIT` of the rule-set version the application was scored with.
+42. **Payout amount** — the principal less the upfront fee; the schedule runs on the full principal from the
+    disbursement day.
+43. **Core banking mock** — its ledger (`MockCoreBankingTransactions`, key = idempotency key) is written in its own
+    scope, like a separate system: 01001011009 rejects the first request of a key; 01001011010 executes the first
+    request but answers after `Mocks:CoreBankingTimeout`, so the retry with the same key returns the same transaction.
+44. **Repayments** — "next installment paid" records the oldest unpaid installment in full; an early repayment is
+    refused while an installment is overdue (record it first).
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1141,7 +1152,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   **Minimal pages:** clients (register + KYC data, incomes, obligations), application create/submit + document
   upload, application list and page (status history, scoring result), Underwriting / Committee / Compliance inboxes
   with decide / counter-offer / vote / clear-reject actions.
-- [ ] **P11** Contract (gapless numbers), disbursement (idempotent, exposure lock), loan booking, repayments; tests
+- [x] **P11** Contract (gapless numbers), disbursement (idempotent, exposure lock), loan booking, repayments; tests
   (double disbursement, exposure race, numbering). **Minimal pages:** client response to a counter-offer, mark
   contract signed, mark conditions met, disburse, loan page with schedule, record repayment. **End-to-end flow works
   in the browser here.**
@@ -1181,30 +1192,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | `be84877` |
 | P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | `24ae829` |
 | P10b — Client, application and inbox pages | done; build 0 warnings, 1,163 tests green (Domain 630, Application 353, Architecture 13, Integration 167). Pages: clients (list, register, edit, KYC document, incomes, obligations), applications (list with SQL-side filters / sort / paging, new, application page with parties, collateral, documents, scoring explanation, history, decisions and every action the viewer may take), decision inboxes. Web tests: operator flow through the pages, upload by content, IDOR by id (404), the Auditor's POST to every permission-protected action refused with nothing changed, unprotected POSTs only account self-service. Fixed on the way: decisions with the same timestamp were listed in an undefined order. | `c842907` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** P10a `24ae829`, P10b `c842907`. **Current step: P11**; stop after the P11 commit (do not start P12).
-- **P11 design:**
-  - Domain: `Disbursements/Disbursement` (ApplicationId, IdempotencyKey `disb:{applicationId}`, Amount, Status
-    Pending/Succeeded/Failed, TransactionId, Attempts; events for audit), `Loans/Loan` (+ `LoanInstallment`,
-    `LoanRepayment`; Book from the application + schedule; pay next installment; early repayment partial/full with
-    `EarlyRepaymentCalculator`; Closed at 0 → `LoanClosed` event); repositories `IDisbursementRepository`,
-    `ILoanRepository`; `ExposureLimitRule.LimitGel(ruleSet)`.
-  - Application: `IContractNumberGenerator` (infra: `ContractNumberSequences` row, `UPDLOCK, HOLDLOCK`, in the signing
-    transaction → rollback returns the number), `IExposureLock` (`sp_getapplock` per party, sorted, owner
-    Transaction), `ICoreBankingClient` (Success(txId) / Rejected; timeout → `ExternalServiceUnavailableException`),
-    `ContractService` (sign, mark condition met), `DisbursementService` (step 1 transaction: guards, locks, exposure
-    re-check against committed money only = Pending/Succeeded disbursements + active loans + this loan; insert
-    Pending; step 2: core banking with the key; success → Disbursed; rejected → Failed (retry reuses the key);
-    timeout → stays Pending, outbox handler retries with the same key), `LoanBookingHandler` (To=Disbursed → Loan +
-    Activate), `LoanClosedHandler`, `LoanService` (view, pay installment, early repayment).
-  - Infrastructure: mock core banking with table `MockCoreBankingTransactions` (key PK → same tx id; error on the first
-    call per key for 01001011009; 01001011010: transfer done, answer hangs past `Mocks:CoreBankingTimeout`), own scope
-    so it never joins the caller's transaction; EF configs, migration, `ExposureQueries` using loans.
-  - Web: application page actions sign / condition met / disburse, loan page with schedule + repayments.
-  - Tests: domain units (Disbursement, Loan); integration: gapless numbers under parallel signing + after rollback,
-    double disbursement sequential + parallel, exposure race over a shared guarantor (exactly one succeeds), core
-    banking error → retry same key, timeout → outbox retry → same tx id, booking + repayments + close; web page test.
-  - README/PLAN decision #41: the disbursement re-check counts committed money only (scoring also counts approvals).
-- **Open questions for the user:** none.
+| P11 — Contract, disbursement, loans, repayments | done; build 0 warnings, 1,190 tests green (Domain 646, Application 353, Architecture 13, Integration 178), no pending EF model changes. Gapless contract numbers from a locked counter row in the signing transaction; idempotent payout (deterministic key, Pending row committed before core banking, rejection → retry with the same key, timeout → background retry returns the same transaction); exposure re-check under per-party `sp_getapplock` in id order; loan booking via the outbox; installments and early repayment (partial recalculation, full closes loan and application). Tests: parallel signing + rollback, double payout sequential and parallel, error and timeout, exposure race over a shared guarantor, repayments, loan IDOR, pages. Decisions #41–#44. | (this commit) |

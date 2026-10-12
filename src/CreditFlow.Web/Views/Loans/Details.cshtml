@@ -1,0 +1,126 @@
+@model LoanPageViewModel
+@using CreditFlow.Domain.Loans
+@{
+    var l = Model.Loan;
+    var id = l.Id.Value;
+    ViewData["Title"] = T["Loans.Title", l.ContractNumber].Value;
+    ViewData["Section"] = T["Nav.Applications"].Value;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <span class="pill @(l.Status == LoanStatus.Active ? "success" : "neutral")" data-loan-status="@l.Status"><span class="dot"></span>@T.EnumText(l.Status)</span>
+        </div>
+        <p class="page-desc">@l.BorrowerName · @l.ProductName</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-controller="Applications" asp-action="Details" asp-route-id="@l.ApplicationId.Value"><icon name="chevron-left" size="15" />@T["Applications.Title", l.ApplicationReference]</a>
+    </div>
+</div>
+<partial name="_Notices" />
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="loan-terms-title">
+        <div class="card-head"><h2 class="card-title" id="loan-terms-title">@T["Applications.Terms"]</h2></div>
+        <dl class="dl card-body">
+            <dt>@T["Loans.Principal"]</dt><dd class="tnum">@DisplayFormat.Money(l.Principal)</dd>
+            <dt>@T["Loans.Outstanding"]</dt><dd class="tnum" data-outstanding>@DisplayFormat.Money(l.OutstandingPrincipal)</dd>
+            <dt>@T["Field.AnnualRate"]</dt><dd>@DisplayFormat.Percent(l.AnnualRate)</dd>
+            <dt>@T["Loans.EffectiveRate"]</dt><dd data-effective-rate>@DisplayFormat.Percent(l.EffectiveAnnualRate)</dd>
+            <dt>@T["Field.ScheduleType"]</dt><dd>@T.EnumText(l.ScheduleType)</dd>
+            <dt>@T["Loans.DisbursedOn"]</dt><dd>@DisplayFormat.Date(l.DisbursedOn)</dd>
+            <dt>@T["Loans.Penalty"]</dt><dd>@DisplayFormat.Percent(l.EarlyRepaymentPenaltyPercent)</dd>
+        </dl>
+    </section>
+    @if (Model.CanRecordRepayment)
+    {
+        <section class="card" aria-labelledby="repay-title" data-section="repay">
+            <div class="card-head"><h2 class="card-title" id="repay-title">@T["Loans.RecordRepayment"]</h2></div>
+            <div class="card-body stack">
+                <form method="post" asp-action="PayInstallment" asp-route-id="@id">
+                    <button type="submit" class="btn primary">@T["Loans.PayInstallment"]</button>
+                </form>
+                <form method="get" asp-action="Details" asp-route-id="@id" class="row wrap">
+                    <input name="quote" type="number" step="0.01" min="0" class="inp" value="@Model.QuotedAmount" placeholder="@T["Loans.PrepaidPrincipal"]" aria-label="@T["Loans.PrepaidPrincipal"]" />
+                    <button type="submit" class="btn">@T["Loans.Quote"]</button>
+                    <button type="submit" name="full" value="true" class="btn">@T["Loans.QuoteFull"]</button>
+                </form>
+                @if (Model.Quote is { } q)
+                {
+                    <dl class="dl" data-quote>
+                        <dt>@T["Loans.PrepaidPrincipal"]</dt><dd class="tnum">@DisplayFormat.Money(q.PrincipalPaid)</dd>
+                        <dt>@T["Loans.AccruedInterest"]</dt><dd class="tnum">@DisplayFormat.Money(q.AccruedInterest)</dd>
+                        <dt>@T["Loans.Penalty"]</dt><dd class="tnum">@DisplayFormat.Money(q.Penalty)</dd>
+                        <dt>@T["Loans.TotalToPay"]</dt><dd class="tnum">@DisplayFormat.Money(q.Total)</dd>
+                    </dl>
+                    <form method="post" asp-action="RepayEarly" asp-route-id="@id">
+                        @if (Model.QuotedAmount is { } amount)
+                        {
+                            <input type="hidden" name="amount" value="@amount" />
+                        }
+                        else
+                        {
+                            <input type="hidden" name="full" value="true" />
+                        }
+                        <button type="submit" class="btn primary">@T["Loans.RepayEarly"]</button>
+                    </form>
+                }
+            </div>
+        </section>
+    }
+</div>
+<section class="card mb" aria-labelledby="schedule-title" data-section="schedule">
+    <div class="card-head"><h2 class="card-title" id="schedule-title">@T["Loans.Schedule"]</h2></div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col" class="num">#</th>
+                    <th scope="col">@T["Loans.DueDate"]</th>
+                    <th scope="col" class="num">@T["Loans.Principal"]</th>
+                    <th scope="col" class="num">@T["Loans.Interest"]</th>
+                    <th scope="col" class="num">@T["Loans.Fee"]</th>
+                    <th scope="col" class="num">@T["Loans.Total"]</th>
+                    <th scope="col">@T["Field.Status"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in l.Installments)
+                {
+                    <tr data-installment="@i.Number" data-paid="@(i.IsPaid ? "true" : "false")">
+                        <td class="num">@i.Number</td>
+                        <td class="tnum">@DisplayFormat.Date(i.DueDate)</td>
+                        <td class="num tnum">@DisplayFormat.Money(i.Principal)</td>
+                        <td class="num tnum">@DisplayFormat.Money(i.Interest)</td>
+                        <td class="num tnum">@DisplayFormat.Money(i.Fee)</td>
+                        <td class="num tnum">@DisplayFormat.Money(i.Total)</td>
+                        <td>@(i.IsPaid ? T["Loans.PaidOn", DisplayFormat.Date(i.PaidOn)].Value : DisplayFormat.Empty)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="card" aria-labelledby="repayments-title" data-section="repayments">
+    <div class="card-head"><h2 class="card-title" id="repayments-title">@T["Loans.Repayments"]</h2></div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var r in l.Repayments)
+                {
+                    <tr data-repayment="@r.Kind">
+                        <td class="tnum">@DisplayFormat.Date(r.PaidOn)</td>
+                        <td>@T.EnumText(r.Kind)</td>
+                        <td class="num tnum">@DisplayFormat.Money(r.Total)</td>
+                        <td class="small muted">@T["Loans.Split", DisplayFormat.Money(r.Principal), DisplayFormat.Money(r.Interest), DisplayFormat.Money(r.Fee), DisplayFormat.Money(r.Penalty)]</td>
+                        <td>@r.RecordedBy</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (l.Repayments.Count == 0)
+        {
+            <div class="empty">@T["Loans.NoRepayments"]</div>
+        }
+    </div>
+</section>

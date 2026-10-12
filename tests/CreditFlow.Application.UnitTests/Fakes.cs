@@ -41,6 +41,11 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
         return Task.CompletedTask;
     }
 
+    /// <summary>Nothing is tracked in memory.</summary>
+    public void Reset()
+    {
+    }
+
     public async Task<TResult> ExecuteInTransactionAsync<TResult>(
         Func<CancellationToken, Task<TResult>> work, CancellationToken cancellationToken)
         where TResult : Result

@@ -18,6 +18,8 @@ internal sealed class UnitOfWork(CreditFlowDbContext db) : IUnitOfWork
         }
     }
 
+    public void Reset() => db.ChangeTracker.Clear();
+
     public async Task<TResult> ExecuteInTransactionAsync<TResult>(
         Func<CancellationToken, Task<TResult>> work, CancellationToken cancellationToken)
         where TResult : Result

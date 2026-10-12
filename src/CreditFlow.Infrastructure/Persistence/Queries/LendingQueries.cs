@@ -72,34 +72,6 @@ internal sealed class ProductQueries(CreditFlowDbContext db) : IProductQueries
     }
 }
 
-/// <summary>
-/// Exposure from applications: approved and not yet disbursed, disbursed and active ones count with their GEL amount
-/// for every party (borrower, co-borrower and guarantor alike — a guarantee covers the full amount).
-/// </summary>
-internal sealed class ExposureQueries(CreditFlowDbContext db) : IExposureQueries
-{
-    private static readonly ApplicationStatus[] Exposed =
-    [
-        ApplicationStatus.Approved, ApplicationStatus.ConditionallyApproved, ApplicationStatus.ContractSigned,
-        ApplicationStatus.ConditionsMet, ApplicationStatus.Disbursed, ApplicationStatus.Active,
-    ];
-
-    public async Task<IReadOnlyDictionary<ClientId, decimal>> ExposureGelAsync(
-        IReadOnlyCollection<ClientId> clients, LoanApplicationId except, CancellationToken cancellationToken) =>
-        await db.LoanApplications.AsNoTracking()
-            .Where(a => a.Id != except && Exposed.Contains(a.Status))
-            .SelectMany(a => a.Parties.Select(p => new { p.ClientId, Amount = a.AmountGel ?? 0m }))
-            .Where(x => clients.Contains(x.ClientId))
-            .GroupBy(x => x.ClientId)
-            .Select(g => new { ClientId = g.Key, Total = g.Sum(x => x.Amount) })
-            .ToDictionaryAsync(x => x.ClientId, x => x.Total, cancellationToken);
-
-    /// <summary>Installments of loans at this bank; loans are booked from P11 on, until then there are none.</summary>
-    public Task<IReadOnlyDictionary<ClientId, decimal>> MonthlyInstallmentsGelAsync(
-        IReadOnlyCollection<ClientId> clients, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyDictionary<ClientId, decimal>>(new Dictionary<ClientId, decimal>());
-}
-
 /// <summary>Document content in its own table, so that application queries never load it.</summary>
 public sealed class DocumentContentRecord
 {

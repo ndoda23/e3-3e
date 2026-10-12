@@ -177,6 +177,14 @@ public interface IExposureQueries
     Task<IReadOnlyDictionary<ClientId, decimal>> ExposureGelAsync(
         IReadOnlyCollection<ClientId> clients, LoanApplicationId except, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// GEL exposure per client from money that is committed, excluding <paramref name="except"/>: payouts pending or
+    /// done whose loan is not booked yet, and the outstanding principal of active loans, as any party. Used by the
+    /// re-check at disbursement (approvals that were never paid out do not block a payout).
+    /// </summary>
+    Task<IReadOnlyDictionary<ClientId, decimal>> CommittedExposureGelAsync(
+        IReadOnlyCollection<ClientId> clients, LoanApplicationId except, CancellationToken cancellationToken);
+
     /// <summary>Monthly installments (GEL) of each client's active loans at this bank, as borrower or co-borrower.</summary>
     Task<IReadOnlyDictionary<ClientId, decimal>> MonthlyInstallmentsGelAsync(
         IReadOnlyCollection<ClientId> clients, CancellationToken cancellationToken);

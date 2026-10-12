@@ -5,11 +5,13 @@ using System.Text.RegularExpressions;
 using CreditFlow.Application.ReferenceData;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Products;
+using CreditFlow.Infrastructure.Outbox;
 using CreditFlow.IntegrationTests.Infrastructure;
 using CreditFlow.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CreditFlow.IntegrationTests.Web;
 
@@ -24,6 +26,9 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
 
     [GeneratedRegex("/(?:Clients|Applications)/Details/(?<id>[0-9a-f-]{36})")]
     private static partial Regex DetailsLocation();
+
+    [GeneratedRegex("data-paid=\"true\"")]
+    private static partial Regex PaidInstallment();
 
     [GeneratedRegex("/Applications/Document/[0-9a-f-]{36}\\?documentId=(?<id>[0-9a-f-]{36})")]
     private static partial Regex DocumentLink();
@@ -87,6 +92,38 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(batumi, $"/Applications/Cancel/{id}", new() { ["reason"] = "Not mine." })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(batumi, $"/Applications/Submit/{id}")).StatusCode);
         Assert.Equal(ApplicationStatus.Draft, await StatusAsync(id));
+    }
+
+    [Fact]
+    public async Task An_operator_signs_the_contract_disburses_and_records_a_repayment_through_the_pages()
+    {
+        var (operatorName, operatorId, operatorPassword) = await CreateUserAsync(RoleCodes.Operator, BranchSeedCatalog.Vake);
+        var (_, underwriterId, _) = await CreateUserAsync(RoleCodes.SeniorUnderwriter);
+        var lending = new TestLending(Factory.Services, Factory.Clock);
+        var id = (await lending.ApprovedAsync(LendingSeedCatalog.Consumer, 10_000m, operatorId, [underwriterId])).Value;
+        using var browser = NewSession();
+        await browser.LoginAsync(operatorName, operatorPassword);
+
+        Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Applications/SignContract/{id}")).StatusCode);
+        var signed = await browser.GetPageAsync($"/Applications/Details/{id}");
+        Assert.Contains("data-status=\"ConditionsMet\"", signed, StringComparison.Ordinal);
+        Assert.Contains("LN-2026-000001", signed, StringComparison.Ordinal);
+
+        Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Applications/Disburse/{id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Applications/Disburse/{id}")).StatusCode);
+        Assert.Equal(1, await QueryAsync(db => db.Disbursements.CountAsync(Ct)));
+        await Factory.Services.GetRequiredService<OutboxProcessor>().ProcessAllDueAsync(Ct); // the dispatcher is off in web tests
+
+        var applicationPage = await browser.GetPageAsync($"/Applications/Details/{id}");
+        Assert.Contains("data-status=\"Active\"", applicationPage, StringComparison.Ordinal);
+        var loanId = await QueryAsync(db => db.Loans.Where(l => l.ApplicationId == new LoanApplicationId(id)).Select(l => l.Id.Value).SingleAsync(Ct));
+        Assert.Contains($"/Loans/Details/{loanId}", applicationPage, StringComparison.Ordinal);
+
+        Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Loans/PayInstallment/{loanId}")).StatusCode);
+        var loanPage = await browser.GetPageAsync($"/Loans/Details/{loanId}");
+        Assert.Single(PaidInstallment().Matches(loanPage));
+        Assert.Contains("data-repayment=\"Installment\"", loanPage, StringComparison.Ordinal);
+        Assert.Contains("data-quote", await browser.GetPageAsync($"/Loans/Details/{loanId}?full=true"), StringComparison.Ordinal);
     }
 
     [Fact]

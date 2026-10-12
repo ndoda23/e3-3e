@@ -723,6 +723,81 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("ClientObligations", (string)null);
                 });
 
+            modelBuilder.Entity("CreditFlow.Domain.Disbursements.Disbursement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Revision")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Amount", "CreditFlow.Domain.Disbursements.Disbursement.Amount#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Currency");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique();
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("RequestedBy");
+
+                    b.ToTable("Disbursements", (string)null);
+                });
+
             modelBuilder.Entity("CreditFlow.Domain.Fx.FxRate", b =>
                 {
                     b.Property<string>("Currency")
@@ -739,6 +814,280 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.HasKey("Currency", "EffectiveDate");
 
                     b.ToTable("FxRates", (string)null);
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.Loan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AnnualRate")
+                        .HasPrecision(9, 4)
+                        .HasColumnType("decimal(9,4)");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("BookedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("BorrowerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ContractNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("DisbursedOn")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("EarlyRepaymentPenaltyPercent")
+                        .HasPrecision(9, 4)
+                        .HasColumnType("decimal(9,4)");
+
+                    b.Property<decimal>("EffectiveAnnualRate")
+                        .HasPrecision(9, 4)
+                        .HasColumnType("decimal(9,4)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Revision")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("ScheduleType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.ComplexProperty<Dictionary<string, object>>("MonthlyFee", "CreditFlow.Domain.Loans.Loan.MonthlyFee#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("MonthlyFee");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("MonthlyFeeCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("OutstandingPrincipal", "CreditFlow.Domain.Loans.Loan.OutstandingPrincipal#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("OutstandingPrincipal");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("OutstandingCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Principal", "CreditFlow.Domain.Loans.Loan.Principal#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Principal");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Currency");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique();
+
+                    b.HasIndex("BorrowerId");
+
+                    b.HasIndex("ContractNumber")
+                        .IsUnique();
+
+                    b.HasIndex("ProductId", "Status");
+
+                    b.ToTable("Loans", (string)null);
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.LoanInstallment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LoanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("PaidOn")
+                        .HasColumnType("date");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Fee", "CreditFlow.Domain.Loans.LoanInstallment.Fee#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Fee");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("FeeCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Interest", "CreditFlow.Domain.Loans.LoanInstallment.Interest#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Interest");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("InterestCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Principal", "CreditFlow.Domain.Loans.LoanInstallment.Principal#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Principal");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Currency");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoanId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("LoanInstallments", (string)null);
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.LoanRepayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("LoanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("PaidOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RecordedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Fee", "CreditFlow.Domain.Loans.LoanRepayment.Fee#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Fee");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("FeeCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Interest", "CreditFlow.Domain.Loans.LoanRepayment.Interest#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Interest");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("InterestCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Penalty", "CreditFlow.Domain.Loans.LoanRepayment.Penalty#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Penalty");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("PenaltyCurrency");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Principal", "CreditFlow.Domain.Loans.LoanRepayment.Principal#Money", b1 =>
+                        {
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Principal");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Currency");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecordedBy");
+
+                    b.HasIndex("LoanId", "PaidOn");
+
+                    b.ToTable("LoanRepayments", (string)null);
                 });
 
             modelBuilder.Entity("CreditFlow.Domain.Products.LoanProduct", b =>
@@ -897,6 +1246,47 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.HasKey("ApplicationId", "ClientId");
 
                     b.ToTable("BureauReports", (string)null);
+                });
+
+            modelBuilder.Entity("CreditFlow.Infrastructure.ExternalServices.MockCoreBankingTransaction", b =>
+                {
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Beneficiary")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<DateTimeOffset>("ExecutedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("IdempotencyKey");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.ToTable("MockCoreBankingTransactions", (string)null);
                 });
 
             modelBuilder.Entity("CreditFlow.Infrastructure.ExternalServices.NotificationRecord", b =>
@@ -1270,6 +1660,19 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("ProcessedMessages", (string)null);
                 });
 
+            modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.Configurations.ContractNumberSequence", b =>
+                {
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LastNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Year");
+
+                    b.ToTable("ContractNumberSequences", (string)null);
+                });
+
             modelBuilder.Entity("CreditFlow.Infrastructure.Persistence.Queries.DocumentContentRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1602,6 +2005,66 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("CreditFlow.Domain.Disbursements.Disbursement", b =>
+                {
+                    b.HasOne("CreditFlow.Domain.Applications.LoanApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CreditFlow.Domain.Users.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.Loan", b =>
+                {
+                    b.HasOne("CreditFlow.Domain.Applications.LoanApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CreditFlow.Domain.Clients.Client", null)
+                        .WithMany()
+                        .HasForeignKey("BorrowerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CreditFlow.Domain.Products.LoanProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.LoanInstallment", b =>
+                {
+                    b.HasOne("CreditFlow.Domain.Loans.Loan", null)
+                        .WithMany("Installments")
+                        .HasForeignKey("LoanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.LoanRepayment", b =>
+                {
+                    b.HasOne("CreditFlow.Domain.Loans.Loan", null)
+                        .WithMany("Repayments")
+                        .HasForeignKey("LoanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CreditFlow.Domain.Users.StaffMember", null)
+                        .WithMany()
+                        .HasForeignKey("RecordedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CreditFlow.Domain.Products.LoanProductVersion", b =>
                 {
                     b.HasOne("CreditFlow.Domain.Products.LoanProduct", null)
@@ -1726,6 +2189,13 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Incomes");
 
                     b.Navigation("Obligations");
+                });
+
+            modelBuilder.Entity("CreditFlow.Domain.Loans.Loan", b =>
+                {
+                    b.Navigation("Installments");
+
+                    b.Navigation("Repayments");
                 });
 
             modelBuilder.Entity("CreditFlow.Domain.Products.LoanProduct", b =>

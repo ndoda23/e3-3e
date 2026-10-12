@@ -3,6 +3,8 @@ using CreditFlow.Domain.Approval;
 using CreditFlow.Domain.Auditing;
 using CreditFlow.Domain.Calendar;
 using CreditFlow.Domain.Clients;
+using CreditFlow.Domain.Disbursements;
+using CreditFlow.Domain.Loans;
 using CreditFlow.Domain.Fx;
 using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Scoring;
@@ -55,6 +57,10 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
 
     public DbSet<Holiday> Holidays => Set<Holiday>();
 
+    public DbSet<Disbursement> Disbursements => Set<Disbursement>();
+
+    public DbSet<Loan> Loans => Set<Loan>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -72,6 +78,8 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
         configurationBuilder.Properties<LoanProductId>().HaveConversion<LoanProductIdConverter>();
         configurationBuilder.Properties<LoanApplicationId>().HaveConversion<LoanApplicationIdConverter>();
         configurationBuilder.Properties<ApplicationLineId>().HaveConversion<ApplicationLineIdConverter>();
+        configurationBuilder.Properties<DisbursementId>().HaveConversion<DisbursementIdConverter>();
+        configurationBuilder.Properties<LoanId>().HaveConversion<LoanIdConverter>();
 
         // Enums are stored as readable strings.
         configurationBuilder.Properties<DataScope>().HaveConversion<string>().HaveMaxLength(20);
@@ -84,6 +92,7 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
             typeof(ProductType), typeof(ScheduleType), typeof(IncomeType), typeof(KycStatus), typeof(ScreeningStatus),
             typeof(IdentityDocumentType), typeof(ApplicationStatus), typeof(PartyRole), typeof(CollateralType),
             typeof(DecisionKind), typeof(ConditionType), typeof(DocumentType), typeof(ApprovalTier),
+            typeof(DisbursementStatus), typeof(LoanStatus), typeof(RepaymentKind),
         })
         {
             configurationBuilder.Properties(enumType).HaveConversion<string>().HaveMaxLength(30);

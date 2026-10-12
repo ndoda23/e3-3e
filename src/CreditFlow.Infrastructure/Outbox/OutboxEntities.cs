@@ -1,6 +1,8 @@
 using System.Text.Json;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Common;
+using CreditFlow.Domain.Disbursements;
+using CreditFlow.Domain.Loans;
 using CreditFlow.Infrastructure.Persistence;
 
 namespace CreditFlow.Infrastructure.Outbox;
@@ -54,6 +56,12 @@ public static class OutboxEventTypes
         ["ApplicationEscalated"] = typeof(ApplicationEscalated),
         ["ApplicationScored"] = typeof(ApplicationScored),
         ["ApplicationDecisionRecorded"] = typeof(ApplicationDecisionRecorded),
+        ["DisbursementRequested"] = typeof(DisbursementRequested),
+        ["DisbursementSucceeded"] = typeof(DisbursementSucceeded),
+        ["DisbursementFailed"] = typeof(DisbursementFailed),
+        ["DisbursementTimedOut"] = typeof(DisbursementTimedOut),
+        ["LoanRepaymentRecorded"] = typeof(LoanRepaymentRecorded),
+        ["LoanClosed"] = typeof(LoanClosed),
     };
 
     private static readonly Dictionary<Type, string> ByType = ByKey.ToDictionary(p => p.Value, p => p.Key);

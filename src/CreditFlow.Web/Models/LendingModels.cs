@@ -300,6 +300,12 @@ public sealed record ApplicationActions
 
     public bool Vote { get; init; }
 
+    public bool SignContract { get; init; }
+
+    public bool MarkConditionsMet { get; init; }
+
+    public bool Disburse { get; init; }
+
     public bool AnyDecision => ReviewCompliance || Decide || CounterOffer || Vote;
 
     public static ApplicationActions For(UserAccessProfile profile, ApplicationDetails application)
@@ -331,12 +337,27 @@ public sealed record ApplicationActions
             CounterOffer = mayDecide && Can(Permissions.Underwriting.CounterOffer),
             NeedsOverride = application.LatestScoring?.RequiresOverride == true,
             Vote = Can(Permissions.Committee.Vote) && status == ApplicationStatus.CreditCommittee && independent,
+            SignContract = Can(Permissions.Contracts.Manage)
+                           && status is ApplicationStatus.Approved or ApplicationStatus.ConditionallyApproved,
+            MarkConditionsMet = Can(Permissions.Contracts.Manage) && status == ApplicationStatus.ContractSigned,
+            Disburse = Can(Permissions.Loans.Disburse) && status == ApplicationStatus.ConditionsMet,
         };
     }
 }
 
 /// <summary>The application page: the data, the actions the viewer may take, and whether they may override scoring.</summary>
-public sealed record ApplicationPageViewModel(ApplicationDetails Application, ApplicationActions Actions, bool CanOverride);
+public sealed record ApplicationPageViewModel(
+    ApplicationDetails Application, ApplicationActions Actions, bool CanOverride, CreditFlow.Domain.Loans.LoanId? Loan);
 
 /// <summary>One decision queue of the viewer and the other queues they may open.</summary>
 public sealed record InboxViewModel(Inbox Current, IReadOnlyList<Inbox> Available, PagedResult<ApplicationListItem> Applications);
+
+/// <summary>
+/// The loan page: the loan, whether the viewer may record repayments, and an early-repayment quote when one was asked
+/// for (<paramref name="QuotedAmount"/> <c>null</c> with a quote = full repayment).
+/// </summary>
+public sealed record LoanPageViewModel(
+    CreditFlow.Application.Disbursements.LoanDetails Loan,
+    bool CanRecordRepayment,
+    CreditFlow.Domain.Loans.EarlyRepaymentQuote? Quote,
+    decimal? QuotedAmount);

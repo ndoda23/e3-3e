@@ -42,7 +42,7 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
     private static readonly byte[] Pdf = [.. "%PDF-1.7\n"u8.ToArray(), .. new byte[512]];
 
     private readonly FakeTimeProvider _clock = new(BankTime.ToInstant(Today, new TimeOnly(10, 0)));
-    private int _clientCounter;
+    private TestLending? _lending;
 
     protected override string Environment => "Development";
 
@@ -376,7 +376,9 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
         Host.QueryAsync(async db => (await db.LoanApplications.AsNoTracking().Include(a => a.Decisions).SingleAsync(a => a.Id == id, Ct))
             .Decisions.ToList());
 
-    private string NextPersonalNumber() => $"0200101{1000 + Interlocked.Increment(ref _clientCounter)}";
+    private TestLending Lending => _lending ??= new TestLending(Host.Services, _clock);
+
+    private string NextPersonalNumber() => Lending.NextPersonalNumber();
 
     private static ClientDetails Details(string firstName) =>
         new(firstName, "Client", new DateOnly(1990, 1, 1), "+995 555 000000", null, "Tbilisi");
@@ -418,49 +420,7 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
         return id;
     }
 
-    /// <summary>
-    /// An application already scored and waiting for a decision (Underwriting or Credit Committee by the seeded
-    /// thresholds), built through the domain so the test controls who created it.
-    /// </summary>
+    /// <summary>An application already scored and waiting for a decision, created by <paramref name="createdBy"/>.</summary>
     private Task<LoanApplicationId> InReviewAsync(string productCode, decimal amount, UserId createdBy) =>
-        Host.InScopeAsync(async sp =>
-        {
-            var db = sp.GetRequiredService<CreditFlowDbContext>();
-            var now = _clock.GetUtcNow();
-            var client = Client.Register(
-                PersonalNumber.Create(NextPersonalNumber()).Value,
-                Details("Review"),
-                IdentityDocument.Create(IdentityDocumentType.IdCard, $"ID{_clientCounter}", new DateOnly(2020, 1, 1), new DateOnly(2030, 1, 1)).Value,
-                Today).Value;
-            db.Clients.Add(client);
-
-            var product = await db.LoanProducts.Include(p => p.Versions).SingleAsync(p => p.Code == productCode, Ct);
-            var branch = await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct);
-            var isMortgage = productCode == LendingSeedCatalog.Mortgage;
-            var terms = LoanTerms.Create(Money.Of(amount, Currency.GEL), isMortgage ? 120 : 24, isMortgage ? 10m : 18m, ScheduleType.Annuity).Value;
-            var application = LoanApplication.Create(product, client.Id, terms, branch, createdBy, now).Value;
-            if (isMortgage)
-            {
-                AssertSuccess(Untyped(application.AddCollateral(
-                    CollateralType.RealEstate, "Flat in Vake", Money.Of(amount * 2, Currency.GEL), Today.AddMonths(-1), Today)));
-            }
-
-            var clients = new Dictionary<ClientId, Client> { [client.Id] = client };
-            AssertSuccess(application.Submit(new SubmissionContext(product, ExchangeRate.Gel(Today), clients, false, Today), createdBy, now));
-            AssertSuccess(application.StartPreCheck(now));
-            AssertSuccess(application.CompletePreCheck(PreCheckOutcome.Clear, null, now));
-            foreach (var type in application.MissingDocuments(application.Snapshot!.Terms))
-            {
-                AssertSuccess(application.AddDocument(
-                    ApplicationLineId.New(), type, $"{type}.pdf", "application/pdf", 1_000, new string('0', 64), createdBy, now));
-            }
-
-            AssertSuccess(application.SendToScoring(createdBy, now));
-            var run = new ScoringRun(1, now, [new RuleResult("PTI", true, true, "20.00%", "45%", "PTI 20.00% <= 45%.")]);
-            AssertSuccess(application.CompleteScoring(run, ExchangeRate.Gel(Today), ApprovalThresholds.Default().TierFor(amount), now));
-
-            db.LoanApplications.Add(application);
-            await db.SaveChangesAsync(Ct);
-            return application.Id;
-        });
+        Lending.InReviewAsync(productCode, amount, createdBy);
 }

@@ -1,8 +1,10 @@
 using CreditFlow.Application.Applications;
 using CreditFlow.Application.Clients;
+using CreditFlow.Application.Disbursements;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
 using CreditFlow.Domain.Common;
+using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Products;
 using CreditFlow.Web.Authorization;
 using CreditFlow.Web.Infrastructure;
@@ -23,6 +25,9 @@ namespace CreditFlow.Web.Controllers;
 public sealed class ApplicationsController(
     ApplicationService applications,
     DecisionService decisions,
+    ContractService contracts,
+    DisbursementService disbursements,
+    LoanService loans,
     ClientService clients,
     CurrentAccess currentAccess,
     IStringLocalizer<SharedResource> localizer) : Controller
@@ -58,7 +63,8 @@ public sealed class ApplicationsController(
         }
 
         var canOverride = profile.HasPermission(P.Scoring.Override);
-        return View(new ApplicationPageViewModel(application, ApplicationActions.For(profile, application), canOverride));
+        var loan = await loans.FindByApplicationAsync(application.Summary.Id, cancellationToken);
+        return View(new ApplicationPageViewModel(application, ApplicationActions.For(profile, application), canOverride, loan));
     }
 
     [HttpGet]
@@ -240,6 +246,32 @@ public sealed class ApplicationsController(
     [HasPermission(P.Committee.Vote)]
     public async Task<IActionResult> Vote(Guid id, bool approve, string? reason, CancellationToken cancellationToken) =>
         Done(id, await decisions.VoteAsync(new LoanApplicationId(id), approve, reason, cancellationToken), "Applications.Voted");
+
+    // ----- Contract and disbursement -----
+
+    [HttpPost]
+    [HasPermission(P.Contracts.Manage)]
+    public async Task<IActionResult> SignContract(Guid id, CancellationToken cancellationToken) =>
+        Done(id, await contracts.SignAsync(new LoanApplicationId(id), cancellationToken), "Applications.ContractSigned");
+
+    [HttpPost]
+    [HasPermission(P.Contracts.Manage)]
+    public async Task<IActionResult> ConditionMet(Guid id, Guid conditionId, CancellationToken cancellationToken) =>
+        Done(id, await contracts.MarkConditionMetAsync(
+            new LoanApplicationId(id), new ApplicationLineId(conditionId), cancellationToken));
+
+    /// <summary>Requests the payout. Pressing twice (or retrying) never pays twice: the payout is idempotent.</summary>
+    [HttpPost]
+    [HasPermission(P.Loans.Disburse)]
+    public async Task<IActionResult> Disburse(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await disbursements.DisburseAsync(new LoanApplicationId(id), cancellationToken);
+        return result.IsFailure
+            ? Done(id, Result.Failure(result.Error!))
+            : Done(id, Result.Success(), result.Value == DisbursementStatus.Succeeded
+                ? "Applications.Disbursed"
+                : "Applications.DisbursementPending");
+    }
 
     /// <summary>
     /// Back to the application page with a notice or the error. An application the viewer may not see is 404 —

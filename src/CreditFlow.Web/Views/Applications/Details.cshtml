@@ -23,12 +23,16 @@
     </div>
     <div class="page-actions">
         <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Nav.Applications"]</a>
+        @if (Model.Loan is { } loanId)
+        {
+            <a class="btn primary" asp-controller="Loans" asp-action="Details" asp-route-id="@loanId.Value" data-loan-link><icon name="wallet" size="15" />@T["Applications.Loan"]</a>
+        }
     </div>
 </div>
 <partial name="_Notices" />
 
 @* ----- Next steps for this viewer ----- *@
-@if (act.Submit || act.SendToScoring || act.RecordClientResponse || act.Cancel)
+@if (act.Submit || act.SendToScoring || act.RecordClientResponse || act.Cancel || act.SignContract || act.Disburse)
 {
     <section class="card mb" aria-labelledby="workflow-title" data-section="workflow">
         <div class="card-head"><h2 class="card-title" id="workflow-title">@T["Applications.NextSteps"]</h2></div>
@@ -51,6 +55,18 @@
                     <form method="post" asp-action="ClientResponse" asp-route-id="@id">
                         <input type="hidden" name="accepted" value="true" />
                         <button type="submit" class="btn primary">@T["Applications.ClientAccepts"]</button>
+                    </form>
+                }
+                @if (act.SignContract)
+                {
+                    <form method="post" asp-action="SignContract" asp-route-id="@id">
+                        <button type="submit" class="btn primary"><icon name="file-text" size="15" />@T["Applications.SignContract"]</button>
+                    </form>
+                }
+                @if (act.Disburse)
+                {
+                    <form method="post" asp-action="Disburse" asp-route-id="@id">
+                        <button type="submit" class="btn primary"><icon name="wallet" size="15" />@T["Applications.Disburse"]</button>
                     </form>
                 }
             </div>
@@ -421,7 +437,16 @@
             <ul class="card-body">
                 @foreach (var condition in a.Conditions)
                 {
-                    <li data-condition>@T.EnumText(condition.Type): @condition.Description @(condition.IsMet ? "✓" : null)</li>
+                    <li data-condition class="row">
+                        <span>@T.EnumText(condition.Type): @condition.Description @(condition.IsMet ? "✓" : null)</span>
+                        @if (act.MarkConditionsMet && !condition.IsMet)
+                        {
+                            <form method="post" asp-action="ConditionMet" asp-route-id="@id">
+                                <input type="hidden" name="conditionId" value="@condition.Id.Value" />
+                                <button type="submit" class="btn sm">@T["Applications.MarkConditionMet"]</button>
+                            </form>
+                        }
+                    </li>
                 }
             </ul>
         }

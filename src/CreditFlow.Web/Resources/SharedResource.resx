@@ -539,4 +539,42 @@
   <data name="Applications.NoDecisions" xml:space="preserve"><value>No decisions yet.</value></data>
   <data name="Applications.Override" xml:space="preserve"><value>override</value></data>
   <data name="Applications.Conditions" xml:space="preserve"><value>Conditions</value></data>
+  <data name="Applications.SignContract" xml:space="preserve"><value>Mark contract signed</value></data>
+  <data name="Applications.ContractSigned" xml:space="preserve"><value>The contract was signed and numbered.</value></data>
+  <data name="Applications.MarkConditionMet" xml:space="preserve"><value>Mark met</value></data>
+  <data name="Applications.Disburse" xml:space="preserve"><value>Disburse</value></data>
+  <data name="Applications.Disbursed" xml:space="preserve"><value>The loan was disbursed. The schedule is booked in the background.</value></data>
+  <data name="Applications.DisbursementPending" xml:space="preserve"><value>Core banking has not confirmed the payout yet; it is confirmed in the background with the same request, so it is never paid twice.</value></data>
+  <data name="Applications.Loan" xml:space="preserve"><value>Loan</value></data>
+  <data name="Loans.Title" xml:space="preserve"><value>Loan {0}</value></data>
+  <data name="Loans.Principal" xml:space="preserve"><value>Principal</value></data>
+  <data name="Loans.Outstanding" xml:space="preserve"><value>Outstanding principal</value></data>
+  <data name="Loans.EffectiveRate" xml:space="preserve"><value>Effective annual rate (with fees)</value></data>
+  <data name="Loans.DisbursedOn" xml:space="preserve"><value>Disbursed on</value></data>
+  <data name="Loans.Penalty" xml:space="preserve"><value>Early repayment penalty</value></data>
+  <data name="Loans.RecordRepayment" xml:space="preserve"><value>Record a repayment</value></data>
+  <data name="Loans.PayInstallment" xml:space="preserve"><value>Next installment paid</value></data>
+  <data name="Loans.PrepaidPrincipal" xml:space="preserve"><value>Principal to repay early</value></data>
+  <data name="Loans.Quote" xml:space="preserve"><value>Quote</value></data>
+  <data name="Loans.QuoteFull" xml:space="preserve"><value>Quote full repayment</value></data>
+  <data name="Loans.AccruedInterest" xml:space="preserve"><value>Accrued interest</value></data>
+  <data name="Loans.TotalToPay" xml:space="preserve"><value>Total to pay today</value></data>
+  <data name="Loans.RepayEarly" xml:space="preserve"><value>Record early repayment</value></data>
+  <data name="Loans.RepaymentRecorded" xml:space="preserve"><value>The repayment was recorded.</value></data>
+  <data name="Loans.Schedule" xml:space="preserve"><value>Repayment schedule</value></data>
+  <data name="Loans.DueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="Loans.Interest" xml:space="preserve"><value>Interest</value></data>
+  <data name="Loans.Fee" xml:space="preserve"><value>Fee</value></data>
+  <data name="Loans.Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Loans.PaidOn" xml:space="preserve"><value>Paid {0}</value></data>
+  <data name="Loans.Repayments" xml:space="preserve"><value>Repayments</value></data>
+  <data name="Loans.NoRepayments" xml:space="preserve"><value>No repayments yet.</value></data>
+  <data name="Loans.Split" xml:space="preserve"><value>principal {0}, interest {1}, fee {2}, penalty {3}</value></data>
+  <data name="AuditAction.Disbursement.Requested" xml:space="preserve"><value>Payout requested</value></data>
+  <data name="AuditAction.Disbursement.Succeeded" xml:space="preserve"><value>Payout confirmed by core banking</value></data>
+  <data name="AuditAction.Disbursement.Failed" xml:space="preserve"><value>Payout rejected by core banking</value></data>
+  <data name="AuditAction.Disbursement.TimedOut" xml:space="preserve"><value>Payout not confirmed in time</value></data>
+  <data name="AuditAction.Loan.Repayment" xml:space="preserve"><value>Repayment recorded</value></data>
+  <data name="AuditAction.Loan.Closed" xml:space="preserve"><value>Loan closed</value></data>
+  <data name="AuditEntity.Loan" xml:space="preserve"><value>Loan</value></data>
 </root>

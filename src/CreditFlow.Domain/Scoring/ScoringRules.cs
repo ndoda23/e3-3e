@@ -309,7 +309,20 @@ public sealed record ExposureParameters(decimal LimitGel);
 /// </summary>
 public sealed class ExposureLimitRule : ScoringRule<ExposureParameters>
 {
-    public override string Code => "EXPOSURE_LIMIT";
+    public const string RuleCode = "EXPOSURE_LIMIT";
+
+    private static readonly JsonSerializerOptions ParameterJson = new() { PropertyNameCaseInsensitive = true };
+
+    public override string Code => RuleCode;
+
+    /// <summary>The limit configured in a rule-set version (re-checked at disbursement), or <c>null</c> without the rule.</summary>
+    public static decimal? LimitOf(ScoringRuleSet ruleSet)
+    {
+        ArgumentNullException.ThrowIfNull(ruleSet);
+        return ruleSet.Rules.FirstOrDefault(r => r.Code == RuleCode) is { } rule
+            ? JsonSerializer.Deserialize<ExposureParameters>(rule.ParametersJson, ParameterJson)?.LimitGel
+            : null;
+    }
 
     protected override string? Validate(ExposureParameters parameters) =>
         parameters.LimitGel <= 0m ? "the limit must be positive." : null;

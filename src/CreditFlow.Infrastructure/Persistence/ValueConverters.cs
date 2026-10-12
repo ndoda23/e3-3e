@@ -2,6 +2,8 @@ using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Auditing;
 using CreditFlow.Domain.Branches;
 using CreditFlow.Domain.Clients;
+using CreditFlow.Domain.Disbursements;
+using CreditFlow.Domain.Loans;
 using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Users;
@@ -31,3 +33,8 @@ internal sealed class LoanApplicationIdConverter()
 
 internal sealed class ApplicationLineIdConverter()
     : ValueConverter<ApplicationLineId, Guid>(id => id.Value, value => new ApplicationLineId(value));
+
+internal sealed class DisbursementIdConverter()
+    : ValueConverter<DisbursementId, Guid>(id => id.Value, value => new DisbursementId(value));
+
+internal sealed class LoanIdConverter() : ValueConverter<LoanId, Guid>(id => id.Value, value => new LoanId(value));

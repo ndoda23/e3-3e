@@ -4,6 +4,7 @@ using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Clients;
 using CreditFlow.Application.Common;
+using CreditFlow.Application.Disbursements;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
 using CreditFlow.Domain.Applications;
@@ -11,7 +12,9 @@ using CreditFlow.Domain.Approval;
 using CreditFlow.Domain.Branches;
 using CreditFlow.Domain.Calendar;
 using CreditFlow.Domain.Clients;
+using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Fx;
+using CreditFlow.Domain.Loans;
 using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Scoring;
@@ -80,6 +83,7 @@ public static class DependencyInjection
         services.AddScoped<ISanctionsScreeningService, MockSanctionsScreeningService>();
         services.AddScoped<IIdentityVerificationService, MockIdentityVerificationService>();
         services.AddSingleton<ICreditBureauClient, MockCreditBureauClient>();
+        services.AddSingleton<ICoreBankingClient, MockCoreBankingClient>();
         services.AddScoped<IBureauReportStore, BureauReportStore>();
         services.AddScoped<INotificationSender, DatabaseNotificationSender>();
     }
@@ -133,6 +137,11 @@ public static class DependencyInjection
         services.AddScoped<IApprovalThresholdsRepository, ApprovalThresholdsRepository>();
         services.AddScoped<IFxRateRepository, FxRateRepository>();
         services.AddScoped<IHolidayRepository, HolidayRepository>();
+        services.AddScoped<IDisbursementRepository, DisbursementRepository>();
+        services.AddScoped<ILoanRepository, LoanRepository>();
+        services.AddScoped<IContractNumberGenerator, ContractNumberGenerator>();
+        services.AddScoped<IExposureLock, SqlExposureLock>();
+        services.AddScoped<ILoanQueries, LoanQueries>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();

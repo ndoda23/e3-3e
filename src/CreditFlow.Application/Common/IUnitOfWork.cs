@@ -9,6 +9,12 @@ public interface IUnitOfWork
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Forgets every loaded entity, so the next reads see the committed state — for a step that follows a committed one
+    /// and must not act on data loaded before another request committed.
+    /// </summary>
+    void Reset();
+
+    /// <summary>
     /// Runs <paramref name="work"/> inside a transaction. The transaction is committed when the returned result is a
     /// success and rolled back when it is a failure or an exception is thrown.
     /// </summary>

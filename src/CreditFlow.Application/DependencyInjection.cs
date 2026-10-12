@@ -3,6 +3,7 @@ using CreditFlow.Application.Applications;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Clients;
+using CreditFlow.Application.Disbursements;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
@@ -29,6 +30,10 @@ public static class DependencyInjection
         services.AddScoped<ClientService>();
         services.AddScoped<ApplicationService>();
         services.AddScoped<DecisionService>();
+        services.AddScoped<ContractService>();
+        services.AddScoped<DisbursementService>();
+        services.AddScoped<DisbursementProcessor>();
+        services.AddScoped<LoanService>();
 
         AddOutboxHandlers(services);
         return services;
