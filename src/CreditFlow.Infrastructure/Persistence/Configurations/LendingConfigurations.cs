@@ -200,6 +200,7 @@ internal sealed class LoanApplicationConfiguration : IEntityTypeConfiguration<Lo
         builder.HasIndex(a => new { a.BranchId, a.Status, a.StatusChangedAt });
         builder.HasIndex(a => new { a.Status, a.Tier, a.StatusChangedAt }).IncludeProperties(a => new { a.CreatedBy, a.AmountGel });
         builder.HasIndex(a => new { a.Status, a.OfferExpiresAt });
+        builder.HasIndex(a => new { a.Status, a.EscalatedAt, a.StatusChangedAt });
 
         AggregateRoot.Configure(builder);
     }

@@ -79,6 +79,13 @@ internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) 
         return new PagedResult<UserListItem>(items, total, query.Page, query.PageSize);
     }
 
+    public async Task<IReadOnlyList<string>> ListActiveEmailsWithPermissionAsync(string permission, CancellationToken cancellationToken) =>
+        await db.UserDirectory.AsNoTracking()
+            .Where(u => u.IsActive && db.RolePermissions.Any(p => p.RoleId == u.RoleId && p.Permission == permission))
+            .OrderBy(u => u.Email)
+            .Select(u => u.Email)
+            .ToListAsync(cancellationToken);
+
     public async Task<UserDetails?> GetDetailsAsync(UserId id, CancellationToken cancellationToken)
     {
         var u = await db.UserDirectory.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id.Value, cancellationToken);

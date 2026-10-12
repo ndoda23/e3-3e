@@ -1082,6 +1082,11 @@ Decisions taken during implementation:
     request but answers after `Mocks:CoreBankingTimeout`, so the retry with the same key returns the same transaction.
 44. **Repayments** — "next installment paid" records the oldest unpaid installment in full; an early repayment is
     refused while an installment is overdue (record it first).
+45. **Jobs** — escalation and offer expiry run every `Jobs:Interval` (1 min) in one `BackgroundService`; each batch
+    claims candidates with `UPDLOCK, READPAST, ROWLOCK` in its transaction (keyset by id, so candidates that are not
+    due yet are not revisited in the same run) and commits the domain change with them. Running twice or in parallel
+    gives one effect. Escalation notifies the active users holding `underwriting.decide-senior`; expiry notifies through
+    the status-change notifications (operator and client).
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1156,7 +1161,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   (double disbursement, exposure race, numbering). **Minimal pages:** client response to a counter-offer, mark
   contract signed, mark conditions met, disburse, loan page with schedule, record repayment. **End-to-end flow works
   in the browser here.**
-- [ ] **P12** Jobs: escalation, offer expiry (+ idempotency tests).
+- [x] **P12** Jobs: escalation, offer expiry (+ idempotency tests).
 - [ ] **P13** Web polish of the P10/P11 pages: multi-step application wizard, scoring explanation, decisions panel,
   contract + schedule PDF, loans list.
 - [ ] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
@@ -1193,19 +1198,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | `24ae829` |
 | P10b — Client, application and inbox pages | done; build 0 warnings, 1,163 tests green (Domain 630, Application 353, Architecture 13, Integration 167). Pages: clients (list, register, edit, KYC document, incomes, obligations), applications (list with SQL-side filters / sort / paging, new, application page with parties, collateral, documents, scoring explanation, history, decisions and every action the viewer may take), decision inboxes. Web tests: operator flow through the pages, upload by content, IDOR by id (404), the Auditor's POST to every permission-protected action refused with nothing changed, unprotected POSTs only account self-service. Fixed on the way: decisions with the same timestamp were listed in an undefined order. | `c842907` |
 | P11 — Contract, disbursement, loans, repayments | done; build 0 warnings, 1,190 tests green (Domain 646, Application 353, Architecture 13, Integration 178), no pending EF model changes. Gapless contract numbers from a locked counter row in the signing transaction; idempotent payout (deterministic key, Pending row committed before core banking, rejection → retry with the same key, timeout → background retry returns the same transaction); exposure re-check under per-party `sp_getapplock` in id order; loan booking via the outbox; installments and early repayment (partial recalculation, full closes loan and application). Tests: parallel signing + rollback, double payout sequential and parallel, error and timeout, exposure race over a shared guarantor, repayments, loan IDOR, pages. Decisions #41–#44. | `8633e23` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** P10a `24ae829`, P10b `c842907`, P11 `8633e23`. **Current step: P12**; stop after the P12 commit and
-  report P11 + P12 to the user (do not start P13).
-- **P12 design:** Application `ApplicationLifecycleJobs` (escalation: Underwriting files whose deadline = entry +
-  2 working days (Tbilisi, weekends, `Holidays`) has passed → `Escalate`; expiry: Approved / ConditionallyApproved /
-  CounterOffered with `OfferExpiresAt` ≤ now → `Expire`), candidates claimed in a transaction with
-  `UPDLOCK, READPAST, ROWLOCK` (keyset by id so not-yet-due rows are not revisited), processed in that transaction;
-  idempotent (escalation sets `EscalatedAt` once; expiry changes status once; rowversion against a parallel runner).
-  Escalation notifies active users with `underwriting.decide-senior` (outbox handler on `ApplicationEscalated`);
-  expiry notifies through the existing status-change handler. Infrastructure `LifecycleJobsService`
-  (`BackgroundService`, `Jobs:Enabled`, `Jobs:Interval`), disabled in web tests like the outbox.
-  Tests: escalation before/after the deadline incl. weekend, run twice and in parallel → one escalation (one audit
-  row, one event); expiry run twice / in parallel → one Expired history entry; inbox effect (UW no longer sees it).
-- **Open questions for the user:** none.
+| P12 — Escalation and offer-expiry jobs | done; build 0 warnings, 1,197 tests green (Domain 646, Application 353, Architecture 13, Integration 185), no pending EF model changes. One `BackgroundService` (`Jobs:Enabled`, `Jobs:Interval`) runs both jobs; candidates claimed with `UPDLOCK, READPAST, ROWLOCK` per batch (keyset by id); escalation after 2 working days (weekends and holidays skipped) notifies the Senior Underwriters; expiry after 30 days notifies operator and client. Tests: deadline across a weekend and a holiday, run twice and two parallel runners → one effect each, inbox and authority after escalation, notifications. Index for the escalation claim added. Seen once: `LoggingTests.A_log_event_reaches_the_database…` timed out (15 s poll for the batched SQL sink) during a full run under load; it passed alone and in the next full run. | (this commit) |

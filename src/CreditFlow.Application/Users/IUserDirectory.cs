@@ -98,4 +98,7 @@ public interface IUserDirectory
     Task<PagedResult<UserListItem>> SearchAsync(UserSearchQuery query, CancellationToken cancellationToken);
 
     Task<UserDetails?> GetDetailsAsync(UserId id, CancellationToken cancellationToken);
+
+    /// <summary>Email addresses of the active users whose role holds <paramref name="permission"/> (notification recipients).</summary>
+    Task<IReadOnlyList<string>> ListActiveEmailsWithPermissionAsync(string permission, CancellationToken cancellationToken);
 }

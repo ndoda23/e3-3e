@@ -339,6 +339,8 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BranchId", "Status", "StatusChangedAt");
 
+                    b.HasIndex("Status", "EscalatedAt", "StatusChangedAt");
+
                     b.HasIndex("Status", "Tier", "StatusChangedAt");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Status", "Tier", "StatusChangedAt"), new[] { "CreatedBy", "AmountGel" });

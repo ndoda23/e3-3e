@@ -22,6 +22,7 @@ using CreditFlow.Domain.Users;
 using CreditFlow.Application.External;
 using CreditFlow.Infrastructure.Auditing;
 using CreditFlow.Infrastructure.ExternalServices;
+using CreditFlow.Infrastructure.Jobs;
 using CreditFlow.Infrastructure.Outbox;
 using CreditFlow.Infrastructure.Authorization;
 using CreditFlow.Infrastructure.Identity;
@@ -71,12 +72,16 @@ public static class DependencyInjection
         return services;
     }
 
-    /// <summary>The transactional outbox with its background dispatcher, and the mock external services.</summary>
+    /// <summary>The transactional outbox with its background dispatcher, the lifecycle jobs, and the mock external services.</summary>
     private static void AddOutboxAndExternalServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<OutboxOptions>().Bind(configuration.GetSection(OutboxOptions.SectionName));
         services.AddSingleton<OutboxProcessor>();
         services.AddHostedService<OutboxDispatcher>();
+
+        services.AddOptions<JobOptions>().Bind(configuration.GetSection(JobOptions.SectionName));
+        services.AddScoped<IApplicationJobQueries, ApplicationJobQueries>();
+        services.AddHostedService<LifecycleJobsService>();
 
         services.AddOptions<MockOptions>().Bind(configuration.GetSection(MockOptions.SectionName));
         services.AddSingleton<MockScenarios>();

@@ -125,4 +125,7 @@ public static class LendingPolicy
 
     /// <summary>An approval or counter-offer is valid this many days.</summary>
     public const int OfferValidityDays = 30;
+
+    /// <summary>A file still in Underwriting this many working days after it arrived is escalated to a senior.</summary>
+    public const int EscalationWorkingDays = 2;
 }

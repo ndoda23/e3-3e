@@ -41,6 +41,7 @@ public sealed class CreditFlowWebFactory(
                 ["Seed:DevUsers:Enabled"] = "false",
                 ["Serilog:MinimumLevel:Default"] = "Warning",
                 ["Outbox:Enabled"] = "false",
+                ["Jobs:Enabled"] = "false",
 
                 // Tests sign in many times from the same (test) client; the rate limit has its own test.
                 ["Security:SignInAttemptsPerMinute"] = "1000",
