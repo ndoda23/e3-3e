@@ -1,0 +1,47 @@
+@* Minimal layout for sign-in, account and error pages: no navigation, no database access. *@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var title = ViewData["Title"] as string ?? T["App.Name"].Value;
+}
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title · CreditFlow</title>
+    <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false,"historyCacheSize":0,"selfRequestsOnly":true}' />
+    <meta name="request-verification-token" content="@requestToken" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/lib/htmx/htmx.min.js" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+</head>
+<body>
+    <main class="auth" id="main">
+        <div class="auth-card">
+            <div class="auth-head">
+                <div class="brand">
+                    <span class="brand-mark" aria-hidden="true">L</span>
+                    <div>
+                        <div class="brand-name">PCB LOS</div>
+                        <div class="brand-sub">@T["App.Tagline"]</div>
+                    </div>
+                </div>
+                <h1 class="auth-title">@title</h1>
+                @if (ViewData["Description"] is string description)
+                {
+                    <p class="auth-desc">@description</p>
+                }
+            </div>
+            <div class="auth-body">
+                @RenderBody()
+            </div>
+            @if (IsSectionDefined("Footer"))
+            {
+                <div class="auth-foot">@RenderSection("Footer")</div>
+            }
+        </div>
+    </main>
+    <div id="toast-host" class="toast-host" aria-live="polite"></div>
+</body>
+</html>

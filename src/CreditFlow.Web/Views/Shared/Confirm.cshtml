@@ -1,0 +1,6 @@
+@model CreditFlow.Web.Models.ConfirmModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+@* Shown when JavaScript is off: the same dialog as a page. *@
+<partial name="_ConfirmModal" model="Model" />

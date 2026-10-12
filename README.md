@@ -1,4 +1,4 @@
-# LAMS — Loan Applications Management System
+# CreditFlow — retail loan origination
 
 Retail loan origination system for PCB. ASP.NET Core 9 MVC modular monolith (Clean Architecture).
 
@@ -25,11 +25,11 @@ authority limits, branches, audit log). The implementation plan and progress are
    docker compose up -d
    ```
 
-2. **Secrets** (user-secrets of `src/Lams.Web`; nothing secret is committed):
+2. **Secrets** (user-secrets of `src/CreditFlow.Web`; nothing secret is committed):
 
    ```bash
-   cd src/Lams.Web
-   dotnet user-secrets set "ConnectionStrings:Lams" "Server=localhost,1433;Database=Lams;User Id=sa;Password=<MSSQL_SA_PASSWORD>;TrustServerCertificate=True"
+   cd src/CreditFlow.Web
+   dotnet user-secrets set "ConnectionStrings:CreditFlow" "Server=localhost,1433;Database=CreditFlow;User Id=sa;Password=<MSSQL_SA_PASSWORD>;TrustServerCertificate=True"
    dotnet user-secrets set "Seed:Admin:Password" "<initial sysadmin password, min. 12 chars, upper/lower/digit/symbol>"
    dotnet user-secrets set "Seed:DevUsers:Password" "<password for all demo users, same rules>"
    ```
@@ -37,7 +37,7 @@ authority limits, branches, audit log). The implementation plan and progress are
 3. **Run:**
 
    ```bash
-   dotnet run --project src/Lams.Web --launch-profile https
+   dotnet run --project src/CreditFlow.Web --launch-profile https
    ```
 
    Open <https://localhost:7180>. In Development the database is created and migrated on start
@@ -130,7 +130,7 @@ Seeded as instructed; all are editable in Admin › Roles & permissions or Admin
 ## Reference data and seeding
 
 Reference data (roles, role permissions, branches, authority limits) is seeded at start-up in every environment by
-`ReferenceDataSeeder` (`src/Lams.Infrastructure/Persistence/Seeding`). Seeding is **versioned**:
+`ReferenceDataSeeder` (`src/CreditFlow.Infrastructure/Persistence/Seeding`). Seeding is **versioned**:
 
 - Every change to reference data is a **seed unit**: a class implementing `ISeedUnit` with an ordered id
   `NNNN_snake_case_description` (for example `0001_initial_roles_permissions`).
@@ -162,10 +162,10 @@ Rules:
 
 ### Adding a new role (e.g. in Phase 2)
 
-1. **Role code.** Add a constant to `RoleCodes` (`src/Lams.Application/ReferenceData/RoleCodes.cs`), e.g.
+1. **Role code.** Add a constant to `RoleCodes` (`src/CreditFlow.Application/ReferenceData/RoleCodes.cs`), e.g.
    `public const string CreditCommittee = "CC";` (2–16 uppercase letters or digits).
 2. **New permissions (if any).** Add the constants to `Permissions` and their module, display name and description to
-   `PermissionCatalog.All` (`src/Lams.Application/Authorization`). Administration permissions must start with `admin.`.
+   `PermissionCatalog.All` (`src/CreditFlow.Application/Authorization`). Administration permissions must start with `admin.`.
 3. **Fixed definition.** Add a `RoleSeed` to `RoleSeedCatalog.All` with the display name, description, `DataScope`,
    `Dashboard`, branch/segment/authority-level rules, `IsAdministrative`, and the role's initial `Permissions`.
    Do **not** add the code to `SeedUnits.InitialRoleCodes`: unit `0001` stays as it was.
@@ -178,7 +178,7 @@ Rules:
    {
        public string Id => "0004_add_role_credit_committee";
 
-       public async Task ApplyAsync(LamsDbContext db, CancellationToken cancellationToken)
+       public async Task ApplyAsync(CreditFlowDbContext db, CancellationToken cancellationToken)
        {
            var seed = RoleSeedCatalog.Get(RoleCodes.CreditCommittee);
            await SeedOperations.CreateRoleIfMissingAsync(db, seed, seed.Permissions, cancellationToken);

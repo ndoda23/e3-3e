@@ -1079,7 +1079,12 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 **Day 1 — foundation, domain, persistence**
 - [x] **P0** Housekeeping: revert stray edits, `.editorconfig` naming rules, `RoleId.New()`/`UserId.New()` in seeding,
   remove unused `Branch.Create` overload; README: decision "EF Core instead of Dapper (agreed with the bank)".
-- [ ] **P1** Rename `Lams` → `CreditFlow` (if approved; mechanical, one commit).
+- [x] **P1** Rename `Lams` → `CreditFlow` (mechanical, one commit). Projects, folders, namespaces, solution, `Lams*`
+  types, cookies (`__Host-CreditFlow.Auth` / `.Af`), claim / session keys (`creditflow:role_id`, `creditflow.issued`),
+  Data Protection application name and TOTP issuer, connection string name `ConnectionStrings:CreditFlow`, design-time
+  variable `CREDITFLOW_DESIGN_CONNECTION`, docker container / volume `creditflow-sqlserver` / `creditflow-sqldata`.
+  Kept: `UserSecretsId` (local secrets survive), migration ids, `docs/`, and the Phase 1 sections of this file
+  (history, old names on purpose).
 - [ ] **P2** Roles & permissions: remove LAMS-only concepts, `RoleKind`, new catalog/matrix/dashboards, seed unit
   `0004`, migration, dev personas for 7 roles (≥2 UW, ≥2 Senior UW, 3 committee, 1 Compliance, 1 Auditor,
   Operators in 2 branches); ported tests.
@@ -1127,4 +1132,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | Step | Status | Commit |
 |---|---|---|
 | A — Plan | approved 2026-10-12 | `395c343` |
-| P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | (this commit) |
+| P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | `5c99de0` |
+| P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | (this commit) |

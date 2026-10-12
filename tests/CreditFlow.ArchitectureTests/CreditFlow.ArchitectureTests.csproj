@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CreditFlow.Domain\CreditFlow.Domain.csproj" />
+    <ProjectReference Include="..\..\src\CreditFlow.Application\CreditFlow.Application.csproj" />
+    <ProjectReference Include="..\..\src\CreditFlow.Infrastructure\CreditFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\CreditFlow.Web\CreditFlow.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+</Project>

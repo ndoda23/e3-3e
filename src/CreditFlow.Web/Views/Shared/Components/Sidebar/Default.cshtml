@@ -1,0 +1,33 @@
+@model CreditFlow.Web.ViewComponents.SidebarModel
+<aside class="sidebar">
+    <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <div>
+            <div class="brand-name">PCB LOS</div>
+            <div class="brand-sub">@T["App.Tagline"]</div>
+        </div>
+    </a>
+    <nav class="nav" aria-label="@T["Layout.MainNavigation"]">
+        @foreach (var navSection in Model.Sections)
+        {
+            <h2 class="nav-section" id="nav-@navSection.Key">@T[$"Nav.Section.{navSection.Key}"]</h2>
+            <ul aria-labelledby="nav-@navSection.Key">
+                @foreach (var item in navSection.Items)
+                {
+                    var active = string.Equals(item.Area, Model.CurrentArea, StringComparison.OrdinalIgnoreCase)
+                                 && string.Equals(item.Controller, Model.CurrentController, StringComparison.OrdinalIgnoreCase);
+                    <li>
+                        <a class="nav-item @(active ? "active" : null)"
+                           asp-area="@item.Area" asp-controller="@item.Controller" asp-action="Index"
+                           aria-current="@(active ? "page" : null)"
+                           data-nav="@item.Key">
+                            <icon name="@item.Icon" size="17" />
+                            <span>@T[$"Nav.{item.Key}"]</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </nav>
+    <vc:user-card />
+</aside>
