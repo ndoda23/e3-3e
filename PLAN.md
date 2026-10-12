@@ -34,7 +34,7 @@ Sign-in works since Step 6 (accounts: see README in Step 8; for now the seeded `
 | 7c — Admin › Authority limits | done | `2c98a18` |
 | 7d — Admin › Branches | done | `68148fc` |
 | 7e — Admin › Audit log | done | `319312b` |
-| 8 — Integration tests and docs (light) | done | (this commit) |
+| 8 — Integration tests and docs (light) | done | `24ae829` |
 
 Test status after Step 8: build with 0 warnings; 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135 — Testcontainers SQL Server).
 
@@ -1179,52 +1179,28 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P7 — Scoring, approval thresholds, schedule, EIR, early repayment | done; build 0 warnings, 1,102 tests green (Domain 630, Application 328, Architecture 13, Integration 131) | `621054e` |
 | P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | `ba77864` |
 | P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | `be84877` |
-| P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | (this commit) |
+| P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | `24ae829` |
 
 
-## Resume notes (2026-10-12, evening)
-- **Current step: P10**, split into **P10a** (application services, SQL access filter, by-id checks, scoring handler,
-  audit of application events + tests) and **P10b** (minimal pages). The user asked to stop after the P10 commit(s);
-  then wait for the user.
-- **State: P10a code is written but NOT committed** (working tree). `dotnet build` of the solution passes with 0
-  errors; the test suite has **not** been run on it yet. Nothing is half-edited inside a file.
-- **Done in the working tree (P10a):**
-  - Domain: `LoanApplicationId.Reference`; events `ApplicationScored`, `ApplicationDecisionRecorded` (raised in
-    `LoanApplication` via `AddDecision` and `CompleteScoring`); `AuditActions.Application*`.
-  - Application: `ApplicationAccessFilter` + `CurrentAccessProfile` (ApplicationAccess.cs), read models and
-    `IApplicationQueries` / `IExposureQueries` (ApplicationQueries.cs), `IDocumentStore` + `DocumentUploadPolicy`
-    (Documents.cs: 10 MB, PDF/PNG/JPEG by magic bytes), `ApplicationService` + `ApplicationChange` (one command path:
-    permission → load → visibility (404) → domain → save; `ConcurrencyConflictException` → `Concurrency.Conflict`;
-    `RunWithRetryAsync` for votes), `DecisionService` (inboxes, compliance, approve/reject/counter-offer, vote),
-    `ScoringHandler` (outbox handler on To=Scoring), `Clients/ClientService` + `IClientQueries`;
-    `CommonErrors.AccessDenied/ConcurrencyConflict`; `ConcurrencyConflictException` (IUnitOfWork.cs); DI registrations.
-  - Infrastructure: `UnitOfWork.SaveChangesAsync` translates `DbUpdateConcurrencyException`;
-    `DomainEventAuditInterceptor` (runs before the outbox interceptor); audited types extended (Client, LoanProduct,
-    versions, rule sets, thresholds, FX, holidays); `Queries/ApplicationQueries.cs` (filter in SQL, inbox predicates:
-    not own, not already decided, tier/escalation), `Queries/LendingQueries.cs` (ClientQueries, ExposureQueries,
-    DocumentStore + `DocumentContents` table); outbox event keys registered; migration `ApplicationDocuments`.
-  - Web: resource texts for the new audit actions / entities.
-- **Left in P10a:**
-  1. Test host: add a per-scope current user to `tests/CreditFlow.IntegrationTests/Infrastructure/InfrastructureHost.cs`
-     (e.g. `InScopeAsAsync(UserId, …)` with a scoped override that `ICurrentUser` resolves first), because
-     `TestCurrentUser` is a singleton and parallel decisions need different users.
-  2. `ApplicationWorkflowTests` (InfrastructureHost + FakeTimeProvider + `OutboxProcessor.ProcessAllDueAsync`):
-     full flow (register client with income → create → upload 2 PDFs → submit → pre-check → send to scoring →
-     scoring → UW inbox → approve; audit rows StatusChanged/Scored/Decision); branch scope in list and by id
-     (Batumi operator vs Vake application → not found); an underwriter never sees an application they created
-     (create it with `CreatedBy` = the underwriter via the repository) and cannot approve it; tier inbox (UW does not
-     see a Senior-tier file, SUW does); concurrent approvals (one wins, one decision stored); three concurrent committee
-     votes (status Approved, every successful vote stored); Auditor: reads work, every command → AccessDenied;
-     upload rejects non-PDF and > 10 MB. Staff for tests: create with `IIdentityService.CreateAccountAsync` +
-     `StaffMember.Create` (see `SeedHistoryTests.AddStaffAsync`).
-  3. Run the full suite (≈ 4 min; Docker), fix, `has-pending-model-changes`, PLAN progress row, commit
-     `feat: application services, access filter and decisions` (P10a).
-- **P10b (pages, then commit):** Clients (list/search, register, details with incomes/obligations), Applications
-  (list with filters/paging/sort, new, details: parties, collateral, documents upload/download, history, scoring
-  results, decisions, conditions, action forms by permission + status: submit, send to scoring, cancel, client
-  response, compliance clear/reject, approve/reject/counter-offer, vote), Inbox (Underwriting / Committee /
-  Compliance by permission); menu entries Clients and Inbox; web tests incl. the Auditor POST test over all POST
-  actions (403/404) and IDOR by id. Then PLAN progress + commit, then **stop and report to the user**.
-- **Known interim:** `ExposureQueries.MonthlyInstallmentsGelAsync` returns nothing until loans are booked (P11).
+
+
+## Resume notes (2026-10-13)
+- **Committed:** P10a `24ae829`. **Current step: P10b** (minimal pages), then **P11**; stop after the P11 commit.
+- **P10b in the working tree (not committed, does not build yet — views unfinished):**
+  - Application: `IProductQueries` + `ProductOption` (ApplicationQueries.cs, impl `ProductQueries` in
+    Infrastructure/Persistence/Queries/LendingQueries.cs, DI), `ApplicationService.ListProductsAsync`,
+    `ApplicationDetails.RequiredTier`.
+  - Web: `ClientsController`, `ApplicationsController` (all actions, `Done()` maps `ApplicationErrors.NotFound` → 404),
+    `InboxController`, `Models/LendingModels.cs` (forms, `ApplicationListQuery`, `ApplicationActions.For`),
+    `LocalizerExtensions.EnumText`, `ModelStateExtensions.LocalizeAll`, `DisplayFormat.Date/Percent/Money(Money)`,
+    menu entries Inbox + Clients, placeholders for Applications removed from WorkspaceControllers.cs.
+  - Views written: Clients/{Index,_ClientRows,_ClientFields,Register,Edit,Details}, Applications/{Index,_ApplicationRows,
+    _ApplicationTable,New}, Shared/{_Notices,_StatusPill,_CurrencySelect}.
+- **Left in P10b:** Applications/Details.cshtml (parties, collateral, documents, history, scoring, decisions,
+  conditions, action forms from `ApplicationActions`), Inbox/Index.cshtml, resource keys (all literal `T["…"]` keys
+  must exist — `ResourceTests`), update MenuTests + DefinitionOfDoneTests menu expectations (Inbox, Clients), web tests:
+  operator flow through the pages, IDOR by id (Batumi operator → 404 on details/document/POST), Auditor POST test over
+  every permission-protected POST action (reflection; htmx POST → 403/404) and a check that unprotected POSTs are only
+  account self-service; XML docs on new public types; build 0 warnings, full suite, PLAN row, commit.
+- **P11** as in §P.7 / §P.3.5 (never-cut list there).
 - **Open questions for the user:** none.
-- Remove this section in the next step's commit.
