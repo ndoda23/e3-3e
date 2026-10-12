@@ -124,6 +124,7 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
 
         var nika = await UserAsync(Underwriter);
         AssertSuccess(await AsAsync<DecisionService, Result>(nika, s => s.CounterOfferAsync(id, 6_000m, 24, 20m, "Lower amount.", Ct)));
+        _clock.Advance(TimeSpan.FromHours(2)); // the client answers later; decisions are listed in time order
         AssertSuccess(await AsAsync<ApplicationService, Result>(anna, s => s.RecordClientResponseAsync(id, true, null, Ct)));
         await Processor.ProcessAllDueAsync(Ct);
         Assert.Equal(ApplicationStatus.Underwriting, await StatusAsync(id));

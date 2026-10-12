@@ -42,6 +42,8 @@ public sealed partial class ResourceTests
         keys.AddRange(Enum.GetNames<RoleKind>().SelectMany(k => new[] { $"RoleKind.{k}", $"RoleKind.{k}.Description", $"Roles.Sod{k}" }));
         keys.AddRange(Enum.GetNames<DataScope>().SelectMany(d => new[] { $"DataScope.{d}", $"DataScope.{d}.Description" }));
         keys.AddRange(Enum.GetNames<AttributeRule>().Select(r => $"AttributeRule.{r}"));
+        keys.AddRange(Enum.GetNames<CreditFlow.Application.Applications.Inbox>().SelectMany(i => new[] { $"Inbox.{i}", $"Inbox.{i}.Description" }));
+        keys.AddRange(["Applications.Failed", "Applications.FailedOverridable"]);
         keys.AddRange(Enum.GetNames<UserStatusFilter>().Select(s => $"Users.Status.{s}"));
         keys.AddRange(Enum.GetNames<UserOperation>().SelectMany(o => new[]
         {

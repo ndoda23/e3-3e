@@ -1,0 +1,8 @@
+@model string
+@* A currency select named by the model (the form field name); GEL first. *@
+<select name="@Model" class="select" aria-label="@T["Field.Currency"]">
+    @foreach (var currency in Enum.GetValues<CreditFlow.Domain.Common.Currency>())
+    {
+        <option value="@currency">@currency</option>
+    }
+</select>

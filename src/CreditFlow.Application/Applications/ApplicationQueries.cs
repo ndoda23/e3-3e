@@ -8,6 +8,7 @@ using CreditFlow.Domain.Users;
 
 namespace CreditFlow.Application.Applications;
 
+/// <summary>Sort orders of the application list.</summary>
 public enum ApplicationSortField
 {
     Updated = 0,
@@ -57,6 +58,7 @@ public enum Inbox
     Compliance = 3,
 }
 
+/// <summary>One row of an application list or inbox.</summary>
 public sealed record ApplicationListItem(
     LoanApplicationId Id,
     string Reference,
@@ -74,17 +76,23 @@ public sealed record ApplicationListItem(
     DateTimeOffset? EscalatedAt,
     DateTimeOffset? OfferExpiresAt);
 
+/// <summary>A party of an application.</summary>
 public sealed record PartyView(ClientId ClientId, string Name, string PersonalNumber, PartyRole Role);
 
+/// <summary>A collateral item of an application.</summary>
 public sealed record CollateralView(ApplicationLineId Id, CollateralType Type, string Description, Money MarketValue, DateOnly ValuationDate);
 
+/// <summary>Metadata of an uploaded document.</summary>
 public sealed record DocumentView(
     ApplicationLineId Id, DocumentType Type, string FileName, long Size, string UploadedBy, DateTimeOffset UploadedAt);
 
+/// <summary>One status transition (who, when, why).</summary>
 public sealed record HistoryView(ApplicationStatus? From, ApplicationStatus To, DateTimeOffset At, string By, string? Reason);
 
+/// <summary>A decision taken on the application.</summary>
 public sealed record DecisionView(DecisionKind Kind, string DecidedBy, UserId DecidedById, DateTimeOffset At, string? Reason, string? OverrideReason);
 
+/// <summary>A condition to meet before disbursement.</summary>
 public sealed record ConditionView(ApplicationLineId Id, ConditionType Type, string Description, bool IsMet, DateTimeOffset? MetAt);
 
 /// <summary>Everything the application page shows.</summary>
@@ -103,6 +111,9 @@ public sealed record ApplicationDetails
     public required LoanTerms Terms { get; init; }
 
     public required LoanTerms? ProposedTerms { get; init; }
+
+    /// <summary>The tier needed to decide now (escalated files need a Senior Underwriter); <c>null</c> before scoring.</summary>
+    public required ApprovalTier? RequiredTier { get; init; }
 
     public required string? ContractNumber { get; init; }
 
@@ -144,6 +155,16 @@ public interface IApplicationQueries
     /// <summary>The application, or <c>null</c> when it does not exist or the viewer may not see it.</summary>
     Task<ApplicationDetails?> GetDetailsAsync(
         LoanApplicationId id, ApplicationAccessFilter access, CancellationToken cancellationToken);
+}
+
+/// <summary>A product that can be applied for, with the terms of its current version.</summary>
+public sealed record ProductOption(LoanProductId Id, string Code, string Name, ProductType Type, ProductTerms Terms);
+
+/// <summary>Read side of loan products.</summary>
+public interface IProductQueries
+{
+    /// <summary>Active products by name.</summary>
+    Task<IReadOnlyList<ProductOption>> ListActiveAsync(CancellationToken cancellationToken);
 }
 
 /// <summary>Current exposure of clients at the bank and their monthly installments here (for scoring and disbursement).</summary>

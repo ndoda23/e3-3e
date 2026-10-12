@@ -1,0 +1,44 @@
+@model IReadOnlyList<CreditFlow.Application.Applications.ApplicationListItem>
+<div class="table-wrap">
+    <table class="tbl">
+        <caption class="sr-only">@T["Nav.Applications"]</caption>
+        <thead>
+            <tr>
+                <th scope="col">@T["Applications.Reference"]</th>
+                <th scope="col">@T["Applications.Borrower"]</th>
+                <th scope="col">@T["Field.Product"]</th>
+                <th scope="col" class="num">@T["Field.Amount"]</th>
+                <th scope="col">@T["Field.Status"]</th>
+                <th scope="col">@T["Applications.Branch"]</th>
+                <th scope="col">@T["Applications.StatusChanged"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr data-application="@item.Id.Value">
+                    <td><a class="row-link mono" asp-controller="Applications" asp-action="Details" asp-route-id="@item.Id.Value">@item.Reference</a></td>
+                    <td>
+                        <div class="person-name">@item.BorrowerName</div>
+                        <div class="person-sub mono">@item.BorrowerPersonalNumber</div>
+                    </td>
+                    <td>@item.ProductName</td>
+                    <td class="num tnum">@DisplayFormat.Money(item.Amount) <span class="muted small">· @item.TermMonths @T["Applications.Months"]</span></td>
+                    <td>
+                        <partial name="_StatusPill" model="item.Status" />
+                        @if (item.EscalatedAt is not null)
+                        {
+                            <span class="pill warning" title="@DisplayFormat.DateTime(item.EscalatedAt)">@T["Applications.Escalated"]</span>
+                        }
+                    </td>
+                    <td>@item.BranchName</td>
+                    <td class="muted tnum nowrap">@DisplayFormat.DateTime(item.StatusChangedAt)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Count == 0)
+    {
+        <div class="empty">@T["Applications.None"]</div>
+    }
+</div>

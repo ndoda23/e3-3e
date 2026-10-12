@@ -1,0 +1,53 @@
+@model ClientForm
+@using CreditFlow.Domain.Clients
+@{
+    ViewData["Title"] = T["Clients.Register"].Value;
+    ViewData["Section"] = T["Nav.Clients"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Clients.RegisterHint"]</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="Register" class="card-body form" novalidate>
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <div class="form-grid">
+            <div class="field full">
+                <label asp-for="PersonalNumber" class="required"></label>
+                <input asp-for="PersonalNumber" class="inp mono" inputmode="numeric" maxlength="11" autocomplete="off" autofocus />
+                <span asp-validation-for="PersonalNumber"></span>
+            </div>
+            <partial name="_ClientFields" model="Model" />
+            <div class="field">
+                <label asp-for="DocumentType" class="required"></label>
+                <select asp-for="DocumentType" class="select">
+                    @foreach (var type in Enum.GetValues<IdentityDocumentType>())
+                    {
+                        <option value="@type" selected="@(Model.DocumentType == type)">@T.EnumText(type)</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label asp-for="DocumentNumber" class="required"></label>
+                <input asp-for="DocumentNumber" class="inp mono" autocomplete="off" />
+                <span asp-validation-for="DocumentNumber"></span>
+            </div>
+            <div class="field">
+                <label asp-for="DocumentIssuedOn" class="required"></label>
+                <input asp-for="DocumentIssuedOn" type="date" class="inp" />
+                <span asp-validation-for="DocumentIssuedOn"></span>
+            </div>
+            <div class="field">
+                <label asp-for="DocumentExpiresOn" class="required"></label>
+                <input asp-for="DocumentExpiresOn" type="date" class="inp" />
+                <span asp-validation-for="DocumentExpiresOn"></span>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Clients.Register"]</button>
+        </div>
+    </form>
+</section>

@@ -9,10 +9,12 @@ using CreditFlow.Domain.Users;
 
 namespace CreditFlow.Application.Applications;
 
+/// <summary>A new draft application for a registered borrower.</summary>
 public sealed record CreateApplicationCommand(
     ClientId BorrowerId, LoanProductId ProductId, decimal Amount, Currency Currency, int TermMonths, decimal AnnualRate,
     ScheduleType ScheduleType);
 
+/// <summary>Collateral with its manually entered valuation.</summary>
 public sealed record AddCollateralCommand(
     CollateralType Type, string? Description, decimal MarketValue, Currency Currency, DateOnly ValuationDate);
 
@@ -33,10 +35,17 @@ public sealed class ApplicationService(
     IFxRateRepository rates,
     IDocumentStore documents,
     IApplicationQueries queries,
+    IProductQueries productQueries,
     IUnitOfWork unitOfWork,
     TimeProvider clock)
 {
     // ----- Read side -----
+
+    /// <summary>The active products (for new applications and list filters; empty without <c>applications.view</c>).</summary>
+    public async Task<IReadOnlyList<ProductOption>> ListProductsAsync(CancellationToken cancellationToken) =>
+        (await access.GetAsync(cancellationToken))?.HasPermission(Permissions.Applications.View) == true
+            ? await productQueries.ListActiveAsync(cancellationToken)
+            : [];
 
     public async Task<PagedResult<ApplicationListItem>> SearchAsync(ApplicationSearch search, CancellationToken cancellationToken)
     {

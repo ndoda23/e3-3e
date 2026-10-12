@@ -1,0 +1,32 @@
+@model ClientForm
+@* Personal and contact fields shared by registration and editing. *@
+<div class="field">
+    <label asp-for="FirstName" class="required"></label>
+    <input asp-for="FirstName" class="inp" autocomplete="off" />
+    <span asp-validation-for="FirstName"></span>
+</div>
+<div class="field">
+    <label asp-for="LastName" class="required"></label>
+    <input asp-for="LastName" class="inp" autocomplete="off" />
+    <span asp-validation-for="LastName"></span>
+</div>
+<div class="field">
+    <label asp-for="BirthDate" class="required"></label>
+    <input asp-for="BirthDate" type="date" class="inp" />
+    <span asp-validation-for="BirthDate"></span>
+</div>
+<div class="field">
+    <label asp-for="Phone" class="required"></label>
+    <input asp-for="Phone" class="inp" autocomplete="off" />
+    <span asp-validation-for="Phone"></span>
+</div>
+<div class="field">
+    <label asp-for="Email"></label>
+    <input asp-for="Email" type="email" class="inp" autocomplete="off" />
+    <span asp-validation-for="Email"></span>
+</div>
+<div class="field">
+    <label asp-for="Address" class="required"></label>
+    <input asp-for="Address" class="inp" autocomplete="off" />
+    <span asp-validation-for="Address"></span>
+</div>

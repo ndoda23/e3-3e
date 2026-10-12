@@ -13,6 +13,17 @@ public static class LocalizerExtensions
     }
 
     /// <summary>
+    /// Display name of an enum value (<c>Enum.{Type}.{Value}</c>); without a resource, the name split into words
+    /// ("ComplianceReview" → "Compliance review").
+    /// </summary>
+    public static string EnumText<TEnum>(this IStringLocalizer localizer, TEnum value)
+        where TEnum : struct, Enum
+    {
+        var name = value.ToString();
+        return localizer.TextOrDefault($"Enum.{typeof(TEnum).Name}.{name}", Words(name));
+    }
+
+    /// <summary>
     /// Display name of an audited action (<c>AuditAction.{action}</c>). Data changes are named with their entity
     /// (<c>AuditAction.{entityType}.{action}</c>, e.g. "User updated"). Unknown actions are shown as stored.
     /// </summary>
@@ -31,5 +42,16 @@ public static class LocalizerExtensions
         }
 
         return localizer.TextOrDefault($"AuditAction.{action}", action);
+    }
+
+    private static string Words(string pascalCase)
+    {
+        var text = new System.Text.StringBuilder(pascalCase.Length + 8);
+        foreach (var c in pascalCase)
+        {
+            text.Append(text.Length > 0 && char.IsUpper(c) ? " " + char.ToLowerInvariant(c) : c.ToString());
+        }
+
+        return text.ToString();
     }
 }

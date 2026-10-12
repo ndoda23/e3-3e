@@ -6,6 +6,7 @@ using CreditFlow.Domain.Common;
 
 namespace CreditFlow.Application.Clients;
 
+/// <summary>A new client with the identity document checked by the operator.</summary>
 public sealed record RegisterClientCommand(
     string? PersonalNumber,
     ClientDetails Details,
@@ -14,12 +15,16 @@ public sealed record RegisterClientCommand(
     DateOnly DocumentIssuedOn,
     DateOnly DocumentExpiresOn);
 
+/// <summary>One row of the client list.</summary>
 public sealed record ClientListItem(ClientId Id, string PersonalNumber, string FullName, DateOnly BirthDate, KycStatus Kyc, ScreeningStatus Screening);
 
+/// <summary>A monthly income of a client.</summary>
 public sealed record IncomeView(ClientLineId Id, IncomeType Type, string Source, Money MonthlyAmount);
 
+/// <summary>A declared obligation of a client.</summary>
 public sealed record ObligationView(ClientLineId Id, string Lender, Money MonthlyPayment, Money OutstandingAmount);
 
+/// <summary>Everything the client page shows.</summary>
 public sealed record ClientDetailsView(
     ClientId Id,
     string PersonalNumber,

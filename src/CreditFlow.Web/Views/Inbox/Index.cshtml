@@ -1,0 +1,25 @@
+@model InboxViewModel
+@{
+    ViewData["Title"] = T["Nav.Inbox"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T[$"Inbox.{Model.Current}.Description"]</p>
+    </div>
+</div>
+@if (Model.Available.Count > 1)
+{
+    <nav class="tabs mb" aria-label="@T["Nav.Inbox"]">
+        @foreach (var inbox in Model.Available)
+        {
+            <a class="tab @(inbox == Model.Current ? "active" : null)" href="@Url.Action("Index", new { inbox })"
+               aria-current="@(inbox == Model.Current ? "page" : null)" data-inbox="@inbox">@T[$"Inbox.{inbox}"]</a>
+        }
+    </nav>
+}
+<section class="card" aria-label="@T[$"Inbox.{Model.Current}"]" data-current-inbox="@Model.Current">
+    <div id="inbox-rows" class="tbl-body">
+        <partial name="_InboxRows" model="Model" />
+    </div>
+</section>

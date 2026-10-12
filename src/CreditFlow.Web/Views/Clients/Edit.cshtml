@@ -1,0 +1,25 @@
+@model ClientForm
+@{
+    ViewData["Title"] = T["Clients.Edit"].Value;
+    ViewData["Section"] = T["Nav.Clients"].Value;
+    var id = ViewContext.RouteData.Values["id"];
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc"><span class="mono">@Model.PersonalNumber</span></p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="Edit" asp-route-id="@id" class="card-body form" novalidate>
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <input type="hidden" asp-for="PersonalNumber" />
+        <div class="form-grid">
+            <partial name="_ClientFields" model="Model" />
+        </div>
+        <div class="form-actions">
+            <a class="btn" asp-action="Details" asp-route-id="@id">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Common.Save"]</button>
+        </div>
+    </form>
+</section>

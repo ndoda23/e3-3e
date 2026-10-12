@@ -135,6 +135,7 @@ public static class DependencyInjection
         services.AddScoped<IHolidayRepository, HolidayRepository>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();
+        services.AddScoped<IProductQueries, ProductQueries>();
         services.AddScoped<IExposureQueries, ExposureQueries>();
         services.AddScoped<IDocumentStore, DocumentStore>();
         services.AddScoped<IAuditWriter, AuditWriter>();

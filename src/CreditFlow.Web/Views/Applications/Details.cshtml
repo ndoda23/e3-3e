@@ -1,0 +1,429 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Common
+@using CreditFlow.Domain.Products
+@{
+    var a = Model.Application;
+    var s = a.Summary;
+    var act = Model.Actions;
+    var id = s.Id.Value;
+    ViewData["Title"] = T["Applications.Title", s.Reference].Value;
+    ViewData["Section"] = T["Nav.Applications"].Value;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <partial name="_StatusPill" model="s.Status" />
+            @if (s.EscalatedAt is not null)
+            {
+                <span class="pill warning">@T["Applications.Escalated"]</span>
+            }
+        </div>
+        <p class="page-desc">@s.ProductName · @s.BranchName · @T["Applications.CreatedBy", a.CreatedByName, DisplayFormat.DateTime(s.CreatedAt)]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Nav.Applications"]</a>
+    </div>
+</div>
+<partial name="_Notices" />
+
+@* ----- Next steps for this viewer ----- *@
+@if (act.Submit || act.SendToScoring || act.RecordClientResponse || act.Cancel)
+{
+    <section class="card mb" aria-labelledby="workflow-title" data-section="workflow">
+        <div class="card-head"><h2 class="card-title" id="workflow-title">@T["Applications.NextSteps"]</h2></div>
+        <div class="card-body stack">
+            <div class="row wrap">
+                @if (act.Submit)
+                {
+                    <form method="post" asp-action="Submit" asp-route-id="@id">
+                        <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Applications.Submit"]</button>
+                    </form>
+                }
+                @if (act.SendToScoring)
+                {
+                    <form method="post" asp-action="SendToScoring" asp-route-id="@id">
+                        <button type="submit" class="btn primary" disabled="@(a.MissingDocuments.Count > 0)"><icon name="sparkles" size="15" />@T["Applications.SendToScoring"]</button>
+                    </form>
+                }
+                @if (act.RecordClientResponse)
+                {
+                    <form method="post" asp-action="ClientResponse" asp-route-id="@id">
+                        <input type="hidden" name="accepted" value="true" />
+                        <button type="submit" class="btn primary">@T["Applications.ClientAccepts"]</button>
+                    </form>
+                }
+            </div>
+            @if (act.RecordClientResponse)
+            {
+                <form method="post" asp-action="ClientResponse" asp-route-id="@id" class="row wrap">
+                    <input type="hidden" name="accepted" value="false" />
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn">@T["Applications.ClientDeclines"]</button>
+                </form>
+            }
+            @if (act.Cancel)
+            {
+                <form method="post" asp-action="Cancel" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn danger">@T["Applications.Cancel"]</button>
+                </form>
+            }
+        </div>
+    </section>
+}
+
+@* ----- Decisions ----- *@
+@if (act.AnyDecision)
+{
+    <section class="card mb" aria-labelledby="decide-title" data-section="decide">
+        <div class="card-head"><h2 class="card-title" id="decide-title">@T["Applications.Decision"]</h2></div>
+        <div class="card-body stack">
+            @if (act.ReviewCompliance)
+            {
+                <form method="post" asp-action="Compliance" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" name="clear" value="true" class="btn primary">@T["Applications.ComplianceClear"]</button>
+                    <button type="submit" name="clear" value="false" class="btn danger">@T["Applications.ComplianceReject"]</button>
+                </form>
+            }
+            @if (act.Decide)
+            {
+                <form method="post" asp-action="Approve" asp-route-id="@id" class="row wrap">
+                    <select name="ConditionType" class="select" aria-label="@T["Applications.Condition"]">
+                        <option value="">@T["Applications.NoCondition"]</option>
+                        @foreach (var type in Enum.GetValues<ConditionType>())
+                        {
+                            <option value="@type">@T.EnumText(type)</option>
+                        }
+                    </select>
+                    <input name="ConditionDescription" class="inp grow" placeholder="@T["Applications.ConditionDescription"]" aria-label="@T["Applications.ConditionDescription"]" />
+                    @if (act.NeedsOverride && Model.CanOverride)
+                    {
+                        <input name="OverrideReason" class="inp grow" placeholder="@T["Applications.OverrideReason"]" aria-label="@T["Applications.OverrideReason"]" />
+                    }
+                    <button type="submit" class="btn primary" disabled="@(act.NeedsOverride && !Model.CanOverride)">@T["Applications.Approve"]</button>
+                </form>
+                @if (act.NeedsOverride && !Model.CanOverride)
+                {
+                    <p class="small muted">@T["Applications.OverrideNeeded"]</p>
+                }
+                <form method="post" asp-action="Reject" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn danger">@T["Applications.Reject"]</button>
+                </form>
+            }
+            @if (act.CounterOffer)
+            {
+                <form method="post" asp-action="CounterOffer" asp-route-id="@id" class="row wrap">
+                    <input name="Amount" type="number" step="0.01" min="0" class="inp" value="@a.Terms.Amount.Amount" aria-label="@T["Field.Amount"]" title="@T["Field.Amount"]" />
+                    <input name="TermMonths" type="number" min="1" class="inp" value="@a.Terms.TermMonths" aria-label="@T["Field.TermMonths"]" title="@T["Field.TermMonths"]" />
+                    <input name="AnnualRate" type="number" step="0.01" min="0" class="inp" value="@a.Terms.AnnualRate" aria-label="@T["Field.AnnualRate"]" title="@T["Field.AnnualRate"]" />
+                    <input name="Reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn">@T["Applications.CounterOffer"]</button>
+                </form>
+            }
+            @if (act.Vote)
+            {
+                <form method="post" asp-action="Vote" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" name="approve" value="true" class="btn primary">@T["Applications.VoteApprove"]</button>
+                    <button type="submit" name="approve" value="false" class="btn danger">@T["Applications.VoteReject"]</button>
+                </form>
+            }
+        </div>
+    </section>
+}
+
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="terms-title" data-section="terms">
+        <div class="card-head"><h2 class="card-title" id="terms-title">@T["Applications.Terms"]</h2></div>
+        <dl class="dl card-body">
+            <dt>@T["Field.Amount"]</dt><dd class="tnum">@DisplayFormat.Money(a.Terms.Amount)@(s.AmountGel is { } gel && a.Terms.Amount.Currency != Currency.GEL ? $" (≈ {DisplayFormat.Money(Currency.GEL, gel)})" : null)</dd>
+            <dt>@T["Field.TermMonths"]</dt><dd>@a.Terms.TermMonths</dd>
+            <dt>@T["Field.AnnualRate"]</dt><dd>@DisplayFormat.Percent(a.Terms.AnnualRate)</dd>
+            <dt>@T["Field.ScheduleType"]</dt><dd>@T.EnumText(a.Terms.ScheduleType)</dd>
+            @if (s.Tier is { } tier)
+            {
+                <dt>@T["Applications.Tier"]</dt><dd>@T.EnumText(tier)</dd>
+            }
+            @if (a.ProposedTerms is { } offer)
+            {
+                <dt>@T["Applications.CounterOffer"]</dt>
+                <dd data-counter-offer>@DisplayFormat.Money(offer.Amount) · @offer.TermMonths @T["Applications.Months"] · @DisplayFormat.Percent(offer.AnnualRate) · @T["Applications.OfferExpires", DisplayFormat.DateTime(s.OfferExpiresAt)]</dd>
+            }
+            @if (a.Snapshot is { } snapshot)
+            {
+                <dt>@T["Applications.Snapshot"]</dt><dd>@snapshot.Name v@(snapshot.Version)</dd>
+            }
+            @if (a.ContractNumber is not null)
+            {
+                <dt>@T["Applications.ContractNumber"]</dt><dd class="mono">@a.ContractNumber</dd>
+            }
+        </dl>
+        @if (act.EditDraft)
+        {
+            <form method="post" asp-action="ChangeTerms" asp-route-id="@id" class="card-body form row wrap">
+                <input name="Amount" type="number" step="0.01" min="0" class="inp" value="@a.Terms.Amount.Amount" aria-label="@T["Field.Amount"]" title="@T["Field.Amount"]" />
+                <partial name="_CurrencySelect" model="@("Currency")" />
+                <input name="TermMonths" type="number" min="1" class="inp" value="@a.Terms.TermMonths" aria-label="@T["Field.TermMonths"]" title="@T["Field.TermMonths"]" />
+                <input name="AnnualRate" type="number" step="0.01" min="0" class="inp" value="@a.Terms.AnnualRate" aria-label="@T["Field.AnnualRate"]" title="@T["Field.AnnualRate"]" />
+                <select name="ScheduleType" class="select" aria-label="@T["Field.ScheduleType"]">
+                    @foreach (var type in Enum.GetValues<ScheduleType>())
+                    {
+                        <option value="@type" selected="@(a.Terms.ScheduleType == type)">@T.EnumText(type)</option>
+                    }
+                </select>
+                <button type="submit" class="btn sm">@T["Common.Save"]</button>
+            </form>
+        }
+    </section>
+
+    <section class="card" aria-labelledby="parties-title" data-section="parties">
+        <div class="card-head"><h2 class="card-title" id="parties-title">@T["Applications.Parties"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var party in a.Parties)
+                    {
+                        <tr data-party="@party.Role">
+                            <td><a asp-controller="Clients" asp-action="Details" asp-route-id="@party.ClientId.Value">@party.Name</a></td>
+                            <td class="mono">@party.PersonalNumber</td>
+                            <td>@T.EnumText(party.Role)</td>
+                            @if (act.EditDraft && party.Role != PartyRole.Borrower)
+                            {
+                                <td class="actions">
+                                    <form method="post" asp-action="RemoveParty" asp-route-id="@id">
+                                        <input type="hidden" name="clientId" value="@party.ClientId.Value" />
+                                        <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (act.EditDraft)
+        {
+            <form method="post" asp-action="AddParty" asp-route-id="@id" class="card-body form row wrap">
+                <input name="PersonalNumber" class="inp mono" inputmode="numeric" maxlength="11" placeholder="@T["Field.PersonalNumber"]" aria-label="@T["Field.PersonalNumber"]" />
+                <select name="Role" class="select" aria-label="@T["Applications.PartyRole"]">
+                    <option value="@PartyRole.CoBorrower">@T.EnumText(PartyRole.CoBorrower)</option>
+                    <option value="@PartyRole.Guarantor">@T.EnumText(PartyRole.Guarantor)</option>
+                </select>
+                <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+            </form>
+        }
+    </section>
+</div>
+
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="collateral-title" data-section="collateral">
+        <div class="card-head"><h2 class="card-title" id="collateral-title">@T["Applications.Collateral"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var item in a.Collaterals)
+                    {
+                        <tr data-collateral>
+                            <td>@T.EnumText(item.Type)</td>
+                            <td>@item.Description</td>
+                            <td class="num tnum">@DisplayFormat.Money(item.MarketValue)</td>
+                            <td class="tnum">@DisplayFormat.Date(item.ValuationDate)</td>
+                            @if (act.EditDraft)
+                            {
+                                <td class="actions">
+                                    <form method="post" asp-action="RemoveCollateral" asp-route-id="@id">
+                                        <input type="hidden" name="collateralId" value="@item.Id.Value" />
+                                        <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (a.Collaterals.Count == 0)
+            {
+                <div class="empty">@T["Applications.NoCollateral"]</div>
+            }
+        </div>
+        @if (act.EditDraft)
+        {
+            <form method="post" asp-action="AddCollateral" asp-route-id="@id" class="card-body form row wrap">
+                <select name="Type" class="select" aria-label="@T["Applications.CollateralType"]">
+                    @foreach (var type in Enum.GetValues<CollateralType>())
+                    {
+                        <option value="@type">@T.EnumText(type)</option>
+                    }
+                </select>
+                <input name="Description" class="inp grow" placeholder="@T["Applications.CollateralDescription"]" aria-label="@T["Applications.CollateralDescription"]" />
+                <input name="MarketValue" type="number" step="0.01" min="0" class="inp" placeholder="@T["Applications.MarketValue"]" aria-label="@T["Applications.MarketValue"]" />
+                <partial name="_CurrencySelect" model="@("Currency")" />
+                <input name="ValuationDate" type="date" class="inp" aria-label="@T["Applications.ValuationDate"]" title="@T["Applications.ValuationDate"]" />
+                <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+            </form>
+        }
+    </section>
+
+    <section class="card" aria-labelledby="documents-title" data-section="documents">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="documents-title">@T["Applications.Documents"]</h2>
+                @if (a.MissingDocuments.Count > 0)
+                {
+                    <p class="card-sub" data-missing>@T["Applications.MissingDocuments", string.Join(", ", a.MissingDocuments.Select(d => T.EnumText(d)))]</p>
+                }
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var document in a.Documents)
+                    {
+                        <tr data-document="@document.Type">
+                            <td>@T.EnumText(document.Type)</td>
+                            <td>
+                                @if (act.DownloadDocuments)
+                                {
+                                    <a asp-action="Document" asp-route-id="@id" asp-route-documentId="@document.Id.Value">@document.FileName</a>
+                                }
+                                else
+                                {
+                                    @document.FileName
+                                }
+                            </td>
+                            <td class="muted small">@document.UploadedBy · @DisplayFormat.DateTime(document.UploadedAt)</td>
+                            @if (act.ChangeDocuments)
+                            {
+                                <td class="actions">
+                                    <form method="post" asp-action="RemoveDocument" asp-route-id="@id">
+                                        <input type="hidden" name="documentId" value="@document.Id.Value" />
+                                        <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (a.Documents.Count == 0)
+            {
+                <div class="empty">@T["Applications.NoDocuments"]</div>
+            }
+        </div>
+        @if (act.ChangeDocuments)
+        {
+            <form method="post" asp-action="Upload" asp-route-id="@id" enctype="multipart/form-data" class="card-body form row wrap">
+                <select name="type" class="select" aria-label="@T["Applications.DocumentType"]">
+                    @foreach (var type in Enum.GetValues<DocumentType>())
+                    {
+                        <option value="@type" selected="@(a.MissingDocuments.FirstOrDefault() == type)">@T.EnumText(type)</option>
+                    }
+                </select>
+                <input name="file" type="file" accept="application/pdf,image/png,image/jpeg" aria-label="@T["Applications.File"]" />
+                <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Applications.Upload"]</button>
+            </form>
+        }
+    </section>
+</div>
+
+@if (a.LatestScoring is { } scoring)
+{
+    <section class="card mb" aria-labelledby="scoring-title" data-section="scoring">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="scoring-title">@T["Applications.Scoring"]</h2>
+                <p class="card-sub">@T["Applications.ScoringRun", scoring.RuleSetVersion, DisplayFormat.DateTime(scoring.ScoredAt)]</p>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th scope="col">@T["Applications.Rule"]</th>
+                        <th scope="col">@T["Applications.Result"]</th>
+                        <th scope="col">@T["Applications.Measured"]</th>
+                        <th scope="col">@T["Applications.Threshold"]</th>
+                        <th scope="col">@T["Applications.Explanation"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rule in scoring.Results)
+                    {
+                        <tr data-rule="@rule.RuleCode">
+                            <td class="mono">@rule.RuleCode</td>
+                            <td>
+                                @if (rule.Passed)
+                                {
+                                    <span class="pill success"><span class="dot"></span>@T["Applications.Passed"]</span>
+                                }
+                                else
+                                {
+                                    <span class="pill @(rule.Overridable ? "warning" : "danger")"><span class="dot"></span>@T[rule.Overridable ? "Applications.FailedOverridable" : "Applications.Failed"]</span>
+                                }
+                            </td>
+                            <td class="tnum">@(rule.Measured ?? DisplayFormat.Empty)</td>
+                            <td class="tnum">@(rule.Threshold ?? DisplayFormat.Empty)</td>
+                            <td>@rule.Reason</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<div class="grid-2">
+    <section class="card" aria-labelledby="history-title" data-section="history">
+        <div class="card-head"><h2 class="card-title" id="history-title">@T["Applications.History"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var entry in a.History)
+                    {
+                        <tr data-history="@entry.To">
+                            <td class="muted tnum nowrap">@DisplayFormat.DateTime(entry.At)</td>
+                            <td>@(entry.From is { } from ? T.EnumText(from) + " → " : null)@T.EnumText(entry.To)</td>
+                            <td>@entry.By</td>
+                            <td class="small">@entry.Reason</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section class="card" aria-labelledby="decisions-title" data-section="decisions">
+        <div class="card-head"><h2 class="card-title" id="decisions-title">@T["Applications.Decisions"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var decision in a.Decisions)
+                    {
+                        <tr data-decision="@decision.Kind">
+                            <td class="muted tnum nowrap">@DisplayFormat.DateTime(decision.At)</td>
+                            <td>@T.EnumText(decision.Kind)</td>
+                            <td>@decision.DecidedBy</td>
+                            <td class="small">@decision.Reason@(decision.OverrideReason is { } why ? $" ({T["Applications.Override"].Value}: {why})" : null)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (a.Decisions.Count == 0)
+            {
+                <div class="empty">@T["Applications.NoDecisions"]</div>
+            }
+        </div>
+        @if (a.Conditions.Count > 0)
+        {
+            <div class="card-head"><h3 class="card-title">@T["Applications.Conditions"]</h3></div>
+            <ul class="card-body">
+                @foreach (var condition in a.Conditions)
+                {
+                    <li data-condition>@T.EnumText(condition.Type): @condition.Description @(condition.IsMet ? "✓" : null)</li>
+                }
+            </ul>
+        }
+    </section>
+</div>

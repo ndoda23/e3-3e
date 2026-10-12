@@ -59,6 +59,19 @@ internal sealed class ClientQueries(CreditFlowDbContext db) : IClientQueries
     }
 }
 
+internal sealed class ProductQueries(CreditFlowDbContext db) : IProductQueries
+{
+    public async Task<IReadOnlyList<ProductOption>> ListActiveAsync(CancellationToken cancellationToken)
+    {
+        var products = await db.LoanProducts.AsNoTracking()
+            .Where(p => p.IsActive)
+            .Include(p => p.Versions)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+        return products.Select(p => new ProductOption(p.Id, p.Code, p.Name, p.Type, p.CurrentVersion.Terms)).ToList();
+    }
+}
+
 /// <summary>
 /// Exposure from applications: approved and not yet disbursed, disbursed and active ones count with their GEL amount
 /// for every party (borrower, co-borrower and guarantor alike — a guarantee covers the full amount).

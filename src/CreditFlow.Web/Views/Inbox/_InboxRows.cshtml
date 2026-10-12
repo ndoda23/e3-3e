@@ -1,0 +1,11 @@
+@model InboxViewModel
+@{
+    var page = Model.Applications;
+    var pager = new PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => Url.Action("Index", new { inbox = Model.Current, page = n })!,
+        n => Url.Action("Index", new { inbox = Model.Current, page = n })!,
+        "#inbox-rows");
+}
+<partial name="_ApplicationTable" model="page.Items" />
+<partial name="_Pager" model="pager" />

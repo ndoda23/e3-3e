@@ -406,4 +406,137 @@
   <data name="AuditEntity.User" xml:space="preserve"><value>User</value></data>
   <data name="AuditEntity.Role" xml:space="preserve"><value>Role</value></data>
   <data name="AuditEntity.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Nav.Clients" xml:space="preserve"><value>Clients</value></data>
+  <data name="Nav.Inbox" xml:space="preserve"><value>Inbox</value></data>
+  <data name="Inbox.Underwriting" xml:space="preserve"><value>Underwriting</value></data>
+  <data name="Inbox.Underwriting.Description" xml:space="preserve"><value>Applications waiting for an underwriting decision within your authority. Your own applications and applications you already decided are never listed.</value></data>
+  <data name="Inbox.Committee" xml:space="preserve"><value>Credit committee</value></data>
+  <data name="Inbox.Committee.Description" xml:space="preserve"><value>Applications above the Senior Underwriter threshold waiting for your vote. Two matching votes decide.</value></data>
+  <data name="Inbox.Compliance" xml:space="preserve"><value>Compliance</value></data>
+  <data name="Inbox.Compliance.Description" xml:space="preserve"><value>Applications held for a sanctions or PEP match. Clear them to continue or reject them with a reason.</value></data>
+  <data name="Common.Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Common.Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Field.PersonalNumber" xml:space="preserve"><value>Personal number</value></data>
+  <data name="Field.FirstName" xml:space="preserve"><value>First name</value></data>
+  <data name="Field.LastName" xml:space="preserve"><value>Last name</value></data>
+  <data name="Field.BirthDate" xml:space="preserve"><value>Date of birth</value></data>
+  <data name="Field.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Field.Address" xml:space="preserve"><value>Address</value></data>
+  <data name="Field.DocumentType" xml:space="preserve"><value>Identity document</value></data>
+  <data name="Field.DocumentNumber" xml:space="preserve"><value>Document number</value></data>
+  <data name="Field.DocumentIssuedOn" xml:space="preserve"><value>Issued on</value></data>
+  <data name="Field.DocumentExpiresOn" xml:space="preserve"><value>Valid until</value></data>
+  <data name="Field.BorrowerPersonalNumber" xml:space="preserve"><value>Borrower's personal number</value></data>
+  <data name="Field.Product" xml:space="preserve"><value>Product</value></data>
+  <data name="Field.Amount" xml:space="preserve"><value>Amount</value></data>
+  <data name="Field.TermMonths" xml:space="preserve"><value>Term (months)</value></data>
+  <data name="Field.AnnualRate" xml:space="preserve"><value>Annual rate (%)</value></data>
+  <data name="Field.ScheduleType" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Clients.Description" xml:space="preserve"><value>Registered clients with their identity documents, incomes and obligations.</value></data>
+  <data name="Clients.Register" xml:space="preserve"><value>Register client</value></data>
+  <data name="Clients.RegisterHint" xml:space="preserve"><value>Enter the client's data from the identity document. The personal number has 11 digits and is unique.</value></data>
+  <data name="Clients.Registered" xml:space="preserve"><value>The client was registered.</value></data>
+  <data name="Clients.Saved" xml:space="preserve"><value>The client was saved.</value></data>
+  <data name="Clients.Edit" xml:space="preserve"><value>Edit client</value></data>
+  <data name="Clients.Search" xml:space="preserve"><value>Search clients</value></data>
+  <data name="Clients.SearchPlaceholder" xml:space="preserve"><value>Name or personal number</value></data>
+  <data name="Clients.None" xml:space="preserve"><value>No clients found.</value></data>
+  <data name="Clients.Kyc" xml:space="preserve"><value>KYC</value></data>
+  <data name="Clients.Screening" xml:space="preserve"><value>Screening</value></data>
+  <data name="Clients.Personal" xml:space="preserve"><value>Personal data</value></data>
+  <data name="Clients.CheckedAt" xml:space="preserve"><value>Last checked</value></data>
+  <data name="Clients.IdentityDocument" xml:space="preserve"><value>Identity document</value></data>
+  <data name="Clients.ReplaceDocument" xml:space="preserve"><value>Replace document</value></data>
+  <data name="Clients.Incomes" xml:space="preserve"><value>Monthly incomes</value></data>
+  <data name="Clients.NoIncomes" xml:space="preserve"><value>No incomes recorded.</value></data>
+  <data name="Clients.IncomeType" xml:space="preserve"><value>Income type</value></data>
+  <data name="Clients.IncomeSource" xml:space="preserve"><value>Source (employer)</value></data>
+  <data name="Clients.MonthlyAmount" xml:space="preserve"><value>Monthly amount</value></data>
+  <data name="Clients.Obligations" xml:space="preserve"><value>Declared obligations</value></data>
+  <data name="Clients.NoObligations" xml:space="preserve"><value>No obligations declared.</value></data>
+  <data name="Clients.Lender" xml:space="preserve"><value>Lender</value></data>
+  <data name="Clients.MonthlyPayment" xml:space="preserve"><value>Monthly payment</value></data>
+  <data name="Clients.Outstanding" xml:space="preserve"><value>Outstanding</value></data>
+  <data name="Applications.Description" xml:space="preserve"><value>Applications you may see, newest first. Filters, sorting and paging run on the server.</value></data>
+  <data name="Applications.Search" xml:space="preserve"><value>Search applications</value></data>
+  <data name="Applications.SearchPlaceholder" xml:space="preserve"><value>Borrower, personal number or contract number</value></data>
+  <data name="Applications.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Applications.AllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="Applications.Sort" xml:space="preserve"><value>Sort by</value></data>
+  <data name="Applications.Ascending" xml:space="preserve"><value>Ascending</value></data>
+  <data name="Applications.None" xml:space="preserve"><value>No applications.</value></data>
+  <data name="Applications.Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Applications.Borrower" xml:space="preserve"><value>Borrower</value></data>
+  <data name="Applications.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Applications.StatusChanged" xml:space="preserve"><value>Status changed</value></data>
+  <data name="Applications.Months" xml:space="preserve"><value>months</value></data>
+  <data name="Applications.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Applications.NewHint" xml:space="preserve"><value>The borrower must be registered as a client first. Amount, term and rate must fit the product.</value></data>
+  <data name="Applications.BorrowerHint" xml:space="preserve"><value>11 digits; the client is found by personal number.</value></data>
+  <data name="Applications.BorrowerNotFound" xml:space="preserve"><value>No client with this personal number. Register the client first.</value></data>
+  <data name="Applications.ChooseProduct" xml:space="preserve"><value>Choose a product</value></data>
+  <data name="Applications.CreateDraft" xml:space="preserve"><value>Create draft</value></data>
+  <data name="Applications.Created" xml:space="preserve"><value>The draft was created. Add the documents and submit it.</value></data>
+  <data name="Applications.Saved" xml:space="preserve"><value>Saved.</value></data>
+  <data name="Applications.Submitted" xml:space="preserve"><value>The application was submitted. The pre-check runs in the background.</value></data>
+  <data name="Applications.SentToScoring" xml:space="preserve"><value>The application was sent to scoring.</value></data>
+  <data name="Applications.Cancelled" xml:space="preserve"><value>The application was cancelled.</value></data>
+  <data name="Applications.Decided" xml:space="preserve"><value>Your decision was recorded.</value></data>
+  <data name="Applications.Voted" xml:space="preserve"><value>Your vote was recorded.</value></data>
+  <data name="Applications.Title" xml:space="preserve"><value>Application {0}</value></data>
+  <data name="Applications.CreatedBy" xml:space="preserve"><value>created by {0} on {1}</value></data>
+  <data name="Applications.NextSteps" xml:space="preserve"><value>Next steps</value></data>
+  <data name="Applications.Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="Applications.SendToScoring" xml:space="preserve"><value>Send to scoring</value></data>
+  <data name="Applications.ClientAccepts" xml:space="preserve"><value>Client accepts the counter-offer</value></data>
+  <data name="Applications.ClientDeclines" xml:space="preserve"><value>Client declines</value></data>
+  <data name="Applications.Cancel" xml:space="preserve"><value>Cancel application</value></data>
+  <data name="Applications.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Applications.Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Applications.ComplianceClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Applications.ComplianceReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Applications.Condition" xml:space="preserve"><value>Condition</value></data>
+  <data name="Applications.NoCondition" xml:space="preserve"><value>No extra condition</value></data>
+  <data name="Applications.ConditionDescription" xml:space="preserve"><value>Condition details</value></data>
+  <data name="Applications.OverrideReason" xml:space="preserve"><value>Override reason</value></data>
+  <data name="Applications.OverrideNeeded" xml:space="preserve"><value>A scoring rule failed: only a user with the override permission can approve.</value></data>
+  <data name="Applications.Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Applications.Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Applications.CounterOffer" xml:space="preserve"><value>Counter-offer</value></data>
+  <data name="Applications.VoteApprove" xml:space="preserve"><value>Vote to approve</value></data>
+  <data name="Applications.VoteReject" xml:space="preserve"><value>Vote to reject</value></data>
+  <data name="Applications.Terms" xml:space="preserve"><value>Loan terms</value></data>
+  <data name="Applications.Tier" xml:space="preserve"><value>Approval tier</value></data>
+  <data name="Applications.OfferExpires" xml:space="preserve"><value>valid until {0}</value></data>
+  <data name="Applications.Snapshot" xml:space="preserve"><value>Product (fixed at submission)</value></data>
+  <data name="Applications.ContractNumber" xml:space="preserve"><value>Contract number</value></data>
+  <data name="Applications.Parties" xml:space="preserve"><value>Parties</value></data>
+  <data name="Applications.PartyRole" xml:space="preserve"><value>Role</value></data>
+  <data name="Applications.Collateral" xml:space="preserve"><value>Collateral</value></data>
+  <data name="Applications.NoCollateral" xml:space="preserve"><value>No collateral.</value></data>
+  <data name="Applications.CollateralType" xml:space="preserve"><value>Collateral type</value></data>
+  <data name="Applications.CollateralDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="Applications.MarketValue" xml:space="preserve"><value>Market value</value></data>
+  <data name="Applications.ValuationDate" xml:space="preserve"><value>Valuation date</value></data>
+  <data name="Applications.Documents" xml:space="preserve"><value>Documents</value></data>
+  <data name="Applications.MissingDocuments" xml:space="preserve"><value>Still needed: {0}</value></data>
+  <data name="Applications.NoDocuments" xml:space="preserve"><value>No documents uploaded.</value></data>
+  <data name="Applications.DocumentType" xml:space="preserve"><value>Document type</value></data>
+  <data name="Applications.File" xml:space="preserve"><value>File</value></data>
+  <data name="Applications.Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Applications.Scoring" xml:space="preserve"><value>Scoring</value></data>
+  <data name="Applications.ScoringRun" xml:space="preserve"><value>Rule set version {0}, scored {1}</value></data>
+  <data name="Applications.Rule" xml:space="preserve"><value>Rule</value></data>
+  <data name="Applications.Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Applications.Measured" xml:space="preserve"><value>Measured</value></data>
+  <data name="Applications.Threshold" xml:space="preserve"><value>Limit</value></data>
+  <data name="Applications.Explanation" xml:space="preserve"><value>Explanation</value></data>
+  <data name="Applications.Passed" xml:space="preserve"><value>Passed</value></data>
+  <data name="Applications.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Applications.FailedOverridable" xml:space="preserve"><value>Failed (overridable)</value></data>
+  <data name="Applications.History" xml:space="preserve"><value>Status history</value></data>
+  <data name="Applications.Decisions" xml:space="preserve"><value>Decisions</value></data>
+  <data name="Applications.NoDecisions" xml:space="preserve"><value>No decisions yet.</value></data>
+  <data name="Applications.Override" xml:space="preserve"><value>override</value></data>
+  <data name="Applications.Conditions" xml:space="preserve"><value>Conditions</value></data>
 </root>

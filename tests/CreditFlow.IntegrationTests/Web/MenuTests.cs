@@ -13,12 +13,12 @@ public sealed class MenuTests
 {
     public static TheoryData<string, string[], bool> Expectations => new()
     {
-        { RoleCodes.Operator, ["Dashboard", "Applications", "Reports"], true },
-        { RoleCodes.Underwriter, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.SeniorUnderwriter, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.CreditCommittee, ["Dashboard", "Applications", "Reports"], false },
-        { RoleCodes.Compliance, ["Dashboard", "Applications"], false },
-        { RoleCodes.Auditor, ["Dashboard", "Applications", "Reports", "Audit"], false },
+        { RoleCodes.Operator, ["Dashboard", "Applications", "Clients", "Reports"], true },
+        { RoleCodes.Underwriter, ["Dashboard", "Inbox", "Applications", "Clients", "Reports"], false },
+        { RoleCodes.SeniorUnderwriter, ["Dashboard", "Inbox", "Applications", "Clients", "Reports"], false },
+        { RoleCodes.CreditCommittee, ["Dashboard", "Inbox", "Applications", "Clients", "Reports"], false },
+        { RoleCodes.Compliance, ["Dashboard", "Inbox", "Applications", "Clients"], false },
+        { RoleCodes.Auditor, ["Dashboard", "Applications", "Clients", "Reports", "Audit"], false },
         { RoleCodes.Admin, ["Users", "Roles", "Branches", "AuditLog"], false },
     };
 

@@ -97,9 +97,9 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
         var application = await Visible(access)
             .Include(a => a.Parties)
             .Include(a => a.Collaterals)
-            .Include(a => a.Documents.OrderBy(d => d.UploadedAt))
+            .Include(a => a.Documents.OrderBy(d => d.UploadedAt).ThenBy(d => d.Id))
             .Include(a => a.History.OrderBy(h => h.Id))
-            .Include(a => a.Decisions.OrderBy(d => d.DecidedAt))
+            .Include(a => a.Decisions.OrderBy(d => d.DecidedAt).ThenBy(d => d.Id))
             .Include(a => a.Conditions)
             .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
@@ -137,6 +137,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             ProductCode = productCode,
             Terms = application.Terms,
             ProposedTerms = application.ProposedTerms,
+            RequiredTier = application.RequiredTier,
             ContractNumber = application.ContractNumber,
             DisbursementRequested = application.DisbursementRequested,
             Parties = application.Parties

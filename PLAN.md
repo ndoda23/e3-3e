@@ -1136,7 +1136,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [x] **P9** Outbox + dispatcher + mocks + PreCheck (bureau retry) + notifications + tests.
 
 **Day 2 — flow in the browser, concurrency, breadth**
-- [ ] **P10** Application services for intake → scoring → underwriting/committee/compliance/counter-offer, access
+- [x] **P10** Application services for intake → scoring → underwriting/committee/compliance/counter-offer, access
   filter + SQL-side lists + by-id checks; integration tests (scope, four-eyes, IDOR, concurrent approve/vote).
   **Minimal pages:** clients (register + KYC data, incomes, obligations), application create/submit + document
   upload, application list and page (status history, scoring result), Underwriting / Committee / Compliance inboxes
@@ -1180,27 +1180,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | `ba77864` |
 | P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | `be84877` |
 | P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | `24ae829` |
-
-
-
-
-## Resume notes (2026-10-13)
-- **Committed:** P10a `24ae829`. **Current step: P10b** (minimal pages), then **P11**; stop after the P11 commit.
-- **P10b in the working tree (not committed, does not build yet — views unfinished):**
-  - Application: `IProductQueries` + `ProductOption` (ApplicationQueries.cs, impl `ProductQueries` in
-    Infrastructure/Persistence/Queries/LendingQueries.cs, DI), `ApplicationService.ListProductsAsync`,
-    `ApplicationDetails.RequiredTier`.
-  - Web: `ClientsController`, `ApplicationsController` (all actions, `Done()` maps `ApplicationErrors.NotFound` → 404),
-    `InboxController`, `Models/LendingModels.cs` (forms, `ApplicationListQuery`, `ApplicationActions.For`),
-    `LocalizerExtensions.EnumText`, `ModelStateExtensions.LocalizeAll`, `DisplayFormat.Date/Percent/Money(Money)`,
-    menu entries Inbox + Clients, placeholders for Applications removed from WorkspaceControllers.cs.
-  - Views written: Clients/{Index,_ClientRows,_ClientFields,Register,Edit,Details}, Applications/{Index,_ApplicationRows,
-    _ApplicationTable,New}, Shared/{_Notices,_StatusPill,_CurrencySelect}.
-- **Left in P10b:** Applications/Details.cshtml (parties, collateral, documents, history, scoring, decisions,
-  conditions, action forms from `ApplicationActions`), Inbox/Index.cshtml, resource keys (all literal `T["…"]` keys
-  must exist — `ResourceTests`), update MenuTests + DefinitionOfDoneTests menu expectations (Inbox, Clients), web tests:
-  operator flow through the pages, IDOR by id (Batumi operator → 404 on details/document/POST), Auditor POST test over
-  every permission-protected POST action (reflection; htmx POST → 403/404) and a check that unprotected POSTs are only
-  account self-service; XML docs on new public types; build 0 warnings, full suite, PLAN row, commit.
-- **P11** as in §P.7 / §P.3.5 (never-cut list there).
-- **Open questions for the user:** none.
+| P10b — Client, application and inbox pages | done; build 0 warnings, 1,163 tests green (Domain 630, Application 353, Architecture 13, Integration 167). Pages: clients (list, register, edit, KYC document, incomes, obligations), applications (list with SQL-side filters / sort / paging, new, application page with parties, collateral, documents, scoring explanation, history, decisions and every action the viewer may take), decision inboxes. Web tests: operator flow through the pages, upload by content, IDOR by id (404), the Auditor's POST to every permission-protected action refused with nothing changed, unprotected POSTs only account self-service. Fixed on the way: decisions with the same timestamp were listed in an undefined order. | (this commit) |

@@ -29,6 +29,13 @@ public static class ModelStateExtensions
         }
     }
 
+    /// <summary>One message for an error and all its details (for a notice after a redirect).</summary>
+    public static string LocalizeAll(Error error, IStringLocalizer localizer)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        return string.Join(" ", (error.Details.Count > 0 ? error.Details : [error]).Select(e => Localize(e, localizer)));
+    }
+
     public static string Localize(Error error, IStringLocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(error);

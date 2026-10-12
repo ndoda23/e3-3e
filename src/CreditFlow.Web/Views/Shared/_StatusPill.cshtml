@@ -1,0 +1,13 @@
+@model ApplicationStatus
+@{
+    var tone = Model switch
+    {
+        ApplicationStatus.Approved or ApplicationStatus.ConditionallyApproved or ApplicationStatus.ConditionsMet
+            or ApplicationStatus.Disbursed or ApplicationStatus.Active => "success",
+        ApplicationStatus.Rejected or ApplicationStatus.Cancelled or ApplicationStatus.Expired => "danger",
+        ApplicationStatus.ComplianceReview or ApplicationStatus.CounterOffered => "warning",
+        ApplicationStatus.Draft or ApplicationStatus.Closed => "neutral",
+        _ => "info",
+    };
+}
+<span class="pill @tone" data-status="@Model"><span class="dot"></span>@T.EnumText(Model)</span>

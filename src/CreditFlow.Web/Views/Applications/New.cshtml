@@ -1,0 +1,81 @@
+@model NewApplicationViewModel
+@using CreditFlow.Domain.Common
+@using CreditFlow.Domain.Products
+@{
+    ViewData["Title"] = T["Topbar.CreateApplication"].Value;
+    ViewData["Section"] = T["Nav.Applications"].Value;
+    var f = Model.Form;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Applications.NewHint"]</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" action="/Applications/New" class="card-body form" novalidate>
+        <div asp-validation-summary="ModelOnly" role="alert"></div>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Form.BorrowerPersonalNumber" for="BorrowerPersonalNumber" class="required"></label>
+                <input name="BorrowerPersonalNumber" id="BorrowerPersonalNumber" value="@f.BorrowerPersonalNumber" class="inp mono" inputmode="numeric" maxlength="11" autocomplete="off" autofocus />
+                <span class="hint">@T["Applications.BorrowerHint"]</span>
+                <span asp-validation-for="Form.BorrowerPersonalNumber" data-valmsg-for="BorrowerPersonalNumber"></span>
+                @Html.ValidationMessage("BorrowerPersonalNumber")
+            </div>
+            <div class="field">
+                <label for="ProductId" class="required">@T["Field.Product"]</label>
+                <select name="ProductId" id="ProductId" class="select">
+                    <option value="">@T["Applications.ChooseProduct"]</option>
+                    @foreach (var product in Model.Products)
+                    {
+                        var t = product.Terms;
+                        <option value="@product.Id.Value" selected="@(f.ProductId == product.Id.Value)">
+                            @product.Name (@DisplayFormat.Money(Currency.GEL, t.MinAmountGel)–@DisplayFormat.Money(Currency.GEL, t.MaxAmountGel), @t.MinTermMonths–@t.MaxTermMonths @T["Applications.Months"], @DisplayFormat.Percent(t.MinRate)–@DisplayFormat.Percent(t.MaxRate))
+                        </option>
+                    }
+                </select>
+                @Html.ValidationMessage("ProductId")
+            </div>
+            <div class="field">
+                <label for="Amount" class="required">@T["Field.Amount"]</label>
+                <input name="Amount" id="Amount" type="number" step="0.01" min="0" value="@(f.Amount == 0 ? null : f.Amount)" class="inp" />
+                @Html.ValidationMessage("Amount")
+            </div>
+            <div class="field">
+                <label for="Currency" class="required">@T["Field.Currency"]</label>
+                <select name="Currency" id="Currency" class="select">
+                    @foreach (var currency in Enum.GetValues<Currency>())
+                    {
+                        <option value="@currency" selected="@(f.Currency == currency)">@currency</option>
+                    }
+                </select>
+                @Html.ValidationMessage("Currency")
+            </div>
+            <div class="field">
+                <label for="TermMonths" class="required">@T["Field.TermMonths"]</label>
+                <input name="TermMonths" id="TermMonths" type="number" min="1" value="@(f.TermMonths == 0 ? null : f.TermMonths)" class="inp" />
+                @Html.ValidationMessage("TermMonths")
+            </div>
+            <div class="field">
+                <label for="AnnualRate" class="required">@T["Field.AnnualRate"]</label>
+                <input name="AnnualRate" id="AnnualRate" type="number" step="0.01" min="0" value="@(f.AnnualRate == 0 ? null : f.AnnualRate)" class="inp" />
+                @Html.ValidationMessage("AnnualRate")
+            </div>
+            <div class="field">
+                <label for="ScheduleType" class="required">@T["Field.ScheduleType"]</label>
+                <select name="ScheduleType" id="ScheduleType" class="select">
+                    @foreach (var type in Enum.GetValues<ScheduleType>())
+                    {
+                        <option value="@type" selected="@(f.ScheduleType == type)">@T.EnumText(type)</option>
+                    }
+                </select>
+                @Html.ValidationMessage("ScheduleType")
+            </div>
+        </div>
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Applications.CreateDraft"]</button>
+        </div>
+    </form>
+</section>
