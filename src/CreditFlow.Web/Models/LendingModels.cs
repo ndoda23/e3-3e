@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using CreditFlow.Application.Applications;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Clients;
+using CreditFlow.Application.Disbursements;
 using CreditFlow.Application.Common;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
@@ -111,8 +112,8 @@ public sealed class ObligationForm
 /// <summary>The client list with its search text.</summary>
 public sealed record ClientIndexViewModel(string? Search, PagedResult<ClientListItem> Clients);
 
-/// <summary>The client page; <paramref name="CanManage"/> shows the edit forms.</summary>
-public sealed record ClientPageViewModel(ClientDetailsView Client, bool CanManage);
+/// <summary>The client page; <paramref name="CanManage"/> shows the edit forms; the applications are those the viewer may see.</summary>
+public sealed record ClientPageViewModel(ClientDetailsView Client, bool CanManage, IReadOnlyList<ApplicationListItem> Applications);
 
 // ----- Applications -----
 
@@ -306,6 +307,9 @@ public sealed record ApplicationActions
 
     public bool Disburse { get; init; }
 
+    /// <summary>The contract and schedule PDFs (offer, signed contract or loan).</summary>
+    public bool Print { get; init; }
+
     public bool AnyDecision => ReviewCompliance || Decide || CounterOffer || Vote;
 
     public static ApplicationActions For(UserAccessProfile profile, ApplicationDetails application)
@@ -341,6 +345,7 @@ public sealed record ApplicationActions
                            && status is ApplicationStatus.Approved or ApplicationStatus.ConditionallyApproved,
             MarkConditionsMet = Can(Permissions.Contracts.Manage) && status == ApplicationStatus.ContractSigned,
             Disburse = Can(Permissions.Loans.Disburse) && status == ApplicationStatus.ConditionsMet,
+            Print = (Can(Permissions.Contracts.Manage) || Can(Permissions.Loans.View)) && ContractDocumentService.IsPrintable(status),
         };
     }
 }
@@ -361,3 +366,19 @@ public sealed record LoanPageViewModel(
     bool CanRecordRepayment,
     CreditFlow.Domain.Loans.EarlyRepaymentQuote? Quote,
     decimal? QuotedAmount);
+
+/// <summary>The draft as a wizard: the application page plus the current step.</summary>
+public sealed record WizardViewModel(ApplicationPageViewModel Page, int Step)
+{
+    public const int FirstStep = 1;
+    public const int LastStep = 4;
+
+    /// <summary>The hidden form field that brings a POST back to its wizard step.</summary>
+    public const string StepField = "step";
+
+    public static IReadOnlyList<string> StepKeys { get; } =
+        ["Wizard.Step.Terms", "Wizard.Step.Parties", "Wizard.Step.Documents", "Wizard.Step.Review"];
+}
+
+/// <summary>The loan list with its filters.</summary>
+public sealed record LoanIndexViewModel(LoanSearch Search, PagedResult<LoanListItem> Loans);

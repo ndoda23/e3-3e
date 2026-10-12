@@ -1,4 +1,6 @@
+using CreditFlow.Application.Applications;
 using CreditFlow.Application.Clients;
+using CreditFlow.Application.Common;
 using CreditFlow.Domain.Clients;
 using CreditFlow.Domain.Common;
 using CreditFlow.Web.Authorization;
@@ -16,7 +18,8 @@ namespace CreditFlow.Web.Controllers;
 /// </summary>
 [HasPermission(P.Clients.View)]
 public sealed class ClientsController(
-    ClientService clients, CurrentAccess currentAccess, IStringLocalizer<SharedResource> localizer) : Controller
+    ClientService clients, ApplicationService applications, CurrentAccess currentAccess, IStringLocalizer<SharedResource> localizer)
+    : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(string? search, int page, CancellationToken cancellationToken) =>
@@ -59,9 +62,16 @@ public sealed class ClientsController(
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         var client = await clients.GetAsync(new ClientId(id), cancellationToken);
-        return client is null
-            ? NotFound()
-            : View(new ClientPageViewModel(client, (await currentAccess.GetAsync())?.HasPermission(P.Clients.Manage) == true));
+        if (client is null)
+        {
+            return NotFound();
+        }
+
+        // Only the applications the viewer may see (an operator: those of their branch).
+        var related = await applications.SearchAsync(
+            new ApplicationSearch { ClientId = client.Id, PageSize = Paging.MaxPageSize }, cancellationToken);
+        var canManage = (await currentAccess.GetAsync())?.HasPermission(P.Clients.Manage) == true;
+        return View(new ClientPageViewModel(client, canManage, related.Items));
     }
 
     [HttpGet]

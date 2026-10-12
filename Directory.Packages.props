@@ -37,6 +37,8 @@
     <!-- 9.0.3, not 10.x: 10.0 needs Microsoft.Data.SqlClient 7; 9.0.3 uses Microsoft.Extensions 8 and SqlClient 6.1. Apache-2.0. -->
     <PackageVersion Include="Serilog.Sinks.MSSqlServer" Version="9.0.3" />
     <PackageVersion Include="QRCoder" Version="1.8.0" />
+    <!-- Contract and schedule PDFs. MIT (not QuestPDF: its Community licence excludes larger companies). -->
+    <PackageVersion Include="PDFsharp-MigraDoc" Version="6.2.4" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

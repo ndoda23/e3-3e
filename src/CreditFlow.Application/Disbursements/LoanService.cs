@@ -53,9 +53,33 @@ public sealed record LoanDetails
     public required IReadOnlyList<RepaymentView> Repayments { get; init; }
 }
 
+/// <summary>Filters and paging of the loan list (applied in SQL).</summary>
+public sealed record LoanSearch
+{
+    /// <summary>Contract number, borrower name or personal number.</summary>
+    public string? Text { get; init; }
+
+    public LoanStatus? Status { get; init; }
+
+    public int Page { get; init; } = 1;
+
+    public LoanSearch Normalize() => this with
+    {
+        Text = string.IsNullOrWhiteSpace(Text) ? null : Text.Trim(),
+        Page = Paging.NormalizePage(Page),
+    };
+}
+
+/// <summary>One row of the loan list.</summary>
+public sealed record LoanListItem(
+    LoanId Id, string ContractNumber, string BorrowerName, string BorrowerPersonalNumber, string ProductName, Money Principal,
+    Money OutstandingPrincipal, LoanStatus Status, DateOnly DisbursedOn, DateOnly? NextDueDate);
+
 /// <summary>Read side of loans. Every method applies the caller's <see cref="ApplicationAccessFilter"/>.</summary>
 public interface ILoanQueries
 {
+    Task<PagedResult<LoanListItem>> SearchAsync(LoanSearch search, ApplicationAccessFilter access, CancellationToken cancellationToken);
+
     /// <summary>The loan, or <c>null</c> when it does not exist or its application is not visible.</summary>
     Task<LoanDetails?> GetAsync(LoanId id, ApplicationAccessFilter access, CancellationToken cancellationToken);
 
@@ -76,6 +100,14 @@ public sealed class LoanService(
     IUnitOfWork unitOfWork,
     TimeProvider clock)
 {
+    public async Task<PagedResult<LoanListItem>> SearchAsync(LoanSearch search, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(search);
+        return await access.GetAsync(cancellationToken) is { } profile && profile.HasPermission(Permissions.Loans.View)
+            ? await queries.SearchAsync(search.Normalize(), ApplicationAccessFilter.For(profile), cancellationToken)
+            : new PagedResult<LoanListItem>([], 0, 1, Paging.DefaultPageSize);
+    }
+
     public async Task<LoanDetails?> GetAsync(LoanId id, CancellationToken cancellationToken) =>
         await access.GetAsync(cancellationToken) is { } profile && profile.HasPermission(Permissions.Loans.View)
             ? await queries.GetAsync(id, ApplicationAccessFilter.For(profile), cancellationToken)

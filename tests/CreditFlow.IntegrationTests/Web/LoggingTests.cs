@@ -15,6 +15,9 @@ public sealed partial class LoggingTests(SqlServerContainer sql) : WebTestBase(s
 {
     private const string PersonalNumber = "01001011001";
 
+    /// <summary>Longer than Serilog's retry backoff after a failed batch, short enough to fail a broken sink quickly.</summary>
+    private static readonly TimeSpan LogArrivalTimeout = TimeSpan.FromSeconds(60);
+
     protected override IReadOnlyDictionary<string, string?>? Settings => new Dictionary<string, string?>
     {
         ["Serilog:MinimumLevel:Default"] = "Information",
@@ -98,8 +101,11 @@ public sealed partial class LoggingTests(SqlServerContainer sql) : WebTestBase(s
 
     private async Task<LogEntry> WaitForLogAsync(System.Linq.Expressions.Expression<Func<LogEntry, bool>> predicate)
     {
-        // The sink writes in batches; poll until the event arrives (fails after 15 seconds).
-        for (var attempt = 0; attempt < 75; attempt++)
+        // The sink writes in batches, and a batch that fails under load (the whole suite shares one SQL Server) is retried
+        // with backoff by Serilog. Poll until the event arrives or a generous deadline passes; the assertions on the
+        // row itself are unchanged.
+        var deadline = DateTime.UtcNow + LogArrivalTimeout;
+        while (DateTime.UtcNow < deadline)
         {
             var entry = await QueryAsync(db => db.Logs.AsNoTracking().Where(predicate).FirstOrDefaultAsync(Ct));
             if (entry is not null)
@@ -107,7 +113,7 @@ public sealed partial class LoggingTests(SqlServerContainer sql) : WebTestBase(s
                 return entry;
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(200), Ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(100), Ct);
         }
 
         var recent = await QueryAsync(db => db.Logs.AsNoTracking().OrderByDescending(l => l.Id).Take(10)

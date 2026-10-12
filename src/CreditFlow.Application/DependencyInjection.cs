@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<DisbursementService>();
         services.AddScoped<DisbursementProcessor>();
         services.AddScoped<LoanService>();
+        services.AddScoped<ContractDocumentService>();
         services.AddScoped<ApplicationLifecycleJobs>();
 
         AddOutboxHandlers(services);

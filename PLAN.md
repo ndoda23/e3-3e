@@ -1087,6 +1087,15 @@ Decisions taken during implementation:
     due yet are not revisited in the same run) and commits the domain change with them. Running twice or in parallel
     gives one effect. Escalation notifies the active users holding `underwriting.decide-senior`; expiry notifies through
     the status-change notifications (operator and client).
+46. **PDFs** — PDFsharp-MigraDoc 6.2.4 (MIT) with DejaVu Sans embedded in the Infrastructure assembly (Bitstream Vera
+    licence; Latin and Georgian glyphs; the same output on every OS, no system fonts). The contract can be printed from
+    the approval on (the number reads "assigned at signing" until then); the schedule is projected from today before
+    disbursement and is the loan's current schedule afterwards. Printing needs `contracts.manage` or `loans.view`.
+47. **Wizard** — step 1 (borrower, product, terms) creates the draft; steps 2–4 (parties and collateral, documents,
+    review and submit) edit that draft through the normal actions, so the wizard adds no second write path. A draft's
+    document checklist comes from the product's current version; from submission on, the snapshot rules.
+48. **Payout on the page** — Pending shows "check again" and Failed shows "retry"; both post the same Disburse action,
+    which reuses the payout and its idempotency key.
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1162,7 +1171,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   contract signed, mark conditions met, disburse, loan page with schedule, record repayment. **End-to-end flow works
   in the browser here.**
 - [x] **P12** Jobs: escalation, offer expiry (+ idempotency tests).
-- [ ] **P13** Web polish of the P10/P11 pages: multi-step application wizard, scoring explanation, decisions panel,
+- [x] **P13** Web polish of the P10/P11 pages: multi-step application wizard, scoring explanation, decisions panel,
   contract + schedule PDF, loans list.
 - [ ] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
   holidays.
@@ -1199,22 +1208,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P10b — Client, application and inbox pages | done; build 0 warnings, 1,163 tests green (Domain 630, Application 353, Architecture 13, Integration 167). Pages: clients (list, register, edit, KYC document, incomes, obligations), applications (list with SQL-side filters / sort / paging, new, application page with parties, collateral, documents, scoring explanation, history, decisions and every action the viewer may take), decision inboxes. Web tests: operator flow through the pages, upload by content, IDOR by id (404), the Auditor's POST to every permission-protected action refused with nothing changed, unprotected POSTs only account self-service. Fixed on the way: decisions with the same timestamp were listed in an undefined order. | `c842907` |
 | P11 — Contract, disbursement, loans, repayments | done; build 0 warnings, 1,190 tests green (Domain 646, Application 353, Architecture 13, Integration 178), no pending EF model changes. Gapless contract numbers from a locked counter row in the signing transaction; idempotent payout (deterministic key, Pending row committed before core banking, rejection → retry with the same key, timeout → background retry returns the same transaction); exposure re-check under per-party `sp_getapplock` in id order; loan booking via the outbox; installments and early repayment (partial recalculation, full closes loan and application). Tests: parallel signing + rollback, double payout sequential and parallel, error and timeout, exposure race over a shared guarantor, repayments, loan IDOR, pages. Decisions #41–#44. | `8633e23` |
 | P12 — Escalation and offer-expiry jobs | done; build 0 warnings, 1,197 tests green (Domain 646, Application 353, Architecture 13, Integration 185), no pending EF model changes. One `BackgroundService` (`Jobs:Enabled`, `Jobs:Interval`) runs both jobs; candidates claimed with `UPDLOCK, READPAST, ROWLOCK` per batch (keyset by id); escalation after 2 working days (weekends and holidays skipped) notifies the Senior Underwriters; expiry after 30 days notifies operator and client. Tests: deadline across a weekend and a holiday, run twice and two parallel runners → one effect each, inbox and authority after escalation, notifications. Index for the escalation claim added. Seen once: `LoggingTests.A_log_event_reaches_the_database…` timed out (15 s poll for the batched SQL sink) during a full run under load; it passed alone and in the next full run. | `0aa641f` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** P10a `24ae829`, P10b `c842907`, P11 `8633e23`, P12 `0aa641f`. **Current step: P13**; stop after the
-  P13 commit with a 3–5 line summary and a manual browser test script (user, personal number, clicks).
-- **P13 scope (user, 2026-10-13):** clients (list of the client's applications), application wizard (step 1 borrower +
-  product + terms creates the draft; steps parties & collateral → documents → review & submit on the draft, existing
-  POST actions return to the wizard step), application page (history, scoring explanation with verdict, decisions with
-  committee vote tally, conditions, counter-offer), inboxes (tier / escalation / waiting since), contract + disbursement
-  panel with payout status (Pending / Failed with error, retry button = Disburse again, same key), loans list (SQL-side
-  filter/paging, menu entry), loan page, contract + schedule PDF with PDFsharp-MigraDoc 6.2.4 (MIT) and embedded DejaVu
-  Sans fonts (Bitstream Vera licence, `Infrastructure/Documents/Fonts`, own `IFontResolver`); port
-  `IContractDocumentRenderer` in Application, renderer in Infrastructure, schedule = booked loan or projected from today.
-  Every button behind its permission (ApplicationActions / asp-permission), enforced server-side.
-- **Also:** `LoggingTests.A_log_event_reaches_the_database…` → bounded longer poll (or flush) without weakening asserts.
-- **Tests:** end-to-end web test over every role (operator → UW inbox → operator sign/disburse → loan → repayment),
-  wizard steps, payout failed + retry, PDF endpoints (content type, %PDF, permission, IDOR 404), loans list scope,
-  document builder content (contract number, schedule rows) via MigraDoc DDL.
-- **Open questions for the user:** none.
+| P13 — Pages: wizard, application page, contract and payout, loans, PDFs | done; build 0 warnings, 1,206 tests green (Domain 646, Application 353, Architecture 13, Integration 194), no pending EF model changes. Application wizard (borrower and terms → parties and collateral → documents → review and submit) on the normal actions; application page split into cards (scoring verdict and per-rule explanation, history, decisions with committee tally, conditions, counter-offer, contract and payout with Pending / Failed states and check-again / retry); loans list (SQL-side filter and paging, scope); client page lists the client's applications; contract and schedule PDFs (PDFsharp-MigraDoc 6.2.4, embedded DejaVu Sans). Web tests walk the whole process role by role (operator, underwriter, compliance, two committee members, auditor), payout rejection and timeout, PDF permissions and IDOR. `LoggingTests` now polls the batched SQL sink against a 60 s deadline (assertions unchanged). Decisions #46–#48. | (this commit) |

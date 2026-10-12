@@ -2,6 +2,7 @@ using CreditFlow.Application.Common;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
 using CreditFlow.Domain.Common;
+using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Products;
 using CreditFlow.Domain.Scoring;
 using CreditFlow.Domain.Users;
@@ -25,6 +26,9 @@ public sealed record ApplicationSearch
     public string? Text { get; init; }
 
     public ApplicationStatus? Status { get; init; }
+
+    /// <summary>Only applications where this client is a party (borrower, co-borrower or guarantor).</summary>
+    public ClientId? ClientId { get; init; }
 
     public LoanProductId? ProductId { get; init; }
 
@@ -95,6 +99,11 @@ public sealed record DecisionView(DecisionKind Kind, string DecidedBy, UserId De
 /// <summary>A condition to meet before disbursement.</summary>
 public sealed record ConditionView(ApplicationLineId Id, ConditionType Type, string Description, bool IsMet, DateTimeOffset? MetAt);
 
+/// <summary>The state of the payout of an application.</summary>
+public sealed record PayoutView(
+    DisbursementStatus Status, Money Amount, int Attempts, string? TransactionId, string? LastError, DateTimeOffset RequestedAt,
+    DateTimeOffset? CompletedAt);
+
 /// <summary>Everything the application page shows.</summary>
 public sealed record ApplicationDetails
 {
@@ -134,6 +143,12 @@ public sealed record ApplicationDetails
     public required IReadOnlyList<ConditionView> Conditions { get; init; }
 
     public required ScoringRun? LatestScoring { get; init; }
+
+    /// <summary>The payout, once requested.</summary>
+    public required PayoutView? Payout { get; init; }
+
+    /// <summary>Matching committee votes that decide (from the approval thresholds).</summary>
+    public required int RequiredVotes { get; init; }
 }
 
 /// <summary>Read side of applications. Every method applies the caller's <see cref="ApplicationAccessFilter"/>.</summary>

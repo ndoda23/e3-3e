@@ -21,6 +21,7 @@ using CreditFlow.Domain.Scoring;
 using CreditFlow.Domain.Users;
 using CreditFlow.Application.External;
 using CreditFlow.Infrastructure.Auditing;
+using CreditFlow.Infrastructure.Documents;
 using CreditFlow.Infrastructure.ExternalServices;
 using CreditFlow.Infrastructure.Jobs;
 using CreditFlow.Infrastructure.Outbox;
@@ -147,6 +148,7 @@ public static class DependencyInjection
         services.AddScoped<IContractNumberGenerator, ContractNumberGenerator>();
         services.AddScoped<IExposureLock, SqlExposureLock>();
         services.AddScoped<ILoanQueries, LoanQueries>();
+        services.AddSingleton<IContractDocumentRenderer, PdfContractRenderer>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();

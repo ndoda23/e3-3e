@@ -24,7 +24,7 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
 {
     private static readonly byte[] Pdf = [.. "%PDF-1.7\n"u8.ToArray(), .. new byte[256]];
 
-    [GeneratedRegex("/(?:Clients|Applications)/Details/(?<id>[0-9a-f-]{36})")]
+    [GeneratedRegex("/(?:Clients|Applications)/(?:Details|Wizard)/(?<id>[0-9a-f-]{36})")]
     private static partial Regex DetailsLocation();
 
     [GeneratedRegex("data-paid=\"true\"")]
@@ -227,9 +227,9 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
     }
 
     /// <summary>Registers a client with a salary and creates a consumer-loan draft for them, all through the pages.</summary>
-    private async Task<Guid> CreateDraftAsync(WebSession browser)
+    private async Task<Guid> CreateDraftAsync(WebSession browser, string? borrowerPersonalNumber = null)
     {
-        var personalNumber = $"0300101{1000 + Interlocked.Increment(ref _clientCounter)}";
+        var personalNumber = borrowerPersonalNumber ?? $"0300101{1000 + Interlocked.Increment(ref _clientCounter)}";
         var clientId = IdFrom(await browser.PostFormAsync("/Clients/Register", "/Clients/Register", new Dictionary<string, string>
         {
             ["PersonalNumber"] = personalNumber,
@@ -266,12 +266,18 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         }));
     }
 
-    private static async Task<HttpResponseMessage> UploadAsync(WebSession browser, Guid id, DocumentType type, byte[]? content = null)
+    private static async Task<HttpResponseMessage> UploadAsync(
+        WebSession browser, Guid id, DocumentType type, byte[]? content = null, int? wizardStep = null)
     {
         var token = WebSession.Token(await browser.GetPageAsync($"/Applications/Details/{id}"));
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(token), "__RequestVerificationToken");
         form.Add(new StringContent(type.ToString()), "type");
+        if (wizardStep is { } step)
+        {
+            form.Add(new StringContent(step.ToString(System.Globalization.CultureInfo.InvariantCulture)), "step");
+        }
+
         var file = new ByteArrayContent(content ?? Pdf);
         file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         form.Add(file, "file", $"{type}.pdf");

@@ -16,6 +16,8 @@
     </div>
     <div class="page-actions">
         <a class="btn" asp-controller="Applications" asp-action="Details" asp-route-id="@l.ApplicationId.Value"><icon name="chevron-left" size="15" />@T["Applications.Title", l.ApplicationReference]</a>
+        <a class="btn" asp-controller="Applications" asp-action="Schedule" asp-route-id="@l.ApplicationId.Value" data-pdf="schedule"><icon name="file-text" size="15" />@T["Applications.SchedulePdf"]</a>
+        <a class="btn" asp-controller="Applications" asp-action="Contract" asp-route-id="@l.ApplicationId.Value" data-pdf="contract"><icon name="file-text" size="15" />@T["Applications.ContractPdf"]</a>
     </div>
 </div>
 <partial name="_Notices" />

@@ -28,6 +28,11 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             rows = rows.Where(r => r.Status == status);
         }
 
+        if (search.ClientId is { } clientId)
+        {
+            rows = rows.Where(r => db.LoanApplications.Any(a => a.Id == r.Id && a.Parties.Any(p => p.ClientId == clientId)));
+        }
+
         if (search.ProductId is { } productId)
         {
             rows = rows.Where(r => r.ProductId == productId);
@@ -124,7 +129,12 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
         var names = await db.UserDirectory.AsNoTracking()
             .Where(u => userIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.FullName, cancellationToken);
-        var productCode = await db.LoanProducts.Where(p => p.Id == application.ProductId).Select(p => p.Code).SingleAsync(cancellationToken);
+        var product = await db.LoanProducts.AsNoTracking().Include(p => p.Versions).SingleAsync(p => p.Id == application.ProductId, cancellationToken);
+        var payout = await db.Disbursements.AsNoTracking()
+            .Where(d => d.ApplicationId == id)
+            .Select(d => new PayoutView(d.Status, d.Amount, d.Attempts, d.TransactionId, d.LastError, d.RequestedAt, d.CompletedAt))
+            .FirstOrDefaultAsync(cancellationToken);
+        var requiredVotes = await db.ApprovalThresholds.AsNoTracking().Select(t => t.RequiredVotes).FirstAsync(cancellationToken);
 
         string NameOf(UserId? user) => user is { } u ? names.GetValueOrDefault(u.Value, "Unknown user") : "System";
 
@@ -134,7 +144,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             CreatedBy = application.CreatedBy,
             CreatedByName = NameOf(application.CreatedBy),
             Snapshot = application.Snapshot,
-            ProductCode = productCode,
+            ProductCode = product.Code,
             Terms = application.Terms,
             ProposedTerms = application.ProposedTerms,
             RequiredTier = application.RequiredTier,
@@ -150,7 +160,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             Documents = application.Documents
                 .Select(d => new DocumentView(d.Id, d.Type, d.FileName, d.Size, NameOf(d.UploadedBy), d.UploadedAt))
                 .ToList(),
-            MissingDocuments = application.Snapshot is { } snapshot ? application.MissingDocuments(snapshot.Terms) : [],
+            MissingDocuments = MissingDocuments(application, product),
             History = application.History.Select(h => new HistoryView(h.From, h.To, h.At, NameOf(h.By), h.Reason)).ToList(),
             Decisions = application.Decisions
                 .Select(d => new DecisionView(d.Kind, NameOf(d.DecidedBy), d.DecidedBy, d.DecidedAt, d.Reason, d.OverrideReason))
@@ -160,7 +170,25 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
                 .OrderBy(c => c.Description)
                 .ToList(),
             LatestScoring = application.LatestScoring,
+            Payout = payout,
+            RequiredVotes = requiredVotes,
         };
+    }
+
+    /// <summary>
+    /// The checklist still open: from the snapshot once submitted; for a draft from the product's current version and the
+    /// requested amount (GEL drafts; a foreign-currency draft learns its GEL amount at submission).
+    /// </summary>
+    private static IReadOnlyList<Domain.Products.DocumentType> MissingDocuments(LoanApplication application, Domain.Products.LoanProduct product)
+    {
+        if (application.Snapshot is { } snapshot)
+        {
+            return application.MissingDocuments(snapshot.Terms);
+        }
+
+        var amount = application.Terms.Amount.Currency == Currency.GEL ? application.Terms.Amount.Amount : 0m;
+        var uploaded = application.Documents.Select(d => d.Type).ToHashSet();
+        return product.CurrentVersion.Terms.DocumentsRequiredFor(amount).Where(t => !uploaded.Contains(t)).ToList();
     }
 
     /// <summary>The access filter as SQL: nothing, one branch, or the whole bank.</summary>

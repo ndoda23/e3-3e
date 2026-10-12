@@ -1,4 +1,5 @@
 using CreditFlow.Application.Applications;
+using CreditFlow.Application.Common;
 using CreditFlow.Application.Disbursements;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
@@ -101,6 +102,68 @@ internal sealed class ExposureQueries(CreditFlowDbContext db) : IExposureQueries
 /// <summary>The loan page; a loan is visible exactly when its application is.</summary>
 internal sealed class LoanQueries(CreditFlowDbContext db) : ILoanQueries
 {
+    /// <summary>The access filter, the search and the paging all run in SQL (newest disbursement first).</summary>
+    public async Task<PagedResult<LoanListItem>> SearchAsync(
+        LoanSearch search, ApplicationAccessFilter access, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(search);
+        ArgumentNullException.ThrowIfNull(access);
+        if (access.SeesNothing)
+        {
+            return new PagedResult<LoanListItem>([], 0, search.Page, Paging.DefaultPageSize);
+        }
+
+        var applications = db.LoanApplications.AsNoTracking();
+        if (access.Branch is { } branch)
+        {
+            applications = applications.Where(a => a.BranchId == branch);
+        }
+
+        var rows =
+            from l in db.Loans.AsNoTracking()
+            join a in applications on l.ApplicationId equals a.Id
+            join c in db.Clients on l.BorrowerId equals c.Id
+            join p in db.LoanProducts on l.ProductId equals p.Id
+            select new { Loan = l, c.FirstName, c.LastName, c.PersonalNumber, ProductName = p.Name };
+
+        if (search.Status is { } status)
+        {
+            rows = rows.Where(r => r.Loan.Status == status);
+        }
+
+        if (search.Text is { } text)
+        {
+            rows = PersonalNumber.Create(text) is { IsSuccess: true } number
+                ? rows.Where(r => r.PersonalNumber == number.Value)
+                : rows.Where(r => r.Loan.ContractNumber == text || (r.FirstName + " " + r.LastName).Contains(text));
+        }
+
+        var total = await rows.CountAsync(cancellationToken);
+        var page = await rows
+            .OrderByDescending(r => r.Loan.DisbursedOn).ThenBy(r => r.Loan.ContractNumber)
+            .Skip((search.Page - 1) * Paging.DefaultPageSize).Take(Paging.DefaultPageSize)
+            .Select(r => new
+            {
+                r.Loan.Id,
+                r.Loan.ContractNumber,
+                Borrower = r.FirstName + " " + r.LastName,
+                r.PersonalNumber,
+                r.ProductName,
+                r.Loan.Principal,
+                r.Loan.OutstandingPrincipal,
+                r.Loan.Status,
+                r.Loan.DisbursedOn,
+                NextDueDate = r.Loan.Installments.Where(i => !i.IsPaid).OrderBy(i => i.Number).Select(i => (DateOnly?)i.DueDate).FirstOrDefault(),
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<LoanListItem>(
+            page.Select(r => new LoanListItem(
+                r.Id, r.ContractNumber, r.Borrower, r.PersonalNumber.Value, r.ProductName, r.Principal, r.OutstandingPrincipal,
+                r.Status, r.DisbursedOn, r.NextDueDate)).ToList(),
+            total, search.Page, Paging.DefaultPageSize);
+    }
+
     public async Task<LoanDetails?> GetAsync(LoanId id, ApplicationAccessFilter access, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(access);

@@ -1,0 +1,50 @@
+@model ApplicationPageViewModel
+@{
+    var a = Model.Application;
+    var act = Model.Actions;
+    var id = a.Summary.Id.Value;
+}
+<section class="card" aria-labelledby="parties-title" data-section="parties">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="parties-title">@T["Applications.Parties"]</h2>
+            <p class="card-sub">@T["Applications.PartiesHint"]</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var party in a.Parties)
+                {
+                    <tr data-party="@party.Role">
+                        <td><a asp-controller="Clients" asp-action="Details" asp-route-id="@party.ClientId.Value">@party.Name</a></td>
+                        <td class="mono">@party.PersonalNumber</td>
+                        <td>@T.EnumText(party.Role)</td>
+                        @if (act.EditDraft && party.Role != PartyRole.Borrower)
+                        {
+                            <td class="actions">
+                                <form method="post" asp-action="RemoveParty" asp-route-id="@id">
+                                    <partial name="_StepField" />
+                                    <input type="hidden" name="clientId" value="@party.ClientId.Value" />
+                                    <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (act.EditDraft)
+    {
+        <form method="post" asp-action="AddParty" asp-route-id="@id" class="card-body form row wrap">
+            <partial name="_StepField" />
+            <input name="PersonalNumber" class="inp mono" inputmode="numeric" maxlength="11" placeholder="@T["Field.PersonalNumber"]" aria-label="@T["Field.PersonalNumber"]" />
+            <select name="Role" class="select" aria-label="@T["Applications.PartyRole"]">
+                <option value="@PartyRole.CoBorrower">@T.EnumText(PartyRole.CoBorrower)</option>
+                <option value="@PartyRole.Guarantor">@T.EnumText(PartyRole.Guarantor)</option>
+            </select>
+            <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+        </form>
+    }
+</section>

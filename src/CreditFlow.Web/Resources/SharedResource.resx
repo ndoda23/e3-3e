@@ -577,4 +577,66 @@
   <data name="AuditAction.Loan.Repayment" xml:space="preserve"><value>Repayment recorded</value></data>
   <data name="AuditAction.Loan.Closed" xml:space="preserve"><value>Loan closed</value></data>
   <data name="AuditEntity.Loan" xml:space="preserve"><value>Loan</value></data>
+  <data name="Applications.BookingLoan" xml:space="preserve"><value>The payout is confirmed; the loan and its schedule are being booked.</value></data>
+  <data name="Applications.CheckHint" xml:space="preserve"><value>Core banking has not confirmed the payout yet. Asking again uses the same request, so nothing is paid twice.</value></data>
+  <data name="Applications.CheckPayout" xml:space="preserve"><value>Check payout again</value></data>
+  <data name="Applications.ChecklistComplete" xml:space="preserve"><value>Every required document is uploaded.</value></data>
+  <data name="Applications.CollateralHint" xml:space="preserve"><value>Valuation and registration are entered by hand; the valuation may be at most 6 months old.</value></data>
+  <data name="Applications.ConditionMet" xml:space="preserve"><value>Met</value></data>
+  <data name="Applications.ConditionOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="Applications.ContractAndPayout" xml:space="preserve"><value>Contract and payout</value></data>
+  <data name="Applications.ContractPdf" xml:space="preserve"><value>Contract (PDF)</value></data>
+  <data name="Applications.DecisionTier" xml:space="preserve"><value>This file needs at least: {0}.</value></data>
+  <data name="Applications.DisburseHint" xml:space="preserve"><value>The payout goes to the borrower's account through core banking; a second click never pays twice.</value></data>
+  <data name="Applications.OfferValidUntil" xml:space="preserve"><value>Offer valid until {0}</value></data>
+  <data name="Applications.OpenLoan" xml:space="preserve"><value>Open the loan</value></data>
+  <data name="Applications.PartiesHint" xml:space="preserve"><value>Co-borrowers and guarantors go through the same KYC, screening and scoring.</value></data>
+  <data name="Applications.PayoutAmount" xml:space="preserve"><value>Payout (principal less upfront fee)</value></data>
+  <data name="Applications.PayoutAttempts" xml:space="preserve"><value>Attempts</value></data>
+  <data name="Applications.PayoutFailed" xml:space="preserve"><value>Rejected by core banking</value></data>
+  <data name="Applications.PayoutMessage" xml:space="preserve"><value>Message</value></data>
+  <data name="Applications.PayoutPending" xml:space="preserve"><value>Waiting for core banking</value></data>
+  <data name="Applications.PayoutStatus" xml:space="preserve"><value>Payout</value></data>
+  <data name="Applications.PayoutSucceeded" xml:space="preserve"><value>Paid out</value></data>
+  <data name="Applications.RetryHint" xml:space="preserve"><value>Core banking rejected the payout and no money moved. A retry uses the same request.</value></data>
+  <data name="Applications.RetryPayout" xml:space="preserve"><value>Retry payout</value></data>
+  <data name="Applications.SchedulePdf" xml:space="preserve"><value>Schedule (PDF)</value></data>
+  <data name="Applications.SignHint" xml:space="preserve"><value>The client signed the contract: the next contract number is assigned.</value></data>
+  <data name="Applications.TransactionId" xml:space="preserve"><value>Core banking transaction</value></data>
+  <data name="Applications.UploadBeforeScoring" xml:space="preserve"><value>Upload the missing documents first.</value></data>
+  <data name="Applications.UploadHint" xml:space="preserve"><value>PDF, PNG or JPEG, at most 10 MB.</value></data>
+  <data name="Applications.Verdict.Override" xml:space="preserve"><value>Approval needs an override</value></data>
+  <data name="Applications.Verdict.Passed" xml:space="preserve"><value>All rules passed</value></data>
+  <data name="Applications.Verdict.Rejected" xml:space="preserve"><value>Rejected by a rule</value></data>
+  <data name="Applications.VoteTally" xml:space="preserve"><value>Votes to approve: {0}, to reject: {1}; {2} matching votes decide.</value></data>
+  <data name="Applications.When" xml:space="preserve"><value>When</value></data>
+  <data name="Applications.Who" xml:space="preserve"><value>By</value></data>
+  <data name="Clients.Applications" xml:space="preserve"><value>Applications</value></data>
+  <data name="Loans.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Loans.Description" xml:space="preserve"><value>Disbursed loans you may see, newest first.</value></data>
+  <data name="Loans.NextDue" xml:space="preserve"><value>Next due</value></data>
+  <data name="Loans.None" xml:space="preserve"><value>No loans.</value></data>
+  <data name="Loans.Search" xml:space="preserve"><value>Search loans</value></data>
+  <data name="Loans.SearchPlaceholder" xml:space="preserve"><value>Contract number, borrower or personal number</value></data>
+  <data name="Nav.Loans" xml:space="preserve"><value>Loans</value></data>
+  <data name="Wizard.Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Wizard.Continue" xml:space="preserve"><value>Continue in the wizard</value></data>
+  <data name="Wizard.FirstStepHint" xml:space="preserve"><value>Step 1 of 5.</value></data>
+  <data name="Wizard.Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Wizard.OpenApplication" xml:space="preserve"><value>Application page</value></data>
+  <data name="Wizard.ReviewHint" xml:space="preserve"><value>Check the data below and submit. The pre-check (KYC, sanctions, credit bureau) then runs automatically.</value></data>
+  <data name="Wizard.Step.Borrower" xml:space="preserve"><value>Borrower and loan</value></data>
+  <data name="Wizard.Step.Documents" xml:space="preserve"><value>Documents</value></data>
+  <data name="Wizard.Step.Parties" xml:space="preserve"><value>Parties and collateral</value></data>
+  <data name="Wizard.Step.Review" xml:space="preserve"><value>Review and submit</value></data>
+  <data name="Wizard.Step.Terms" xml:space="preserve"><value>Terms</value></data>
+  <data name="Wizard.Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="Wizard.Title" xml:space="preserve"><value>New application {0}</value></data>
+  <data name="Rule.BUREAU_DPD30_12M" xml:space="preserve"><value>No payment 30+ days late in the last 12 months</value></data>
+  <data name="Rule.PTI" xml:space="preserve"><value>Payment-to-income within the income band's limit</value></data>
+  <data name="Rule.LTV" xml:space="preserve"><value>Loan-to-value within the product's limit</value></data>
+  <data name="Rule.VALUATION_AGE" xml:space="preserve"><value>Collateral valuation at most 6 months old</value></data>
+  <data name="Rule.FX_INCOME_CURRENCY" xml:space="preserve"><value>Foreign-currency loan needs income in that currency</value></data>
+  <data name="Rule.EXPOSURE_LIMIT" xml:space="preserve"><value>Total exposure within the limit</value></data>
+  <data name="Rule.PRODUCT_LIMITS" xml:space="preserve"><value>Amount, term and rate within the product</value></data>
 </root>

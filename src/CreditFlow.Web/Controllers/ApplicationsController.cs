@@ -26,6 +26,7 @@ public sealed class ApplicationsController(
     ApplicationService applications,
     DecisionService decisions,
     ContractService contracts,
+    ContractDocumentService documents,
     DisbursementService disbursements,
     LoanService loans,
     ClientService clients,
@@ -53,18 +54,29 @@ public sealed class ApplicationsController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken) =>
+        await PageAsync(id, cancellationToken) is { } page ? View(page) : NotFound();
+
+    /// <summary>
+    /// The draft as a wizard: 1 terms, 2 parties and collateral, 3 documents, 4 review and submit. Every step posts to
+    /// the normal actions and comes back here; once submitted, the application page takes over.
+    /// </summary>
+    [HttpGet]
+    [HasPermission(P.Applications.Create)]
+    public async Task<IActionResult> Wizard(Guid id, int step, CancellationToken cancellationToken)
     {
-        var profile = await currentAccess.GetAsync();
-        var application = await applications.GetDetailsAsync(new LoanApplicationId(id), cancellationToken);
-        if (profile is null || application is null)
+        var page = await PageAsync(id, cancellationToken);
+        if (page is null)
         {
             return NotFound();
         }
 
-        var canOverride = profile.HasPermission(P.Scoring.Override);
-        var loan = await loans.FindByApplicationAsync(application.Summary.Id, cancellationToken);
-        return View(new ApplicationPageViewModel(application, ApplicationActions.For(profile, application), canOverride, loan));
+        if (!page.Actions.EditDraft)
+        {
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        return View(new WizardViewModel(page, Math.Clamp(step, WizardViewModel.FirstStep, WizardViewModel.LastStep)));
     }
 
     [HttpGet]
@@ -75,6 +87,22 @@ public sealed class ApplicationsController(
             new LoanApplicationId(id), new ApplicationLineId(documentId), cancellationToken);
         return document is null ? NotFound() : File(document.Content, document.ContentType, document.FileName);
     }
+
+    /// <summary>The contract PDF (offer before signing, with its number after).</summary>
+    [HttpGet]
+    [HasAnyPermission(P.Contracts.Manage, P.Loans.View)]
+    public async Task<IActionResult> Contract(Guid id, CancellationToken cancellationToken) =>
+        await documents.ContractAsync(new LoanApplicationId(id), cancellationToken) is { } pdf
+            ? File(pdf.Content, pdf.ContentType, pdf.FileName)
+            : NotFound();
+
+    /// <summary>The repayment schedule PDF (projected before disbursement, the loan's afterwards).</summary>
+    [HttpGet]
+    [HasAnyPermission(P.Contracts.Manage, P.Loans.View)]
+    public async Task<IActionResult> Schedule(Guid id, CancellationToken cancellationToken) =>
+        await documents.ScheduleAsync(new LoanApplicationId(id), cancellationToken) is { } pdf
+            ? File(pdf.Content, pdf.ContentType, pdf.FileName)
+            : NotFound();
 
     // ----- New application -----
 
@@ -109,7 +137,7 @@ public sealed class ApplicationsController(
             if (created.IsSuccess)
             {
                 TempData["Notice"] = localizer["Applications.Created"].Value;
-                return RedirectToAction(nameof(Details), new { id = created.Value.Value });
+                return RedirectToAction(nameof(Wizard), new { id = created.Value.Value, step = WizardViewModel.FirstStep + 1 });
             }
 
             ModelState.AddError(created.Error!, localizer);
@@ -293,7 +321,25 @@ public sealed class ApplicationsController(
             TempData["Error"] = ModelStateExtensions.LocalizeAll(result.Error!, localizer);
         }
 
-        return RedirectToAction(nameof(Details), new { id });
+        // A form inside the wizard carries its step and returns to it (the wizard sends a submitted application on).
+        return Request.HasFormContentType && int.TryParse(Request.Form[WizardViewModel.StepField], out var step)
+            ? RedirectToAction(nameof(Wizard), new { id, step })
+            : RedirectToAction(nameof(Details), new { id });
+    }
+
+    /// <summary>The application page model, or <c>null</c> when the application is not visible.</summary>
+    private async Task<ApplicationPageViewModel?> PageAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var profile = await currentAccess.GetAsync();
+        var application = await applications.GetDetailsAsync(new LoanApplicationId(id), cancellationToken);
+        if (profile is null || application is null)
+        {
+            return null;
+        }
+
+        var loan = await loans.FindByApplicationAsync(application.Summary.Id, cancellationToken);
+        return new ApplicationPageViewModel(
+            application, ApplicationActions.For(profile, application), profile.HasPermission(P.Scoring.Override), loan);
     }
 
     private async Task<ApplicationIndexViewModel> BuildIndexAsync(ApplicationListQuery query, CancellationToken cancellationToken)

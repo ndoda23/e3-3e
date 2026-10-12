@@ -26,6 +26,10 @@
                     <td class="num tnum">@DisplayFormat.Money(item.Amount) <span class="muted small">· @item.TermMonths @T["Applications.Months"]</span></td>
                     <td>
                         <partial name="_StatusPill" model="item.Status" />
+                        @if (item.Tier is { } tier && item.Status is ApplicationStatus.Underwriting or ApplicationStatus.CreditCommittee)
+                        {
+                            <span class="chip" data-tier="@tier">@T.EnumText(tier)</span>
+                        }
                         @if (item.EscalatedAt is not null)
                         {
                             <span class="pill warning" title="@DisplayFormat.DateTime(item.EscalatedAt)">@T["Applications.Escalated"]</span>

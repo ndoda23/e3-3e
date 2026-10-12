@@ -1,0 +1,119 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Disbursements
+@{
+    var a = Model.Application;
+    var s = a.Summary;
+    var act = Model.Actions;
+    var id = s.Id.Value;
+    var payout = a.Payout;
+    var shown = act.Print || act.SignContract || act.MarkConditionsMet || act.Disburse || payout is not null || a.ContractNumber is not null;
+}
+@if (shown)
+{
+    <section class="card mb" aria-labelledby="contract-title" data-section="contract">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="contract-title">@T["Applications.ContractAndPayout"]</h2>
+                <p class="card-sub">
+                    @if (a.ContractNumber is { } number)
+                    {
+                        <span>@T["Applications.ContractNumber"]: <span class="mono" data-contract-number>@number</span></span>
+                    }
+                    else if (s.OfferExpiresAt is { } expires)
+                    {
+                        <span>@T["Applications.OfferValidUntil", DisplayFormat.DateTime(expires)]</span>
+                    }
+                </p>
+            </div>
+            @if (act.Print)
+            {
+                <div class="card-tools row">
+                    <a class="btn sm" asp-action="Contract" asp-route-id="@id" data-pdf="contract"><icon name="file-text" size="14" />@T["Applications.ContractPdf"]</a>
+                    <a class="btn sm" asp-action="Schedule" asp-route-id="@id" data-pdf="schedule"><icon name="file-text" size="14" />@T["Applications.SchedulePdf"]</a>
+                </div>
+            }
+        </div>
+        <div class="card-body stack">
+            @if (act.SignContract)
+            {
+                <form method="post" asp-action="SignContract" asp-route-id="@id" class="row wrap">
+                    <span class="small muted grow">@T["Applications.SignHint"]</span>
+                    <button type="submit" class="btn primary"><icon name="file-text" size="15" />@T["Applications.SignContract"]</button>
+                </form>
+            }
+
+            @if (a.Conditions.Count > 0)
+            {
+                <div>
+                    <h3 class="field-label">@T["Applications.Conditions"]</h3>
+                    <ul class="action-list">
+                        @foreach (var condition in a.Conditions)
+                        {
+                            <li data-condition="@(condition.IsMet ? "met" : "open")" class="row">
+                                <span class="pill @(condition.IsMet ? "success" : "neutral")"><span class="dot"></span>@(condition.IsMet ? T["Applications.ConditionMet"] : T["Applications.ConditionOpen"])</span>
+                                <span class="grow">@T.EnumText(condition.Type): @condition.Description</span>
+                                @if (act.MarkConditionsMet && !condition.IsMet)
+                                {
+                                    <form method="post" asp-action="ConditionMet" asp-route-id="@id">
+                                        <input type="hidden" name="conditionId" value="@condition.Id.Value" />
+                                        <button type="submit" class="btn sm">@T["Applications.MarkConditionMet"]</button>
+                                    </form>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (payout is not null)
+            {
+                <dl class="dl" data-payout="@payout.Status">
+                    <dt>@T["Applications.PayoutStatus"]</dt>
+                    <dd>
+                        @switch (payout.Status)
+                        {
+                            case DisbursementStatus.Succeeded:
+                                <span class="pill success"><span class="dot"></span>@T["Applications.PayoutSucceeded"]</span>
+                                break;
+                            case DisbursementStatus.Failed:
+                                <span class="pill danger"><span class="dot"></span>@T["Applications.PayoutFailed"]</span>
+                                break;
+                            default:
+                                <span class="pill warning"><span class="dot"></span>@T["Applications.PayoutPending"]</span>
+                                break;
+                        }
+                    </dd>
+                    <dt>@T["Applications.PayoutAmount"]</dt><dd class="tnum">@DisplayFormat.Money(payout.Amount)</dd>
+                    <dt>@T["Applications.PayoutAttempts"]</dt><dd>@payout.Attempts · @DisplayFormat.DateTime(payout.RequestedAt)</dd>
+                    @if (payout.TransactionId is { } transaction)
+                    {
+                        <dt>@T["Applications.TransactionId"]</dt><dd class="mono">@transaction</dd>
+                    }
+                    @if (payout.LastError is { } error)
+                    {
+                        <dt>@T["Applications.PayoutMessage"]</dt><dd data-payout-error>@error</dd>
+                    }
+                </dl>
+            }
+
+            @if (act.Disburse)
+            {
+                <form method="post" asp-action="Disburse" asp-route-id="@id" class="row wrap">
+                    <span class="small muted grow">@T[payout is null ? "Applications.DisburseHint" : payout.Status == DisbursementStatus.Failed ? "Applications.RetryHint" : "Applications.CheckHint"]</span>
+                    <button type="submit" class="btn primary" data-disburse="@(payout?.Status.ToString() ?? "New")">
+                        <icon name="wallet" size="15" />@T[payout is null ? "Applications.Disburse" : payout.Status == DisbursementStatus.Failed ? "Applications.RetryPayout" : "Applications.CheckPayout"]
+                    </button>
+                </form>
+            }
+
+            @if (Model.Loan is { } loanId)
+            {
+                <a class="btn" asp-controller="Loans" asp-action="Details" asp-route-id="@loanId.Value" data-loan-link><icon name="wallet" size="15" />@T["Applications.OpenLoan"]</a>
+            }
+            else if (s.Status == ApplicationStatus.Disbursed)
+            {
+                <p class="small muted">@T["Applications.BookingLoan"]</p>
+            }
+        </div>
+    </section>
+}

@@ -1,0 +1,55 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Common
+@using CreditFlow.Domain.Products
+@{
+    var a = Model.Application;
+    var s = a.Summary;
+    var act = Model.Actions;
+    var id = s.Id.Value;
+}
+<section class="card" aria-labelledby="terms-title" data-section="terms">
+    <div class="card-head"><h2 class="card-title" id="terms-title">@T["Applications.Terms"]</h2></div>
+    <dl class="dl card-body">
+        <dt>@T["Applications.Borrower"]</dt><dd>@s.BorrowerName <span class="mono muted">@s.BorrowerPersonalNumber</span></dd>
+        <dt>@T["Field.Product"]</dt><dd>@s.ProductName</dd>
+        <dt>@T["Field.Amount"]</dt><dd class="tnum">@DisplayFormat.Money(a.Terms.Amount)@(s.AmountGel is { } gel && a.Terms.Amount.Currency != Currency.GEL ? $" (≈ {DisplayFormat.Money(Currency.GEL, gel)})" : null)</dd>
+        <dt>@T["Field.TermMonths"]</dt><dd>@a.Terms.TermMonths</dd>
+        <dt>@T["Field.AnnualRate"]</dt><dd>@DisplayFormat.Percent(a.Terms.AnnualRate)</dd>
+        <dt>@T["Field.ScheduleType"]</dt><dd>@T.EnumText(a.Terms.ScheduleType)</dd>
+        @if (s.Tier is { } tier)
+        {
+            <dt>@T["Applications.Tier"]</dt><dd>@T.EnumText(tier)</dd>
+        }
+        @if (a.ProposedTerms is { } offer)
+        {
+            <dt>@T["Applications.CounterOffer"]</dt>
+            <dd data-counter-offer>@DisplayFormat.Money(offer.Amount) · @offer.TermMonths @T["Applications.Months"] · @DisplayFormat.Percent(offer.AnnualRate) · @T["Applications.OfferExpires", DisplayFormat.DateTime(s.OfferExpiresAt)]</dd>
+        }
+        @if (a.Snapshot is { } snapshot)
+        {
+            <dt>@T["Applications.Snapshot"]</dt><dd>@snapshot.Name v@(snapshot.Version)</dd>
+        }
+    </dl>
+    @if (act.EditDraft)
+    {
+        <form method="post" asp-action="ChangeTerms" asp-route-id="@id" class="card-body form row wrap">
+            <partial name="_StepField" />
+            <input name="Amount" type="number" step="0.01" min="0" class="inp" value="@a.Terms.Amount.Amount" aria-label="@T["Field.Amount"]" title="@T["Field.Amount"]" />
+            <select name="Currency" class="select" aria-label="@T["Field.Currency"]">
+                @foreach (var currency in Enum.GetValues<Currency>())
+                {
+                    <option value="@currency" selected="@(a.Terms.Amount.Currency == currency)">@currency</option>
+                }
+            </select>
+            <input name="TermMonths" type="number" min="1" class="inp" value="@a.Terms.TermMonths" aria-label="@T["Field.TermMonths"]" title="@T["Field.TermMonths"]" />
+            <input name="AnnualRate" type="number" step="0.01" min="0" class="inp" value="@a.Terms.AnnualRate" aria-label="@T["Field.AnnualRate"]" title="@T["Field.AnnualRate"]" />
+            <select name="ScheduleType" class="select" aria-label="@T["Field.ScheduleType"]">
+                @foreach (var type in Enum.GetValues<ScheduleType>())
+                {
+                    <option value="@type" selected="@(a.Terms.ScheduleType == type)">@T.EnumText(type)</option>
+                }
+            </select>
+            <button type="submit" class="btn sm">@T["Common.Save"]</button>
+        </form>
+    }
+</section>

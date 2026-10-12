@@ -1,0 +1,85 @@
+@model WizardViewModel
+@{
+    var page = Model.Page;
+    var a = page.Application;
+    var s = a.Summary;
+    var id = s.Id.Value;
+    var step = Model.Step;
+    ViewData["Title"] = T["Wizard.Title", s.Reference].Value;
+    ViewData["Section"] = T["Nav.Applications"].Value;
+    ViewData["WizardStep"] = step;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <partial name="_StatusPill" model="s.Status" />
+        </div>
+        <p class="page-desc">@s.BorrowerName · @s.ProductName · @DisplayFormat.Money(a.Terms.Amount)</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Details" asp-route-id="@id">@T["Wizard.OpenApplication"]</a>
+    </div>
+</div>
+<nav class="tabs mb" aria-label="@T["Wizard.Steps"]" data-wizard-steps>
+    <span class="tab">1. @T["Wizard.Step.Borrower"] ✓</span>
+    @for (var i = WizardViewModel.FirstStep; i <= WizardViewModel.LastStep; i++)
+    {
+        <a class="tab @(i == step ? "active" : null)" asp-action="Wizard" asp-route-id="@id" asp-route-step="@i"
+           aria-current="@(i == step ? "step" : null)" data-step="@i">@(i + 1). @T[WizardViewModel.StepKeys[i - 1]]</a>
+    }
+</nav>
+<partial name="_Notices" />
+
+<div data-wizard-step="@step">
+    @switch (step)
+    {
+        case 1:
+            <partial name="_TermsCard" model="page" />
+            break;
+        case 2:
+            <div class="grid-2">
+                <partial name="_PartiesCard" model="page" />
+                <partial name="_CollateralCard" model="page" />
+            </div>
+            break;
+        case 3:
+            <partial name="_DocumentsCard" model="page" />
+            break;
+        default:
+            <section class="card mb" aria-labelledby="review-title" data-section="review">
+                <div class="card-head"><h2 class="card-title" id="review-title">@T["Wizard.Step.Review"]</h2></div>
+                <div class="card-body stack">
+                    <p>@T["Wizard.ReviewHint"]</p>
+                    @if (a.MissingDocuments.Count > 0)
+                    {
+                        <div class="alert warning" role="status" data-missing><icon name="alert-triangle" size="18" /><span>@T["Applications.MissingDocuments", string.Join(", ", a.MissingDocuments.Select(d => T.EnumText(d)))]</span></div>
+                    }
+                    <form method="post" asp-action="Submit" asp-route-id="@id">
+                        <partial name="_StepField" />
+                        <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Applications.Submit"]</button>
+                    </form>
+                </div>
+            </section>
+            <div class="grid-2 mb">
+                <partial name="_TermsCard" model="page" />
+                <partial name="_PartiesCard" model="page" />
+            </div>
+            <div class="grid-2">
+                <partial name="_CollateralCard" model="page" />
+                <partial name="_DocumentsCard" model="page" />
+            </div>
+            break;
+    }
+</div>
+
+<div class="form-actions" data-wizard-nav>
+    @if (step > WizardViewModel.FirstStep)
+    {
+        <a class="btn" asp-action="Wizard" asp-route-id="@id" asp-route-step="@(step - 1)"><icon name="chevron-left" size="15" />@T["Wizard.Back"]</a>
+    }
+    @if (step < WizardViewModel.LastStep)
+    {
+        <a class="btn primary" asp-action="Wizard" asp-route-id="@id" asp-route-step="@(step + 1)">@T["Wizard.Next"]<icon name="chevron-right" size="15" /></a>
+    }
+</div>

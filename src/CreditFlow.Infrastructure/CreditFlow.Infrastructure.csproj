@@ -16,6 +16,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <PackageReference Include="PDFsharp-MigraDoc" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- DejaVu Sans (Bitstream Vera licence, see Documents/Fonts/DejaVu-LICENSE.txt): Latin and Georgian glyphs for PDFs. -->
+    <EmbeddedResource Include="Documents/Fonts/*.ttf" LogicalName="CreditFlow.Fonts.%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="CreditFlow.IntegrationTests" />

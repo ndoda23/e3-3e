@@ -1,0 +1,37 @@
+@model LoanIndexViewModel
+@using CreditFlow.Domain.Loans
+@{
+    ViewData["Title"] = T["Nav.Loans"].Value;
+    var q = Model.Search;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Loans.Description"]</p>
+    </div>
+</div>
+<section class="card" aria-labelledby="loans-title">
+    <div class="card-head">
+        <h2 class="card-title" id="loans-title">@T["Nav.Loans"]</h2>
+        <form class="card-tools filters" method="get" asp-action="Index" role="search"
+              hx-get="@Url.Action("Rows")" hx-target="#loan-rows" hx-trigger="input delay:400ms, change, submit">
+            <div class="search">
+                <icon name="search" size="14" />
+                <label class="sr-only" for="loan-search">@T["Loans.Search"]</label>
+                <input id="loan-search" type="search" name="search" value="@q.Text" placeholder="@T["Loans.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+            <label class="sr-only" for="loan-status">@T["Field.Status"]</label>
+            <select id="loan-status" name="status" class="select">
+                <option value="">@T["Loans.AllStatuses"]</option>
+                @foreach (var status in Enum.GetValues<LoanStatus>())
+                {
+                    <option value="@status" selected="@(q.Status == status)">@T.EnumText(status)</option>
+                }
+            </select>
+            <noscript><button type="submit" class="btn sm">@T["Users.Filter"]</button></noscript>
+        </form>
+    </div>
+    <div id="loan-rows" class="tbl-body">
+        <partial name="_LoanRows" model="Model" />
+    </div>
+</section>

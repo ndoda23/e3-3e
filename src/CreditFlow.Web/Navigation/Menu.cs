@@ -24,6 +24,7 @@ public static class Menu
             p.HasPermission(P.Underwriting.Decide) || p.HasPermission(P.Committee.Vote) || p.HasPermission(P.Compliance.Review)),
         new("Applications", "", "Applications", "files", p => p.HasPermission(P.Applications.View)),
         new("Clients", "", "Clients", "user-check", p => p.HasPermission(P.Clients.View)),
+        new("Loans", "", "Loans", "wallet", p => p.HasPermission(P.Loans.View)),
         new("Reports", "", "Reports", "bar-chart", p => p.HasPermission(P.Reports.View)),
 
         // Read-only roles reach the audit log without an administration permission.

@@ -1,0 +1,5 @@
+@* Inside the wizard, a form carries its step so the action returns to it. *@
+@if (ViewData["WizardStep"] is int step)
+{
+    <input type="hidden" name="@WizardViewModel.StepField" value="@step" />
+}

@@ -1,0 +1,63 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Common
+@{
+    var a = Model.Application;
+}
+@if (a.LatestScoring is { } scoring)
+{
+    var verdict = scoring.HasHardFailure ? "Rejected" : scoring.RequiresOverride ? "Override" : "Passed";
+    <section class="card mb" aria-labelledby="scoring-title" data-section="scoring" data-verdict="@verdict">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="scoring-title">@T["Applications.Scoring"]</h2>
+                <p class="card-sub">@T["Applications.ScoringRun", scoring.RuleSetVersion, DisplayFormat.DateTime(scoring.ScoredAt)]@(a.Summary.AmountGel is { } gel ? $" · {DisplayFormat.Money(Currency.GEL, gel)}" : null)</p>
+            </div>
+            @switch (verdict)
+            {
+                case "Rejected":
+                    <span class="pill danger"><span class="dot"></span>@T["Applications.Verdict.Rejected"]</span>
+                    break;
+                case "Override":
+                    <span class="pill warning"><span class="dot"></span>@T["Applications.Verdict.Override"]</span>
+                    break;
+                default:
+                    <span class="pill success"><span class="dot"></span>@T["Applications.Verdict.Passed"]</span>
+                    break;
+            }
+        </div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th scope="col">@T["Applications.Rule"]</th>
+                        <th scope="col">@T["Applications.Result"]</th>
+                        <th scope="col">@T["Applications.Measured"]</th>
+                        <th scope="col">@T["Applications.Threshold"]</th>
+                        <th scope="col">@T["Applications.Explanation"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rule in scoring.Results)
+                    {
+                        <tr data-rule="@rule.RuleCode" data-passed="@(rule.Passed ? "true" : "false")">
+                            <td><span class="mono">@rule.RuleCode</span><div class="small muted">@T.TextOrDefault($"Rule.{rule.RuleCode}", rule.RuleCode)</div></td>
+                            <td>
+                                @if (rule.Passed)
+                                {
+                                    <span class="pill success"><span class="dot"></span>@T["Applications.Passed"]</span>
+                                }
+                                else
+                                {
+                                    <span class="pill @(rule.Overridable ? "warning" : "danger")"><span class="dot"></span>@T[rule.Overridable ? "Applications.FailedOverridable" : "Applications.Failed"]</span>
+                                }
+                            </td>
+                            <td class="tnum">@(rule.Measured ?? DisplayFormat.Empty)</td>
+                            <td class="tnum">@(rule.Threshold ?? DisplayFormat.Empty)</td>
+                            <td>@rule.Reason</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}

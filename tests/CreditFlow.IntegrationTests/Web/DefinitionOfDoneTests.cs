@@ -56,7 +56,7 @@ public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebT
         var dashboard = WebUtility.HtmlDecode(await underwriter.GetPageAsync("/"));
         Assert.Contains("data-dashboard=\"Underwriting\"", dashboard, StringComparison.Ordinal);
         Assert.Equal(
-            ["Dashboard", "Inbox", "Applications", "Clients", "Reports"],
+            ["Dashboard", "Inbox", "Applications", "Clients", "Loans", "Reports"],
             NavItemPattern().Matches(dashboard).Select(m => m.Groups["key"].Value));
         Assert.DoesNotContain("href=\"/Applications/New\"", dashboard, StringComparison.Ordinal);
         Assert.Contains("data-dashboard-chip>SUW · Tamta Tatishvili<", dashboard, StringComparison.Ordinal);
