@@ -1136,4 +1136,17 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | `efa0d9f` |
 | P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | `9f2042a` |
 | P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | `beb50a6` |
-| P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | (this commit) |
+| P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | `3e4dc87` |
+
+## Resume notes (2026-10-12)
+- **Current step:** P5 (domain primitives: `Money`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
+  `LoanProduct` with versions; unit tests). Not started; no files mid-edit; the working tree is clean apart from the
+  untracked `lams.zip` (the user's, never committed).
+- **Done:** P0–P4, all committed and green (557 tests, 0 warnings).
+- **Left:** P5–P17 as listed in §P.7 (2-day plan, UI pages in P10/P11, cut list unchanged).
+- **Integration tests:** each test gets its own database; the per-test connection string sets `ConnectRetryCount = 0`
+  (SqlClient 6.1 otherwise waits 10 s for the not-yet-created database). Full run ≈ 4 minutes.
+- **Local set-up after P1/P2:** connection string key `ConnectionStrings:CreditFlow`, database `CreditFlow`, docker
+  container/volume `creditflow-sqlserver` / `creditflow-sqldata`; a fresh database is recommended (new roles).
+- **Open questions for the user:** none.
+- Remove this section in the next step's commit.
