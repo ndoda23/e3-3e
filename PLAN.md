@@ -1054,6 +1054,11 @@ Decisions taken during implementation:
     (reason required), refining #12.
 34. **Counter-offer** keeps currency and schedule type; amount, term and rate must fit the snapshot. Accepting it needs
     the checklist for the new amount (documents may be added while the offer is pending).
+35. **Scoring rules: data vs. code** — the DB holds which rules a version uses, their parameters (JSON) and whether a
+    failure is overridable; the logic of each rule code is code (`IScoringRule`). Comparisons use exact values; measured
+    values are only rounded for display (a found bug: rounding first let 45.004 % pass a 45 % PTI limit).
+36. **EIR** — monthly IRR of the client's cash flows (principal − upfront fee received; installments + monthly fees
+    paid), annualised (1 + i)^12 − 1, solved by bisection in `decimal`.
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1112,7 +1117,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [x] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
   `LoanProduct` (versions) + unit tests.
 - [x] **P6** `LoanApplication` aggregate and state machine + transition tests.
-- [ ] **P7** Scoring engine + rules, approval authority, schedule/EIR/early-repayment calculators + unit tests.
+- [x] **P7** Scoring engine + rules, approval authority, schedule/EIR/early-repayment calculators + unit tests.
 
 - [ ] **P8** EF mappings, migration, repositories (rowversion), reference seed (products v1/v2, rule set, thresholds,
   FX, holidays, sanctions list) + repository integration tests.
@@ -1159,4 +1164,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | `3e4dc87` |
 | P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | `a7d9b79` |
 | P6 — LoanApplication aggregate and state machine | done; build 0 warnings, 1,036 tests green (Domain 574 incl. all 361 status pairs, Application 318, Architecture 13, Integration 131) | `d35133f` |
+| P7 — Scoring, approval thresholds, schedule, EIR, early repayment | done; build 0 warnings, 1,102 tests green (Domain 630, Application 328, Architecture 13, Integration 131) | (this commit) |
 
