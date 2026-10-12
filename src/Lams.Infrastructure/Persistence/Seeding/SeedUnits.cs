@@ -98,7 +98,7 @@ internal static class SeedOperations
 
         var role = new ApplicationRole
         {
-            Id = Guid.CreateVersion7(),
+            Id = RoleId.New().Value,
             Name = seed.Code,
             NormalizedName = seed.Code.ToUpperInvariant(),
             Code = seed.Code,

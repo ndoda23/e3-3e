@@ -1077,7 +1077,7 @@ Seeded test personal numbers (also in README):
 Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end after P11.
 
 **Day 1 — foundation, domain, persistence**
-- [ ] **P0** Housekeeping: revert stray edits, `.editorconfig` naming rules, `RoleId.New()`/`UserId.New()` in seeding,
+- [x] **P0** Housekeeping: revert stray edits, `.editorconfig` naming rules, `RoleId.New()`/`UserId.New()` in seeding,
   remove unused `Branch.Create` overload; README: decision "EF Core instead of Dapper (agreed with the bank)".
 - [ ] **P1** Rename `Lams` → `CreditFlow` (if approved; mechanical, one commit).
 - [ ] **P2** Roles & permissions: remove LAMS-only concepts, `RoleKind`, new catalog/matrix/dashboards, seed unit
@@ -1126,4 +1126,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 ## P.8 Progress
 | Step | Status | Commit |
 |---|---|---|
-| A — Plan | approved 2026-10-12 | `docs: add Phase 2 (CreditFlow) plan` |
+| A — Plan | approved 2026-10-12 | `395c343` |
+| P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | (this commit) |

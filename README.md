@@ -5,6 +5,15 @@ Retail loan origination system for PCB. ASP.NET Core 9 MVC modular monolith (Cle
 Phase 1 delivers sign-in (with MFA), permission-based authorization and the Admin area (users, roles & permissions,
 authority limits, branches, audit log). The implementation plan and progress are in [PLAN.md](PLAN.md).
 
+## Decisions
+
+1. **EF Core instead of Dapper — agreed with the bank in writing.** The CreditFlow task names Dapper; the bank
+   confirmed that EF Core may be used instead. What the task asks of Dapper is met with EF Core: the Unit of Work is
+   the scoped `DbContext` plus an explicit transaction for multi-step use cases (audit records and outbox messages
+   are saved in the same transaction); optimistic concurrency uses SQL Server `rowversion`; raw SQL (locks, gapless
+   numbering) goes only through interpolated, parameterised `FromSql` / `ExecuteSql`; reads are `AsNoTracking`
+   projections without lazy loading. EF Core is referenced only by Infrastructure (architecture test).
+
 ## Running locally
 
 **Requirements:** .NET SDK 9.0.x (see `global.json`) and Docker Desktop (for SQL Server and for the integration tests).

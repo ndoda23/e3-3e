@@ -24,11 +24,7 @@ public sealed class Branch
 
     public bool IsActive { get; private set; }
 
-    public static Result<Branch> Create(string? code, string? name, string? city) =>
-        Create(BranchId.New(), code, name, city);
-
-    /// <summary>Creates a branch with a known identifier (used by seeding so that IDs are stable).</summary>
-    public static Result<Branch> Create(BranchId id, string? code, string? name, string? city)
+    public static Result<Branch> Create(string? code, string? name, string? city)
     {
         var normalizedCode = Text.Normalize(code).ToUpperInvariant();
         if (normalizedCode.Length is < 2 or > CodeMaxLength
@@ -37,7 +33,7 @@ public sealed class Branch
             return Result.Failure<Branch>(BranchErrors.InvalidCode);
         }
 
-        var branch = new Branch { Id = id, Code = normalizedCode, IsActive = true };
+        var branch = new Branch { Id = BranchId.New(), Code = normalizedCode, IsActive = true };
         var details = branch.Update(name, city);
         return details.IsSuccess ? Result.Success(branch) : Result.Failure<Branch>(details.Error!);
     }

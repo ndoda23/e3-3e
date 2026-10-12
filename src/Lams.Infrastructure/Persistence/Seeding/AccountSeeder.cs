@@ -81,7 +81,7 @@ internal sealed partial class AccountSeeder(
 
         var user = new ApplicationUser
         {
-            Id = Guid.CreateVersion7(),
+            Id = UserId.New().Value,
             UserName = userName,
             Email = email,
             EmailConfirmed = true,
