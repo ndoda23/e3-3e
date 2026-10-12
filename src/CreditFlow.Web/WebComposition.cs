@@ -3,6 +3,7 @@ using CreditFlow.Application.Common;
 using CreditFlow.Web.Authentication;
 using CreditFlow.Web.Authorization;
 using CreditFlow.Web.Infrastructure;
+using CreditFlow.Web.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -169,11 +170,31 @@ public static class WebComposition
         app.UseHttpsRedirection();
         app.UseMiddleware<SecurityHeadersMiddleware>();
         app.UseStaticFiles();
-        app.UseSerilogRequestLogging();
+        app.UseSerilogRequestLogging(options =>
+        {
+            // The host's logger, not the static Log.Logger (which this app never replaces: preserveStaticLogger).
+            options.Logger = app.Services.GetRequiredService<Serilog.ILogger>();
+
+            // The request-completion event is written outside LogContextMiddleware, so it gets the same columns here.
+            options.EnrichDiagnosticContext = (diagnostics, http) =>
+            {
+                var currentUser = http.RequestServices.GetRequiredService<ICurrentUser>();
+                if (currentUser.UserName is { } userName)
+                {
+                    diagnostics.Set(LogContextMiddleware.UserName, userName);
+                }
+
+                if (currentUser.CorrelationId is { } correlationId)
+                {
+                    diagnostics.Set(LogContextMiddleware.CorrelationId, correlationId);
+                }
+            };
+        });
         app.UseRequestLocalization();
         app.UseRouting();
         app.UseRateLimiter();
         app.UseAuthentication();
+        app.UseMiddleware<LogContextMiddleware>();
         app.UseAuthorization();
 
         app.MapHealthChecks("/health").AllowAnonymous();

@@ -1089,7 +1089,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   `0004`, migration, dev personas for 7 roles (≥2 UW, ≥2 Senior UW, 3 committee, 1 Compliance, 1 Auditor,
   Operators in 2 branches); ported tests.
 - [x] **P3** Repository interfaces to Domain, query interfaces in Application, architecture tests.
-- [ ] **P4** Logging to SQL + masking (logs and audit) + tests.
+- [x] **P4** Logging to SQL + masking (logs and audit) + tests.
 - [ ] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
   `LoanProduct` (versions) + unit tests.
 - [ ] **P6** `LoanApplication` aggregate and state machine + transition tests.
@@ -1135,4 +1135,5 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | `5c99de0` |
 | P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | `efa0d9f` |
 | P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | `9f2042a` |
-| P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | (this commit) |
+| P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | `beb50a6` |
+| P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | (this commit) |

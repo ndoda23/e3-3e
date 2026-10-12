@@ -114,6 +114,14 @@ takes one decision per application).
 - MFA (authenticator app) is required when the role or the user requires it; enrolment is then forced at sign-in.
 - Every sign-in, security event and administrative change is in the audit log. It is append-only in code and in the
   database. The Admin and the Auditor can read it; links to administration pages are shown only to the Admin.
+- Logs go to the console and to the `Logs` table (Serilog SQL Server sink; time, level, message, exception, user,
+  request path, correlation id, other properties as JSON). The table is created by an EF Core migration, not by the
+  sink. Settings: `DatabaseLog` (`Enabled`, `MinimumLevel`, `BatchPeriod`).
+- **Masking.** One rule (`SensitiveData`) serves logs and audit records: any 11-digit number (a personal number) keeps
+  only its last four digits (`*******1001`), fields named like a password, token, key or recovery code are hidden, and
+  personal / document number fields keep their last four characters. In logs, a wrapping sink masks every event before
+  any sink sees it — template text, property values at any depth and exception text (database errors can quote a
+  duplicate personal number). In audit records, the before/after JSON is masked when it is written.
 - The app is meant to run locally as a single instance. Behind a reverse proxy, forwarded headers would have to be
   configured first (audit IP addresses are the direct peer).
 

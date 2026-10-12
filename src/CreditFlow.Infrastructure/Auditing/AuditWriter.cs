@@ -5,7 +5,10 @@ using CreditFlow.Infrastructure.Persistence;
 
 namespace CreditFlow.Infrastructure.Auditing;
 
-/// <summary>Appends explicit audit events, filling actor and request context from <see cref="ICurrentUser"/>.</summary>
+/// <summary>
+/// Appends explicit audit events, filling actor and request context from <see cref="ICurrentUser"/>; personal numbers
+/// in the payload are masked (<see cref="SensitiveData"/>).
+/// </summary>
 internal sealed class AuditWriter(CreditFlowDbContext db, ICurrentUser currentUser, TimeProvider clock) : IAuditWriter
 {
     public async Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken)
@@ -20,8 +23,8 @@ internal sealed class AuditWriter(CreditFlowDbContext db, ICurrentUser currentUs
             UserName = auditEvent.UserName ?? currentUser.UserName,
             EntityType = auditEvent.EntityType,
             EntityId = auditEvent.EntityId,
-            BeforeJson = auditEvent.BeforeJson,
-            AfterJson = auditEvent.AfterJson,
+            BeforeJson = auditEvent.BeforeJson is { } before ? SensitiveData.MaskText(before) : null,
+            AfterJson = auditEvent.AfterJson is { } after ? SensitiveData.MaskText(after) : null,
             IpAddress = currentUser.IpAddress,
             UserAgent = currentUser.UserAgent,
             CorrelationId = currentUser.CorrelationId,

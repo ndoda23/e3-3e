@@ -38,6 +38,25 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
     }
 
     [Fact]
+    public async Task Personal_numbers_are_masked_in_data_changes_and_in_explicit_audit_events()
+    {
+        const string personalNumber = "01001011001";
+        var created = await Host.InScopeAsync(sp => sp.GetRequiredService<CreditFlow.Application.Branches.BranchAdministrationService>()
+            .CreateAsync(new CreditFlow.Application.Branches.CreateBranchCommand("PNT", $"Branch {personalNumber}", "Tbilisi"), Ct));
+        await Host.InScopeAsync(sp => sp.GetRequiredService<CreditFlow.Application.Auditing.IAuditWriter>().WriteAsync(
+            new CreditFlow.Application.Auditing.AuditEvent("Test.Event") { AfterJson = $"{{\"client\":\"{personalNumber}\"}}" },
+            Ct));
+
+        var (dataChange, explicitEvent) = await Host.QueryAsync(async db => (
+            await db.AuditLogs.SingleAsync(l => l.EntityType == "Branch" && l.EntityId == created.Value.ToString(), Ct),
+            await db.AuditLogs.SingleAsync(l => l.Action == "Test.Event", Ct)));
+
+        Assert.Contains("Branch *******1001", dataChange.AfterJson, StringComparison.Ordinal);
+        Assert.DoesNotContain(personalNumber, dataChange.AfterJson, StringComparison.Ordinal);
+        Assert.Equal("{\"client\":\"*******1001\"}", explicitEvent.AfterJson);
+    }
+
+    [Fact]
     public async Task Audit_records_cannot_be_updated_through_the_application()
     {
         await WriteAuditRecordAsync();

@@ -2,6 +2,7 @@ using CreditFlow.Application;
 using CreditFlow.Infrastructure;
 using CreditFlow.Infrastructure.Persistence.Seeding;
 using CreditFlow.Web;
+using CreditFlow.Web.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,8 @@ builder.Host.UseSerilog(
     (context, services, logger) => logger
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext(),
+        .Enrich.FromLogContext()
+        .WriteToMaskedSinks(context.Configuration),
     preserveStaticLogger: true);
 
 builder.Services.AddApplication();

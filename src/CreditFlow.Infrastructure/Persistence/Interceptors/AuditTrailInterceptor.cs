@@ -13,7 +13,8 @@ namespace CreditFlow.Infrastructure.Persistence.Interceptors;
 
 /// <summary>
 /// Stamps <see cref="IAuditedEntity"/> (created/updated by and at) and appends an <see cref="AuditLog"/> record with
-/// before/after values for every change to audited entities, in the same SaveChanges.
+/// before/after values for every change to audited entities, in the same SaveChanges. Secrets are left out, and
+/// personal data is masked with <see cref="SensitiveData"/> (personal numbers keep their last four digits).
 /// Authentication accounts are not audited here (sign-in bookkeeping would flood the log); security events are
 /// written explicitly instead.
 /// </summary>
@@ -100,8 +101,8 @@ public sealed class AuditTrailInterceptor(ICurrentUser currentUser, TimeProvider
                 UserName = currentUser.UserName,
                 EntityType = entityType,
                 EntityId = KeyOf(entry),
-                BeforeJson = before.Count == 0 ? null : JsonSerializer.Serialize(before),
-                AfterJson = after.Count == 0 ? null : JsonSerializer.Serialize(after),
+                BeforeJson = before.Count == 0 ? null : SensitiveData.MaskText(JsonSerializer.Serialize(before)),
+                AfterJson = after.Count == 0 ? null : SensitiveData.MaskText(JsonSerializer.Serialize(after)),
                 IpAddress = currentUser.IpAddress,
                 UserAgent = currentUser.UserAgent,
                 CorrelationId = currentUser.CorrelationId,
@@ -127,19 +128,27 @@ public sealed class AuditTrailInterceptor(ICurrentUser currentUser, TimeProvider
             switch (entry.State)
             {
                 case EntityState.Added:
-                    after[name] = ToProvider(property, property.CurrentValue);
+                    after[name] = Logged(property, property.CurrentValue);
                     break;
                 case EntityState.Deleted:
-                    before[name] = ToProvider(property, property.OriginalValue);
+                    before[name] = Logged(property, property.OriginalValue);
                     break;
                 case EntityState.Modified when property.IsModified && !Equals(property.OriginalValue, property.CurrentValue):
-                    before[name] = ToProvider(property, property.OriginalValue);
-                    after[name] = ToProvider(property, property.CurrentValue);
+                    before[name] = Logged(property, property.OriginalValue);
+                    after[name] = Logged(property, property.CurrentValue);
                     break;
             }
         }
 
         return (before, after);
+    }
+
+    /// <summary>The value as written to the log: provider value, masked when the field is sensitive.</summary>
+    private static object? Logged(PropertyEntry property, object? value)
+    {
+        var name = property.Metadata.Name;
+        var provider = ToProvider(property, value);
+        return SensitiveData.IsSensitiveField(name) ? SensitiveData.MaskField(name, provider?.ToString()) : provider;
     }
 
     private static object? ToProvider(PropertyEntry property, object? value) =>

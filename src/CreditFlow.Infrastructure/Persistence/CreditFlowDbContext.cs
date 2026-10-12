@@ -4,6 +4,7 @@ using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Roles;
 using CreditFlow.Domain.Users;
 using CreditFlow.Infrastructure.Identity;
+using CreditFlow.Infrastructure.Logging;
 using CreditFlow.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.Infrastructure.Persistence;
 
-/// <summary>The single CreditFlow database context: Identity, staff, reference data, audit log and Data Protection keys.</summary>
+/// <summary>The single CreditFlow database context: Identity, staff, reference data, audit log, logs and Data Protection keys.</summary>
 public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> options)
     : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options), IDataProtectionKeyContext
 {
@@ -30,6 +31,8 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<SeedHistoryEntry> SeedHistory => Set<SeedHistoryEntry>();
+
+    public DbSet<LogEntry> Logs => Set<LogEntry>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
