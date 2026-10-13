@@ -400,6 +400,9 @@ The full list with the reasoning is §P.4 of [PLAN.md](PLAN.md); in short:
     period; portfolio and overdue as of today; GEL at the scoring rate; a scoring rejection counts once per failed
     rule; exports need `reports.export` (not held by Operators).
 51. **Demo data** — Development only, once per database, built through the domain; see above.
+52. **Application reference** — `APP-000123`: a number from a database sequence (`ApplicationNumbers`), assigned when
+    the application is first saved, unique, searchable in the application list. Ids are time-ordered GUIDs, whose start
+    is a timestamp, so no part of an id is used as a reference (the audit log abbreviates ids by their random end).
 
 ## Libraries and licences
 
@@ -437,10 +440,13 @@ CSV is written by a small RFC 4180 writer that neutralises spreadsheet formulas 
   append-only in code and in the database (trigger). The Admin and the Auditor can read it.
 - Logs go to the console and to the `Logs` table (time, level, message, exception, user, request path, correlation id,
   other properties as JSON); the table is created by an EF Core migration, not by the sink.
-- **Masking.** One rule (`SensitiveData`) serves logs and audit records: any 11-digit number (a personal number) keeps
-  only its last four digits (`*******1001`), fields named like a password, token, key or recovery code are hidden, and
-  personal / document number fields keep their last four characters. In logs, a wrapping sink masks every event before
-  any sink sees it — template text, property values at any depth and exception text.
+- **Masking.** One rule (`SensitiveData`) serves logs, audit records and notification bodies: any 11-digit number (a
+  personal number) keeps only its last four digits (`*******1001`); email addresses keep the first character and the
+  domain (`a***@pcb.ge`); phone numbers (`+995 599 011011`, or a Georgian mobile `599 01 10 11`) keep their last two
+  digits (`+*** *** ****11`); fields named like a password, token, key or recovery code are hidden; personal / document
+  number fields keep their last four characters; phone, email and recipient fields are always masked. In logs, a
+  wrapping sink masks every event before any sink sees it — template text, property values at any depth and exception
+  text.
 - Content Security Policy `'self'` only (htmx and fonts are self-hosted), antiforgery on every POST, security headers.
 - Lists, inboxes, reports and exports are paged / filtered / sorted on the server with parameterised SQL; indexes exist
   for the operator lists, the inboxes, the jobs and the reports.

@@ -10,9 +10,6 @@ public readonly record struct LoanApplicationId(Guid Value)
 {
     public static LoanApplicationId New() => new(IdGenerator.NewGuid());
 
-    /// <summary>A short reference for people (the first 8 hex digits).</summary>
-    public string Reference => Value.ToString("N")[..8].ToUpperInvariant();
-
     public override string ToString() => Value.ToString();
 }
 

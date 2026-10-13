@@ -120,7 +120,7 @@ public sealed record ClientPageViewModel(ClientDetailsView Client, bool CanManag
 /// <summary>Application list filters bound from the query string; all of them are applied in SQL.</summary>
 public sealed class ApplicationListQuery
 {
-    /// <summary>Borrower name, personal number or contract number.</summary>
+    /// <summary>Borrower name, personal number, application reference (APP-000123) or contract number.</summary>
     public string? Search { get; set; }
 
     public ApplicationStatus? Status { get; set; }

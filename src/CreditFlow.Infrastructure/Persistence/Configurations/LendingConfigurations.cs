@@ -139,6 +139,9 @@ internal sealed class LoanProductVersionConfiguration : IEntityTypeConfiguration
 
 internal sealed class LoanApplicationConfiguration : IEntityTypeConfiguration<LoanApplication>
 {
+    /// <summary>The database sequence behind <see cref="LoanApplication.Number"/>.</summary>
+    public const string ApplicationNumberSequence = "ApplicationNumbers";
+
     public void Configure(EntityTypeBuilder<LoanApplication> builder)
     {
         builder.ToTable("LoanApplications");
@@ -148,6 +151,11 @@ internal sealed class LoanApplicationConfiguration : IEntityTypeConfiguration<Lo
         builder.Property(a => a.Tier).HasMaxLength(20);
         builder.Property(a => a.AmountGel).HasPrecision(18, 2);
         builder.Property(a => a.ContractNumber).HasMaxLength(20);
+
+        // The application number comes from a sequence when the row is inserted (unique, never reused).
+        builder.Property(a => a.Number).HasDefaultValueSql($"NEXT VALUE FOR [{ApplicationNumberSequence}]").ValueGeneratedOnAdd();
+        builder.HasIndex(a => a.Number).IsUnique();
+        builder.Ignore(a => a.Reference);
         builder.HasIndex(a => a.ContractNumber).IsUnique().HasFilter("[ContractNumber] IS NOT NULL");
 
         builder.HasOne<Branch>().WithMany().HasForeignKey(a => a.BranchId).OnDelete(DeleteBehavior.Restrict);

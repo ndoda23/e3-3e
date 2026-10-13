@@ -457,7 +457,7 @@
   <data name="Clients.Outstanding" xml:space="preserve"><value>Outstanding</value></data>
   <data name="Applications.Description" xml:space="preserve"><value>Applications you may see, newest first. Filters, sorting and paging run on the server.</value></data>
   <data name="Applications.Search" xml:space="preserve"><value>Search applications</value></data>
-  <data name="Applications.SearchPlaceholder" xml:space="preserve"><value>Borrower, personal number or contract number</value></data>
+  <data name="Applications.SearchPlaceholder" xml:space="preserve"><value>Borrower, personal number, APP- number or contract number</value></data>
   <data name="Applications.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
   <data name="Applications.AllProducts" xml:space="preserve"><value>All products</value></data>
   <data name="Applications.Sort" xml:space="preserve"><value>Sort by</value></data>

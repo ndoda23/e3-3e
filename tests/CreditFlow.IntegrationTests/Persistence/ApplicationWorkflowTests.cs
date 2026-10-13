@@ -97,6 +97,48 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
     }
 
     [Fact]
+    public async Task Applications_created_in_the_same_instant_get_different_references_everywhere()
+    {
+        // The clock does not move: both applications are created at the same instant (and within the same
+        // millisecond of their time-ordered ids).
+        var anna = await UserAsync(VakeOperator);
+        var first = await SubmitThroughServicesAsync(anna, NextPersonalNumber(), 5_000m);
+        var second = await SubmitThroughServicesAsync(anna, NextPersonalNumber(), 5_000m);
+        await Processor.ProcessAllDueAsync(Ct);
+
+        var references = new List<string>();
+        foreach (var id in new[] { first, second })
+        {
+            var details = (await AsAsync<ApplicationService, ApplicationDetails?>(anna, s => s.GetDetailsAsync(id, Ct)))!;
+            Assert.Matches("^APP-[0-9]{6,}$", details.Summary.Reference);
+            references.Add(details.Summary.Reference);
+
+            var found = await AsAsync<ApplicationService, PagedResult<ApplicationListItem>>(anna, s =>
+                s.SearchAsync(new ApplicationSearch { Text = details.Summary.Reference.ToLowerInvariant() }, Ct));
+            Assert.Equal(id, Assert.Single(found.Items).Id);
+        }
+
+        Assert.NotEqual(references[0], references[1]);
+        var subjects = await Host.QueryAsync(db => db.Set<NotificationRecord>().Select(n => n.Subject).Distinct().ToListAsync(Ct));
+        Assert.Contains($"Application {references[0]}: Submitted", subjects);
+        Assert.Contains($"Application {references[1]}: Submitted", subjects);
+    }
+
+    [Fact]
+    public async Task The_client_audit_record_masks_phone_and_personal_number()
+    {
+        var anna = await UserAsync(VakeOperator);
+        await CreateDraftAsync(anna, "01001011099");
+
+        var audit = await Host.QueryAsync(db => db.AuditLogs.Where(a => a.EntityType == "Client").Select(a => a.AfterJson).ToListAsync(Ct));
+
+        var registration = Assert.Single(audit, json => json!.Contains("PersonalNumber", StringComparison.Ordinal))!;
+        Assert.DoesNotContain("01001011099", registration, StringComparison.Ordinal);
+        Assert.DoesNotContain("555 000000", registration, StringComparison.Ordinal);
+        Assert.Contains("****00", registration, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task A_screening_match_waits_for_compliance_which_clears_it()
     {
         var anna = await UserAsync(VakeOperator);

@@ -38,6 +38,7 @@ using CreditFlow.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -124,6 +125,11 @@ public static class DependencyInjection
             }
 
             options.UseSqlServer(connectionString);
+            if (configuration.GetSection(DatabaseOptions.SectionName).GetValue<bool>(nameof(DatabaseOptions.ThrowOnQueryWarnings)))
+            {
+                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+            }
+
             options.AddInterceptors(
                 provider.GetRequiredService<DomainEventAuditInterceptor>(),
                 provider.GetRequiredService<OutboxInterceptor>(),

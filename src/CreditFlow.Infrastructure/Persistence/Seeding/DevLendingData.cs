@@ -244,7 +244,7 @@ internal sealed class DevLendingDataSeeder(
         var today = BankTime.DateOf(now);
         var number = personalNumber ?? $"3500101{1000 + ++_clients}";
         var personal = PersonalNumber.Create(number).Value;
-        var existing = await db.Clients.Include(c => c.Incomes).Include(c => c.Obligations)
+        var existing = await db.Clients.Include(c => c.Incomes).Include(c => c.Obligations).AsSplitQuery()
             .FirstOrDefaultAsync(c => c.PersonalNumber == personal);
         if (existing is not null)
         {

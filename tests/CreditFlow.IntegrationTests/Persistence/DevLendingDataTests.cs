@@ -10,6 +10,8 @@ using CreditFlow.Infrastructure.Persistence;
 using CreditFlow.Infrastructure.Persistence.Seeding;
 using CreditFlow.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 
@@ -64,7 +66,7 @@ public sealed class DevLendingDataTests(SqlServerContainer sql) : DatabaseTestBa
         Assert.Contains(DisbursementStatus.Pending, payouts);
         Assert.Contains(DisbursementStatus.Failed, payouts);
 
-        var loans = await Host.QueryAsync(db => db.Loans.Include(l => l.Installments).Include(l => l.Repayments).ToListAsync(Ct));
+        var loans = await Host.QueryAsync(db => db.Loans.Include(l => l.Installments).Include(l => l.Repayments).AsSplitQuery().ToListAsync(Ct));
         var today = BankTime.DateOf(_clock.GetUtcNow());
         Assert.Contains(loans, l => l.Status == LoanStatus.Active && l.Installments.Count(i => i.IsPaid) >= 3 && !l.Installments.Any(i => !i.IsPaid && i.DueDate < today));
         Assert.Contains(loans, l => l.Status == LoanStatus.Active && l.Installments.Any(i => !i.IsPaid && i.DueDate < today));
@@ -104,6 +106,27 @@ public sealed class DevLendingDataTests(SqlServerContainer sql) : DatabaseTestBa
         Assert.Equal(before, await CountsAsync());
         Assert.True(await Host.QueryAsync(db => db.SeedHistory.AnyAsync(s => s.SeedId == DevLendingDataSeeder.SeedId, Ct)));
         Assert.Equal(24, before.Applications); // 1 draft, 5 live pre-checks, 7 decisions, 4 contracts and payouts, 3 loans, 4 endings
+    }
+
+    [Fact]
+    public async Task Existing_applications_are_numbered_in_creation_order_when_the_numbers_are_introduced()
+    {
+        // Back to the schema before application numbers (the demo applications stay), then forward again.
+        await Host.InScopeAsync(async sp =>
+        {
+            var migrator = sp.GetRequiredService<CreditFlowDbContext>().GetService<IMigrator>();
+            await migrator.MigrateAsync("20261012213325_EscalationIndex", Ct);
+            await migrator.MigrateAsync(null, Ct);
+        });
+
+        var numbers = await Host.QueryAsync(db => db.LoanApplications
+            .OrderBy(a => a.CreatedAt).ThenBy(a => a.Id).Select(a => a.Number).ToListAsync(Ct));
+        Assert.Equal(Enumerable.Range(1, numbers.Count).Select(n => (long)n), numbers);
+
+        // The sequence continues after the existing applications.
+        var creator = await Host.QueryAsync(db => db.UserDirectory.Where(u => u.UserName == "anna.gelashvili").Select(u => u.Id).SingleAsync(Ct));
+        var next = await new TestLending(Host.Services, _clock).InReviewAsync(LendingSeedCatalog.Consumer, 5_000m, new Domain.Users.UserId(creator));
+        Assert.Equal(numbers.Count + 1, await Host.QueryAsync(db => db.LoanApplications.Where(a => a.Id == next).Select(a => a.Number).SingleAsync(Ct)));
     }
 
     private Task<(int Applications, int Clients, int Loans)> CountsAsync() =>

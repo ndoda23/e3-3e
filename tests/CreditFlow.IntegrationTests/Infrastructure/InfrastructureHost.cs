@@ -82,6 +82,7 @@ public sealed class InfrastructureHost : IAsyncDisposable
             {
                 ["ConnectionStrings:CreditFlow"] = connectionString,
                 ["Database:ApplyMigrationsOnStartup"] = "true",
+                ["Database:ThrowOnQueryWarnings"] = "true",
                 ["Seed:Admin:UserName"] = AdminUserName,
                 ["Seed:Admin:Email"] = "sysadmin@pcb.ge",
                 ["Seed:Admin:Password"] = AdminPassword,

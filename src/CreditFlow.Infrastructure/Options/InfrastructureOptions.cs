@@ -11,6 +11,12 @@ public sealed class DatabaseOptions
 
     /// <summary>Apply pending EF Core migrations at start-up (Development). Other environments use a migration bundle.</summary>
     public bool ApplyMigrationsOnStartup { get; set; }
+
+    /// <summary>
+    /// Turn EF Core query warnings that point at slow queries (several collections loaded in one query) into exceptions
+    /// (Development and tests), so they are found before they reach production, where they are only logged.
+    /// </summary>
+    public bool ThrowOnQueryWarnings { get; set; }
 }
 
 /// <summary>Configuration section <c>Seed</c>. Secrets (passwords) come from user-secrets or the environment.</summary>

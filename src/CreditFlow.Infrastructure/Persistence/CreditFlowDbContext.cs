@@ -65,6 +65,7 @@ public sealed class CreditFlowDbContext(DbContextOptions<CreditFlowDbContext> op
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(CreditFlowDbContext).Assembly);
+        builder.HasSequence<long>(Configurations.LoanApplicationConfiguration.ApplicationNumberSequence);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

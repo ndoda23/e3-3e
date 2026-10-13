@@ -125,11 +125,17 @@ public sealed class ApplicationLifecycleJobs(
 }
 
 /// <summary>An escalated file is announced to every active user who may decide it (Senior Underwriters).</summary>
-internal sealed class NotifyEscalationHandler(IUserDirectory users, INotificationSender sender) : IOutboxHandler<ApplicationEscalated>
+internal sealed class NotifyEscalationHandler(
+    ILoanApplicationRepository applications, IUserDirectory users, INotificationSender sender) : IOutboxHandler<ApplicationEscalated>
 {
     public async Task HandleAsync(ApplicationEscalated domainEvent, CancellationToken cancellationToken)
     {
-        var reference = domainEvent.ApplicationId.Reference;
+        if (await applications.GetAsync(domainEvent.ApplicationId, cancellationToken) is not { } application)
+        {
+            return;
+        }
+
+        var reference = application.Reference;
         var subject = $"Application {reference}: escalated";
         var body = $"Application {reference} has waited in Underwriting for more than {LendingPolicy.EscalationWorkingDays} working days and now needs a Senior Underwriter.";
         foreach (var email in await users.ListActiveEmailsWithPermissionAsync(Permissions.Underwriting.DecideSenior, cancellationToken))

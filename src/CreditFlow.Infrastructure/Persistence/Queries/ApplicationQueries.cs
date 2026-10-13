@@ -40,9 +40,16 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
 
         if (search.Text is { } text)
         {
-            rows = PersonalNumber.Create(text) is { IsSuccess: true } number
-                ? rows.Where(r => r.PersonalNumber == number.Value)
-                : rows.Where(r => r.BorrowerName.Contains(text) || r.ContractNumber == text);
+            if (LoanApplication.ParseReference(text) is { } applicationNumber)
+            {
+                rows = rows.Where(r => r.Number == applicationNumber);
+            }
+            else
+            {
+                rows = PersonalNumber.Create(text) is { IsSuccess: true } number
+                    ? rows.Where(r => r.PersonalNumber == number.Value)
+                    : rows.Where(r => r.BorrowerName.Contains(text) || r.ContractNumber == text);
+            }
         }
 
         rows = (search.Sort, search.Descending) switch
@@ -206,6 +213,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
         select new Row
         {
             Id = a.Id,
+            Number = a.Number,
             Status = a.Status,
             ProductId = a.ProductId,
             ProductName = p.Name,
@@ -233,13 +241,15 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
     }
 
     private static ApplicationListItem ToItem(Row r) => new(
-        r.Id, r.Id.Reference, r.Status, r.ProductName, r.BorrowerName, r.PersonalNumber.Value,
+        r.Id, LoanApplication.FormatReference(r.Number), r.Status, r.ProductName, r.BorrowerName, r.PersonalNumber.Value,
         Money.Of(r.Amount, r.Currency), r.AmountGel, r.TermMonths, r.BranchName, r.Tier, r.CreatedAt, r.StatusChangedAt,
         r.EscalatedAt, r.OfferExpiresAt);
 
     private sealed class Row
     {
         public LoanApplicationId Id { get; init; }
+
+        public long Number { get; init; }
 
         public ApplicationStatus Status { get; init; }
 

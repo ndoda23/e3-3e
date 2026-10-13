@@ -22,7 +22,7 @@ public enum ApplicationSortField
 /// <summary>Filters, sorting and paging of the application list (all applied in SQL).</summary>
 public sealed record ApplicationSearch
 {
-    /// <summary>Borrower name, personal number or contract number.</summary>
+    /// <summary>Borrower name, personal number, application reference (APP-000123) or contract number.</summary>
     public string? Text { get; init; }
 
     public ApplicationStatus? Status { get; init; }

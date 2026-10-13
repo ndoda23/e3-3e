@@ -95,6 +95,29 @@ public sealed partial class LoggingTests(SqlServerContainer sql) : WebTestBase(s
         Assert.Contains("*******1001", masked.MessageTemplate.Text, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Phone_numbers_and_email_addresses_are_masked_in_the_database_log()
+    {
+        var logger = Factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger("CreditFlow.Tests");
+        var marker = Guid.NewGuid().ToString("N");
+
+        LogNotificationSent(logger, marker, "+995 599 011011", "Notify anna.g@pcb.ge or call 599 01 10 11");
+
+        var entry = await WaitForLogAsync(l => l.Message!.Contains(marker));
+
+        Assert.Contains("+*** *** ****11", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("a***@pcb.ge", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("*** ** ** 11", entry.Message, StringComparison.Ordinal);
+        foreach (var clear in new[] { "599 011011", "anna.g@", "599 01 10 11" })
+        {
+            Assert.DoesNotContain(clear, entry.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain(clear, entry.Properties ?? string.Empty, StringComparison.Ordinal);
+        }
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Marker {Marker}: SMS to {Recipient}: {Body}")]
+    private static partial void LogNotificationSent(ILogger logger, string marker, string recipient, string body);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Marker {Marker}: client {PersonalNumber} failed, password {Password}")]
     private static partial void LogClientFailed(
         ILogger logger, Exception exception, string marker, string personalNumber, string password);

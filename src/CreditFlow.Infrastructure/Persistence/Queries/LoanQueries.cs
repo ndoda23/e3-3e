@@ -180,6 +180,7 @@ internal sealed class LoanQueries(CreditFlowDbContext db) : ILoanQueries
         var borrower = await db.Clients.Where(c => c.Id == loan.BorrowerId)
             .Select(c => c.FirstName + " " + c.LastName).SingleAsync(cancellationToken);
         var product = await db.LoanProducts.Where(p => p.Id == loan.ProductId).Select(p => p.Name).SingleAsync(cancellationToken);
+        var applicationNumber = await db.LoanApplications.Where(a => a.Id == loan.ApplicationId).Select(a => a.Number).SingleAsync(cancellationToken);
         var userIds = loan.Repayments.Select(r => r.RecordedBy.Value).Distinct().ToList();
         var names = await db.UserDirectory.AsNoTracking()
             .Where(u => userIds.Contains(u.Id))
@@ -189,7 +190,7 @@ internal sealed class LoanQueries(CreditFlowDbContext db) : ILoanQueries
         {
             Id = loan.Id,
             ApplicationId = loan.ApplicationId,
-            ApplicationReference = loan.ApplicationId.Reference,
+            ApplicationReference = LoanApplication.FormatReference(applicationNumber),
             ContractNumber = loan.ContractNumber,
             BorrowerName = borrower,
             ProductName = product,

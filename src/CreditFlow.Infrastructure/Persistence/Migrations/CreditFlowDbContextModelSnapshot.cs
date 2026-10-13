@@ -23,6 +23,8 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.HasSequence("ApplicationNumbers");
+
             modelBuilder.Entity("CreditFlow.Domain.Applications.ApplicationCondition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -241,6 +243,11 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsOpen")
                         .HasColumnType("bit");
 
+                    b.Property<long>("Number")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("NEXT VALUE FOR [ApplicationNumbers]");
+
                     b.Property<DateTimeOffset?>("OfferExpiresAt")
                         .HasColumnType("datetimeoffset");
 
@@ -327,6 +334,9 @@ namespace CreditFlow.Infrastructure.Persistence.Migrations
                         .HasFilter("[ContractNumber] IS NOT NULL");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
 
                     b.HasIndex("ProductId");
 

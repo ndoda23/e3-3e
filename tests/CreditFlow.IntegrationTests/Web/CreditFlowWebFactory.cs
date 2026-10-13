@@ -35,6 +35,7 @@ public sealed class CreditFlowWebFactory(
             {
                 ["ConnectionStrings:CreditFlow"] = connectionString,
                 ["Database:ApplyMigrationsOnStartup"] = "true",
+                ["Database:ThrowOnQueryWarnings"] = "true",
                 ["Seed:Admin:UserName"] = InfrastructureHost.AdminUserName,
                 ["Seed:Admin:Email"] = "sysadmin@pcb.ge",
                 ["Seed:Admin:Password"] = InfrastructureHost.AdminPassword,

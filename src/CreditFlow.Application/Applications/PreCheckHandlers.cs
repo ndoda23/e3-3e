@@ -127,7 +127,7 @@ internal sealed class NotifyStatusChangeHandler(
             return;
         }
 
-        var reference = application.Id.Reference;
+        var reference = application.Reference;
         var subject = $"Application {reference}: {domainEvent.To}";
 
         if (domainEvent.By != application.CreatedBy

@@ -54,6 +54,15 @@ public sealed class LoanApplication : IHasDomainEvents
 
     public LoanApplicationId Id { get; private set; }
 
+    /// <summary>
+    /// The application number people use, assigned from a database sequence when the application is first saved (0
+    /// before). Unique for good, unlike any part of the time-ordered <see cref="Id"/>.
+    /// </summary>
+    public long Number { get; private set; }
+
+    /// <summary>The reference shown to people: <c>APP-000123</c>.</summary>
+    public string Reference => FormatReference(Number);
+
     public BranchId BranchId { get; private set; }
 
     public UserId CreatedBy { get; private set; }
@@ -129,6 +138,21 @@ public sealed class LoanApplication : IHasDomainEvents
     }
 
     public void ClearDomainEvents() => _events.Clear();
+
+    /// <summary><c>APP-</c> and the number with at least six digits.</summary>
+    public static string FormatReference(long number) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture, $"APP-{number:000000}");
+
+    /// <summary>The number of a reference typed by a person (<c>APP-000123</c>, <c>app-123</c>), or <c>null</c>.</summary>
+    public static long? ParseReference(string? text)
+    {
+        var value = text?.Trim();
+        return value is { Length: > 4 } && value.StartsWith("APP-", StringComparison.OrdinalIgnoreCase)
+               && long.TryParse(value[4..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var number)
+               && number > 0
+            ? number
+            : null;
+    }
 
     // ----- Draft -----
 
