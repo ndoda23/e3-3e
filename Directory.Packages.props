@@ -39,6 +39,8 @@
     <PackageVersion Include="QRCoder" Version="1.8.0" />
     <!-- Contract and schedule PDFs. MIT (not QuestPDF: its Community licence excludes larger companies). -->
     <PackageVersion Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <!-- Excel export. MIT (not EPPlus: commercial licence). -->
+    <PackageVersion Include="ClosedXML" Version="0.105.0" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

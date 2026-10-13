@@ -1,0 +1,78 @@
+@model ReportsViewModel
+@using CreditFlow.Application.Reports
+@{
+    ViewData["Title"] = T["Nav.Reports"].Value;
+    var f = Model.Filter;
+    string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    object Route(ExportFormat format, ReportKind report) =>
+        new { format, report, from = Iso(f.From), to = Iso(f.To), product = f.ProductId?.Value };
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Reports.Description", DisplayFormat.Date(f.From), DisplayFormat.Date(f.To)]</p>
+    </div>
+    <div class="page-actions">
+        <a asp-permission="@Permissions.Reports.Export" class="btn primary" href="@Url.Action("Export", Route(ExportFormat.Excel, ReportKind.ApplicationsByStatus))" data-export="xlsx">
+            <icon name="file-text" size="15" />@T["Reports.ExportExcel"]
+        </a>
+    </div>
+</div>
+<section class="card mb">
+    <form method="get" asp-action="Index" class="card-body form row wrap" role="search">
+        <label class="field-label" for="report-from">@T["Reports.From"]</label>
+        <input id="report-from" name="from" type="date" class="inp" value="@Iso(f.From)" />
+        <label class="field-label" for="report-to">@T["Reports.To"]</label>
+        <input id="report-to" name="to" type="date" class="inp" value="@Iso(f.To)" />
+        <label class="sr-only" for="report-product">@T["Field.Product"]</label>
+        <select id="report-product" name="product" class="select">
+            <option value="">@T["Applications.AllProducts"]</option>
+            @foreach (var product in Model.Products)
+            {
+                <option value="@product.Id.Value" selected="@(f.ProductId == product.Id)">@product.Name</option>
+            }
+        </select>
+        <button type="submit" class="btn sm">@T["Reports.Show"]</button>
+    </form>
+</section>
+@foreach (var table in Model.Tables)
+{
+    var titleId = $"report-{table.Kind}";
+    <section class="card mb" aria-labelledby="@titleId" data-report="@table.Kind">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="@titleId">@T.TextOrDefault($"Report.{table.Kind}", table.Title)</h2>
+                <p class="card-sub">@table.Title</p>
+            </div>
+            <a asp-permission="@Permissions.Reports.Export" class="btn sm" href="@Url.Action("Export", Route(ExportFormat.Csv, table.Kind))" data-export="csv">CSV</a>
+        </div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        @foreach (var column in table.Columns)
+                        {
+                            <th scope="col" class="@(column.Kind == ReportColumnKind.Text ? null : "num")">@T.TextOrDefault($"ReportColumn.{column.Key}", column.Title)</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in table.Rows)
+                    {
+                        <tr>
+                            @for (var c = 0; c < table.Columns.Count; c++)
+                            {
+                                var column = table.Columns[c];
+                                <td class="@(column.Kind == ReportColumnKind.Text ? null : "num tnum")">@CsvReportWriter.Format(row[c], column.Kind)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (table.Rows.Count == 0)
+            {
+                <div class="empty">@T["Reports.NoData"]</div>
+            }
+        </div>
+    </section>
+}

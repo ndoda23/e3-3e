@@ -4,6 +4,7 @@ using CreditFlow.Application.Applications;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Clients;
+using CreditFlow.Application.Reports;
 using CreditFlow.Application.Disbursements;
 using CreditFlow.Application.Common;
 using CreditFlow.Application.Roles;
@@ -42,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ApprovalThresholdsAdministrationService>();
         services.AddScoped<FxRateAdministrationService>();
         services.AddScoped<HolidayAdministrationService>();
+        services.AddScoped<ReportService>();
         services.AddScoped<ApplicationLifecycleJobs>();
 
         AddOutboxHandlers(services);

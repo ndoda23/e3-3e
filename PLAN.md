@@ -1100,6 +1100,14 @@ Decisions taken during implementation:
     nothing is edited in place, an unchanged form publishes nothing); approval thresholds, FX rates and holidays are
     edited in place with before/after in the data audit. An FX CSV import is all or nothing and names every wrong line.
     The admin services re-check their `admin.*` permission behind the controller attribute.
+50. **Reports** — eight reports (applications by status, approval / rejection rate, average time per stage, rejection
+    reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations) for a
+    period (default the last 90 days, at most 3 years) and optionally a product, always within the viewer's data scope
+    in SQL. Period semantics: applications created, decisions taken, stages left, loans disbursed, escalations in the
+    period; the portfolio and overdue installments are as of today. Amounts are GEL at each application's scoring rate.
+    A scoring rejection counts once per failed hard rule. One `ReportTable` feeds the page, the CSV (one report, UTF-8
+    with BOM, formula injection neutralised) and the Excel workbook (ClosedXML 0.105, MIT; its dependencies are MIT /
+    Apache-2.0, SixLabors.Fonts 1.0 is pre-split-licence). Export needs `reports.export` (not held by Operators).
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1179,7 +1187,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   contract + schedule PDF, loans list.
 - [x] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
   holidays.
-- [ ] **P15** Reports + Excel/CSV export.
+- [x] **P15** Reports + Excel/CSV export.
 - [ ] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
 - [ ] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
   mocks, accounts, ambiguities, licences); final verification.
@@ -1214,19 +1222,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P12 — Escalation and offer-expiry jobs | done; build 0 warnings, 1,197 tests green (Domain 646, Application 353, Architecture 13, Integration 185), no pending EF model changes. One `BackgroundService` (`Jobs:Enabled`, `Jobs:Interval`) runs both jobs; candidates claimed with `UPDLOCK, READPAST, ROWLOCK` per batch (keyset by id); escalation after 2 working days (weekends and holidays skipped) notifies the Senior Underwriters; expiry after 30 days notifies operator and client. Tests: deadline across a weekend and a holiday, run twice and two parallel runners → one effect each, inbox and authority after escalation, notifications. Index for the escalation claim added. Seen once: `LoggingTests.A_log_event_reaches_the_database…` timed out (15 s poll for the batched SQL sink) during a full run under load; it passed alone and in the next full run. | `0aa641f` |
 | P13 — Pages: wizard, application page, contract and payout, loans, PDFs | done; build 0 warnings, 1,206 tests green (Domain 646, Application 353, Architecture 13, Integration 194), no pending EF model changes. Application wizard (borrower and terms → parties and collateral → documents → review and submit) on the normal actions; application page split into cards (scoring verdict and per-rule explanation, history, decisions with committee tally, conditions, counter-offer, contract and payout with Pending / Failed states and check-again / retry); loans list (SQL-side filter and paging, scope); client page lists the client's applications; contract and schedule PDFs (PDFsharp-MigraDoc 6.2.4, embedded DejaVu Sans). Web tests walk the whole process role by role (operator, underwriter, compliance, two committee members, auditor), payout rejection and timeout, PDF permissions and IDOR. `LoggingTests` now polls the batched SQL sink against a 60 s deadline (assertions unchanged). Decisions #46–#48. | `fe583a9` |
 | P14 — Admin: products, scoring rules, thresholds, FX rates, holidays | done; build 0 warnings, 1,233 tests green (Domain 646, Application 364, Architecture 13, Integration 210), no pending EF model changes. Admin › Products (create with v1, publish the next version, rename, (de)activate), Scoring rules (versions, publish the next version with edited parameters / overridable flags, validated by the engine), Approval thresholds, FX rates (set, delete, CSV import all or nothing), Holidays (add, rename, remove). Services re-check `admin.*`; every change is in the data audit. Tests: per area incl. snapshot unaffected by a new product version, invalid input changes nothing, business roles get AccessDenied; pages render, forms and CSV upload round-trip; the Auditor POST sweep covers the new actions. Decision #49. | `4156d51` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** … P14 `4156d51`. **Current step: P15**; stop after the P15 commit with a 3–5 line summary.
-  Bug reports from the user's P13 browser test come first.
-- **P15 design:** Application `Reports/` — `ReportFilter` (from / to bank dates, product), `ReportTable` (title,
-  typed columns, rows) as the single shape for page, Excel and CSV; `IReportQueries` (Infrastructure) applying
-  `ApplicationAccessFilter` in SQL: applications by status, approval and rejection rates by product (decisions in the
-  period from the status history), average time per stage (history with `LEAD` in parameterised SQL), rejection reasons
-  (scoring rule codes, KYC, compliance, underwriter, committee), portfolio by product (active loans, outstanding, GEL)
-  and disbursed volume by product and branch (period), overdue installments by product, escalations. `ReportService`
-  (`reports.view`; export needs `reports.export`); `CsvReportWriter` (RFC 4180, formula-injection safe) in Application,
-  `ExcelReportWriter` (ClosedXML 0.105.x, MIT) in Infrastructure; one workbook = one sheet per report.
-  Web: Reports page with filters, export links (asp-permission). Tests: figures on a known data set, branch scope in
-  page and exports, CSV escaping / injection, xlsx opens with the same rows, permissions.
-- **Open questions for the user:** none.
+| P15 — Reports and Excel / CSV export | done; build 0 warnings, 1,239 tests green (Domain 646, Application 364, Architecture 13, Integration 216), no pending EF model changes. Eight reports (applications by status, approval / rejection rate, average time per stage with `LEAD` in parameterised SQL, rejection reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations), period and product filters, the viewer's data scope in SQL; Excel (ClosedXML, every report a sheet) and CSV (one report, injection-safe). The placeholder "coming soon" page is gone. Tests: figures on a two-branch data set, operator = branch / auditor = bank on the page model and in both exports, CSV escaping, permissions, page and downloads over HTTP. Decision #50. | (this commit) |

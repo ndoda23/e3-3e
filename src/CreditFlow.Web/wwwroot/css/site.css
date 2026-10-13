@@ -349,8 +349,6 @@ select.inp { appearance: none; padding-right: 30px; background-image: url("data:
 .status-code { font-family: var(--font-mono); font-size: 13px; color: var(--text-3); }
 
 /* ---------- Placeholder ---------- */
-.coming-soon { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 56px 24px; }
-.coming-soon .badge-icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: var(--primary-50); color: var(--primary); }
 
 /* ---------- Definition list ---------- */
 .dl { display: grid; grid-template-columns: 180px 1fr; gap: 10px 16px; margin: 0; font-size: 13px; }

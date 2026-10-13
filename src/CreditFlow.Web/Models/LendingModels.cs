@@ -382,3 +382,9 @@ public sealed record WizardViewModel(ApplicationPageViewModel Page, int Step)
 
 /// <summary>The loan list with its filters.</summary>
 public sealed record LoanIndexViewModel(LoanSearch Search, PagedResult<LoanListItem> Loans);
+
+/// <summary>The reports page: the filter, every report table and the products for the product filter.</summary>
+public sealed record ReportsViewModel(
+    CreditFlow.Application.Reports.ReportFilter Filter,
+    IReadOnlyList<CreditFlow.Application.Reports.ReportTable> Tables,
+    IReadOnlyList<ProductOption> Products);

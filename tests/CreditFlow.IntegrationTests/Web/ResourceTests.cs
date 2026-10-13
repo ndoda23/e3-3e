@@ -49,6 +49,7 @@ public sealed partial class ResourceTests
             "Applications.DisburseHint", "Applications.RetryHint", "Applications.CheckHint",
         ]);
         keys.AddRange(CreditFlow.Web.Models.WizardViewModel.StepKeys);
+        keys.AddRange(Enum.GetNames<CreditFlow.Application.Reports.ReportKind>().Select(k => $"Report.{k}"));
         keys.AddRange(CreditFlow.Application.ReferenceData.ScoringRuleSetSeed.Version1.Select(r => $"Rule.{r.Code}"));
         keys.AddRange(Enum.GetNames<UserStatusFilter>().Select(s => $"Users.Status.{s}"));
         keys.AddRange(Enum.GetNames<UserOperation>().SelectMany(o => new[]

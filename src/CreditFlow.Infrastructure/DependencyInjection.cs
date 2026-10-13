@@ -5,6 +5,7 @@ using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
 using CreditFlow.Application.Clients;
 using CreditFlow.Application.Common;
+using CreditFlow.Application.Reports;
 using CreditFlow.Application.Disbursements;
 using CreditFlow.Application.Roles;
 using CreditFlow.Application.Users;
@@ -150,6 +151,8 @@ public static class DependencyInjection
         services.AddScoped<IExposureLock, SqlExposureLock>();
         services.AddScoped<ILoanQueries, LoanQueries>();
         services.AddScoped<ILendingAdminQueries, LendingAdminQueries>();
+        services.AddScoped<IReportQueries, ReportQueries>();
+        services.AddSingleton<IReportExcelWriter, ExcelReportWriter>();
         services.AddSingleton<IContractDocumentRenderer, PdfContractRenderer>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();

@@ -23,6 +23,9 @@ public sealed class TestLending(IServiceProvider services, TimeProvider clock)
 
     private int _counter;
 
+    /// <summary>The branch new applications belong to (Vake unless a test sets another).</summary>
+    public string BranchCode { get; set; } = BranchSeedCatalog.Vake;
+
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     /// <summary>A new personal number that triggers no mock scenario.</summary>
@@ -45,7 +48,7 @@ public sealed class TestLending(IServiceProvider services, TimeProvider clock)
 
     /// <summary>
     /// An application already scored and waiting for a decision (Underwriting or Credit Committee by the seeded
-    /// thresholds) in Vake. A mortgage gets a property worth twice the amount.
+    /// thresholds) in <see cref="BranchCode"/>. A mortgage gets a property worth twice the amount.
     /// </summary>
     public Task<LoanApplicationId> InReviewAsync(
         string productCode, decimal amount, UserId createdBy, ClientId? borrower = null, params ClientId[] guarantors) =>
@@ -80,7 +83,7 @@ public sealed class TestLending(IServiceProvider services, TimeProvider clock)
             var borrower = borrowerId ?? await ClientAsync();
 
             var product = await db.LoanProducts.Include(p => p.Versions).SingleAsync(p => p.Code == productCode, Ct);
-            var branch = await db.Branches.Where(b => b.Code == BranchSeedCatalog.Vake).Select(b => b.Id).SingleAsync(Ct);
+            var branch = await db.Branches.Where(b => b.Code == BranchCode).Select(b => b.Id).SingleAsync(Ct);
             var isMortgage = productCode == LendingSeedCatalog.Mortgage;
             var terms = LoanTerms.Create(Money.Of(amount, Currency.GEL), isMortgage ? 120 : 24, isMortgage ? 10m : 18m, ScheduleType.Annuity).Value;
             var application = LoanApplication.Create(product, borrower, terms, branch, createdBy, now).Value;

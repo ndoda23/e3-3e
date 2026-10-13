@@ -45,8 +45,6 @@
   <data name="Dashboard.Placeholder.Description" xml:space="preserve"><value>Your queues and shortcuts appear here as the loan process screens are added. Your access is already set up.</value></data>
 
   <!-- Placeholders -->
-  <data name="ComingSoon.Title" xml:space="preserve"><value>Coming soon</value></data>
-  <data name="ComingSoon.Description" xml:space="preserve"><value>This page is part of the navigation and is being built.</value></data>
 
   <!-- User attributes -->
 
@@ -724,4 +722,18 @@
   <data name="AuditEntity.ApprovalThresholds" xml:space="preserve"><value>Approval thresholds</value></data>
   <data name="AuditEntity.FxRate" xml:space="preserve"><value>FX rate</value></data>
   <data name="AuditEntity.Holiday" xml:space="preserve"><value>Holiday</value></data>
+  <data name="Reports.Description" xml:space="preserve"><value>{0} – {1}, within your data scope. Amounts in GEL at the rate fixed when each application was scored.</value></data>
+  <data name="Reports.ExportExcel" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="Reports.From" xml:space="preserve"><value>From</value></data>
+  <data name="Reports.To" xml:space="preserve"><value>To</value></data>
+  <data name="Reports.Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Reports.NoData" xml:space="preserve"><value>No data for this period.</value></data>
+  <data name="Report.ApplicationsByStatus" xml:space="preserve"><value>Applications by status</value></data>
+  <data name="Report.ApprovalRate" xml:space="preserve"><value>Approval rate</value></data>
+  <data name="Report.TimePerStage" xml:space="preserve"><value>Average time per stage</value></data>
+  <data name="Report.RejectionReasons" xml:space="preserve"><value>Rejection reasons</value></data>
+  <data name="Report.Portfolio" xml:space="preserve"><value>Portfolio by product</value></data>
+  <data name="Report.DisbursedVolume" xml:space="preserve"><value>Disbursed volume</value></data>
+  <data name="Report.Overdue" xml:space="preserve"><value>Overdue installments</value></data>
+  <data name="Report.Escalations" xml:space="preserve"><value>Escalations</value></data>
 </root>
