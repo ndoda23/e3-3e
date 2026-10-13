@@ -110,6 +110,11 @@ public sealed class ApplicationService(
             return Result.Failure<LoanApplicationId>(ClientErrors.NotFound);
         }
 
+        if (await applications.FindOpenApplicationReferenceAsync(command.BorrowerId, command.ProductId, cancellationToken) is { } open)
+        {
+            return Result.Failure<LoanApplicationId>(ApplicationErrors.OpenApplicationExistsFor(open));
+        }
+
         var created = LoanApplication.Create(product, command.BorrowerId, terms.Value, branch, profile.UserId, clock.GetUtcNow());
         if (created.IsFailure)
         {
@@ -117,7 +122,24 @@ public sealed class ApplicationService(
         }
 
         applications.Add(created.Value);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (UniqueConstraintViolationException exception)
+            when (exception.IndexName == UniqueIndexes.OpenApplicationPerBorrowerAndProduct)
+        {
+            // A parallel request created the same draft after the check above: name the one that won.
+            unitOfWork.Reset();
+            var winner = await applications.FindOpenApplicationReferenceAsync(command.BorrowerId, command.ProductId, cancellationToken);
+            return Result.Failure<LoanApplicationId>(
+                winner is null ? ApplicationErrors.OpenApplicationExists : ApplicationErrors.OpenApplicationExistsFor(winner));
+        }
+        catch (UniqueConstraintViolationException exception)
+        {
+            return Result.Failure<LoanApplicationId>(UniqueIndexes.ErrorFor(exception.IndexName));
+        }
+
         return Result.Success(created.Value.Id);
     }
 
@@ -295,6 +317,10 @@ internal static class ApplicationChange
         catch (ConcurrencyConflictException)
         {
             return Result.Failure(CommonErrors.ConcurrencyConflict);
+        }
+        catch (UniqueConstraintViolationException exception)
+        {
+            return Result.Failure(UniqueIndexes.ErrorFor(exception.IndexName));
         }
     }
 

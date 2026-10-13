@@ -29,6 +29,20 @@ public sealed class WebShellTests(SqlServerContainer sql) : IAsyncLifetime
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync(Ct));
     }
 
+    [Theory]
+    [InlineData("/Account/Login")]
+    [InlineData("/Error/404")]
+    [InlineData("/Error/500")]
+    public async Task Sign_in_and_error_pages_carry_the_CreditFlow_brand(string path)
+    {
+        var html = await (await _factory.CreateBrowser().GetAsync(path, Ct)).Content.ReadAsStringAsync(Ct);
+
+        Assert.Contains("<div class=\"brand-name\">CreditFlow</div>", html, StringComparison.Ordinal);
+        Assert.Contains("· CreditFlow</title>", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("PCB LOS", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Credit Operations", html, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Security_headers_are_set_on_every_response()
     {

@@ -1,10 +1,12 @@
+using System.Text.RegularExpressions;
 using CreditFlow.Application.Common;
 using CreditFlow.Domain.Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.Infrastructure.Persistence;
 
-internal sealed class UnitOfWork(CreditFlowDbContext db) : IUnitOfWork
+internal sealed partial class UnitOfWork(CreditFlowDbContext db) : IUnitOfWork
 {
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
@@ -16,7 +18,16 @@ internal sealed class UnitOfWork(CreditFlowDbContext db) : IUnitOfWork
         {
             throw new ConcurrencyConflictException("The data was changed by someone else.", exception);
         }
+        catch (DbUpdateException exception) when (exception.InnerException is SqlException { Number: 2601 or 2627 } sql)
+        {
+            // 2601: duplicate key in a unique index; 2627: unique / primary key constraint.
+            var index = IndexNamePattern().Match(sql.Message) is { Success: true } match ? match.Groups["name"].Value : null;
+            throw new UniqueConstraintViolationException(index, $"Unique index '{index}' rejected the change.", exception);
+        }
     }
+
+    [GeneratedRegex("(?:unique index|constraint) '(?<name>[^']+)'", RegexOptions.IgnoreCase)]
+    private static partial Regex IndexNamePattern();
 
     public void Reset() => db.ChangeTracker.Clear();
 

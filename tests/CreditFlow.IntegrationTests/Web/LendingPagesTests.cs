@@ -36,6 +36,32 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
     private int _clientCounter;
 
     [Fact]
+    public async Task A_second_open_application_is_refused_on_the_form_naming_the_first()
+    {
+        using var browser = await SignInAsync(RoleCodes.Operator, BranchSeedCatalog.Vake);
+        var personalNumber = $"0300101{1000 + Interlocked.Increment(ref _clientCounter)}";
+        var first = await CreateDraftAsync(browser, personalNumber);
+        var product = await QueryAsync(db => db.LoanProducts.Where(p => p.Code == LendingSeedCatalog.Consumer).Select(p => p.Id).SingleAsync(Ct));
+        var reference = await QueryAsync(async db => LoanApplication.FormatReference(
+            await db.LoanApplications.Where(a => a.Id == new LoanApplicationId(first)).Select(a => a.Number).SingleAsync(Ct)));
+
+        var again = await browser.PostFormAsync($"/Applications/New?personalNumber={personalNumber}", "/Applications/New", new Dictionary<string, string>
+        {
+            ["BorrowerPersonalNumber"] = personalNumber,
+            ["ProductId"] = product.Value.ToString(),
+            ["Amount"] = "7000",
+            ["Currency"] = "GEL",
+            ["TermMonths"] = "12",
+            ["AnnualRate"] = "18",
+            ["ScheduleType"] = "Annuity",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+        var html = WebUtility.HtmlDecode(await again.Content.ReadAsStringAsync(Ct));
+        Assert.Contains($"already has an open application for this product: {reference}", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task An_operator_registers_a_client_and_submits_an_application_with_documents()
     {
         using var browser = await SignInAsync(RoleCodes.Operator, BranchSeedCatalog.Vake);

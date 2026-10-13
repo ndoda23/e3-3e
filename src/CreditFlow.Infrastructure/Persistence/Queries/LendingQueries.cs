@@ -21,7 +21,7 @@ internal sealed class ClientQueries(CreditFlowDbContext db) : IClientQueries
 
         var total = await clients.CountAsync(cancellationToken);
         var rows = await clients
-            .OrderBy(c => c.LastName).ThenBy(c => c.FirstName)
+            .OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ThenBy(c => c.Id)
             .Skip((page - 1) * Paging.DefaultPageSize).Take(Paging.DefaultPageSize)
             .Select(c => new { c.Id, c.PersonalNumber, c.FirstName, c.LastName, c.BirthDate, c.KycStatus, c.ScreeningStatus })
             .ToListAsync(cancellationToken);
@@ -54,7 +54,7 @@ internal sealed class ClientQueries(CreditFlowDbContext db) : IClientQueries
     public async Task<ClientId?> FindByPersonalNumberAsync(string personalNumber, CancellationToken cancellationToken)
     {
         var number = PersonalNumber.Create(personalNumber).Value;
-        var ids = await db.Clients.Where(c => c.PersonalNumber == number).Select(c => c.Id).Take(1).ToListAsync(cancellationToken);
+        var ids = await db.Clients.Where(c => c.PersonalNumber == number).OrderBy(c => c.Id).Select(c => c.Id).Take(1).ToListAsync(cancellationToken);
         return ids.Count == 0 ? null : ids[0];
     }
 }

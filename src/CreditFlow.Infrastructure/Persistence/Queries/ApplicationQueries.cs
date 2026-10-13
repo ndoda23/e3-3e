@@ -52,7 +52,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             }
         }
 
-        rows = (search.Sort, search.Descending) switch
+        IOrderedQueryable<Row> ordered = (search.Sort, search.Descending) switch
         {
             (ApplicationSortField.Created, false) => rows.OrderBy(r => r.CreatedAt),
             (ApplicationSortField.Created, true) => rows.OrderByDescending(r => r.CreatedAt),
@@ -66,7 +66,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             _ => rows.OrderByDescending(r => r.StatusChangedAt),
         };
 
-        return await PageAsync(rows, search.Page, search.PageSize, cancellationToken);
+        return await PageAsync(ordered, search.Page, search.PageSize, cancellationToken);
     }
 
     public async Task<PagedResult<ApplicationListItem>> InboxAsync(
@@ -232,11 +232,12 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             OfferExpiresAt = a.OfferExpiresAt,
         };
 
+    /// <summary>One page of <paramref name="rows"/> in their order, with the id as tiebreaker so pages never overlap.</summary>
     private static async Task<PagedResult<ApplicationListItem>> PageAsync(
-        IQueryable<Row> rows, int page, int pageSize, CancellationToken cancellationToken)
+        IOrderedQueryable<Row> rows, int page, int pageSize, CancellationToken cancellationToken)
     {
         var total = await rows.CountAsync(cancellationToken);
-        var items = await rows.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        var items = await rows.ThenBy(r => r.Id).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
         return new PagedResult<ApplicationListItem>(items.Select(ToItem).ToList(), total, page, pageSize);
     }
 

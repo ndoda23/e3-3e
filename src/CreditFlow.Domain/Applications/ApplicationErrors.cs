@@ -60,6 +60,12 @@ public static class ApplicationErrors
     public static readonly Error OpenApplicationExists = Error.Conflict(
         "Application.OpenApplicationExists", "The borrower already has an open application for this product.");
 
+    /// <summary><see cref="OpenApplicationExists"/> naming the open application, so the operator can go to it.</summary>
+    public static Error OpenApplicationExistsFor(string reference) => OpenApplicationExists with
+    {
+        Description = $"The borrower already has an open application for this product: {reference}.",
+    };
+
     public static readonly Error DocumentNotFound = Error.NotFound(
         "Application.DocumentNotFound", "The document was not found.");
 

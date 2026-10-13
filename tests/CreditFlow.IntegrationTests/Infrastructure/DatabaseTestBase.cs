@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace CreditFlow.IntegrationTests.Infrastructure;
 
 /// <summary>Gives each test class its own migrated and seeded database.</summary>
@@ -18,7 +20,13 @@ public abstract class DatabaseTestBase(SqlServerContainer sql) : IAsyncLifetime
     protected virtual IReadOnlyDictionary<string, string?>? Settings => null;
 
     public async ValueTask InitializeAsync() =>
-        Host = await InfrastructureHost.StartAsync(sql.NewDatabaseConnectionString(), Environment, SeedDevUsers, Clock, Settings);
+        Host = await InfrastructureHost.StartAsync(
+            sql.NewDatabaseConnectionString(), Environment, SeedDevUsers, Clock, Settings, ConfigureServices);
+
+    /// <summary>Replaces services before the host starts (none by default).</summary>
+    protected virtual void ConfigureServices(IServiceCollection services)
+    {
+    }
 
     public async ValueTask DisposeAsync()
     {

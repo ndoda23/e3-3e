@@ -6,6 +6,7 @@ namespace CreditFlow.Application.Common;
 public interface IUnitOfWork
 {
     /// <exception cref="ConcurrencyConflictException">The aggregate was changed by someone else since it was loaded.</exception>
+    /// <exception cref="UniqueConstraintViolationException">A unique index rejected the change (a concurrent request won).</exception>
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
     /// <summary>
@@ -42,4 +43,32 @@ public sealed class ConcurrencyConflictException : Exception
         : base(message, innerException)
     {
     }
+}
+
+/// <summary>
+/// A unique index rejected the save: another request committed the same thing first (the service's own check ran
+/// before it). Nothing was saved; <see cref="IndexName"/> tells which rule (see <see cref="UniqueIndexes"/>).
+/// </summary>
+public sealed class UniqueConstraintViolationException : Exception
+{
+    public UniqueConstraintViolationException()
+    {
+    }
+
+    public UniqueConstraintViolationException(string message)
+        : base(message)
+    {
+    }
+
+    public UniqueConstraintViolationException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public UniqueConstraintViolationException(string? indexName, string message, Exception innerException)
+        : base(message, innerException) =>
+        IndexName = indexName;
+
+    /// <summary>The violated index, or <c>null</c> when the database did not name it.</summary>
+    public string? IndexName { get; }
 }

@@ -8,7 +8,7 @@
 
   <!-- Application / layout -->
   <data name="App.Name" xml:space="preserve"><value>CreditFlow</value></data>
-  <data name="App.Tagline" xml:space="preserve"><value>Credit Operations</value></data>
+  <data name="App.Tagline" xml:space="preserve"><value>Loan origination</value></data>
   <data name="Layout.SkipToContent" xml:space="preserve"><value>Skip to content</value></data>
   <data name="Layout.Breadcrumbs" xml:space="preserve"><value>Breadcrumbs</value></data>
   <data name="Layout.MainNavigation" xml:space="preserve"><value>Main navigation</value></data>

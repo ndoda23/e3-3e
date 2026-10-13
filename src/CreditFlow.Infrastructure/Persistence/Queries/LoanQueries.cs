@@ -140,7 +140,7 @@ internal sealed class LoanQueries(CreditFlowDbContext db) : ILoanQueries
 
         var total = await rows.CountAsync(cancellationToken);
         var page = await rows
-            .OrderByDescending(r => r.Loan.DisbursedOn).ThenBy(r => r.Loan.ContractNumber)
+            .OrderByDescending(r => r.Loan.DisbursedOn).ThenBy(r => r.Loan.ContractNumber).ThenBy(r => r.Loan.Id)
             .Skip((search.Page - 1) * Paging.DefaultPageSize).Take(Paging.DefaultPageSize)
             .Select(r => new
             {
@@ -222,7 +222,7 @@ internal sealed class LoanQueries(CreditFlowDbContext db) : ILoanQueries
             return null;
         }
 
-        var ids = await db.Loans.Where(l => l.ApplicationId == applicationId).Select(l => l.Id).Take(1).ToListAsync(cancellationToken);
+        var ids = await db.Loans.Where(l => l.ApplicationId == applicationId).OrderBy(l => l.Id).Select(l => l.Id).Take(1).ToListAsync(cancellationToken);
         return ids.Count == 0 ? null : ids[0];
     }
 

@@ -105,6 +105,11 @@ public sealed class ClientService(
         {
             return Result.Failure<ClientId>(CommonErrors.ConcurrencyConflict);
         }
+        catch (UniqueConstraintViolationException exception)
+        {
+            // A parallel registration of the same personal number won the race.
+            return Result.Failure<ClientId>(UniqueIndexes.ErrorFor(exception.IndexName));
+        }
 
         return Result.Success(client.Id);
     }
@@ -170,6 +175,10 @@ public sealed class ClientService(
         catch (ConcurrencyConflictException)
         {
             return Result.Failure(CommonErrors.ConcurrencyConflict);
+        }
+        catch (UniqueConstraintViolationException exception)
+        {
+            return Result.Failure(UniqueIndexes.ErrorFor(exception.IndexName));
         }
     }
 

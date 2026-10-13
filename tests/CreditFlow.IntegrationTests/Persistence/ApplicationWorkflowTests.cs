@@ -120,8 +120,8 @@ public sealed class ApplicationWorkflowTests(SqlServerContainer sql) : DatabaseT
 
         Assert.NotEqual(references[0], references[1]);
         var subjects = await Host.QueryAsync(db => db.Set<NotificationRecord>().Select(n => n.Subject).Distinct().ToListAsync(Ct));
-        Assert.Contains($"Application {references[0]}: Submitted", subjects);
-        Assert.Contains($"Application {references[1]}: Submitted", subjects);
+        Assert.Contains($"CreditFlow · Application {references[0]}: Submitted", subjects);
+        Assert.Contains($"CreditFlow · Application {references[1]}: Submitted", subjects);
     }
 
     [Fact]

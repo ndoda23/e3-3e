@@ -15,5 +15,8 @@ public interface ILoanApplicationRepository
     Task<bool> HasOpenApplicationAsync(
         ClientId borrowerId, LoanProductId productId, LoanApplicationId except, CancellationToken cancellationToken);
 
+    /// <summary>The reference of the borrower's open application for the product, or <c>null</c> when there is none.</summary>
+    Task<string?> FindOpenApplicationReferenceAsync(ClientId borrowerId, LoanProductId productId, CancellationToken cancellationToken);
+
     void Add(LoanApplication application);
 }

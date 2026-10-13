@@ -128,7 +128,7 @@ internal sealed class NotifyStatusChangeHandler(
         }
 
         var reference = application.Reference;
-        var subject = $"Application {reference}: {domainEvent.To}";
+        var subject = $"CreditFlow · Application {reference}: {domainEvent.To}";
 
         if (domainEvent.By != application.CreatedBy
             && await users.GetDetailsAsync(application.CreatedBy, cancellationToken) is { } creator)

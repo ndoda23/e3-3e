@@ -127,7 +127,8 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString);
             if (configuration.GetSection(DatabaseOptions.SectionName).GetValue<bool>(nameof(DatabaseOptions.ThrowOnQueryWarnings)))
             {
-                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+                options.ConfigureWarnings(warnings => warnings.Throw(
+                    RelationalEventId.MultipleCollectionIncludeWarning, CoreEventId.RowLimitingOperationWithoutOrderByWarning));
             }
 
             options.AddInterceptors(

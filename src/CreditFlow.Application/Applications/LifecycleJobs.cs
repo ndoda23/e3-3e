@@ -136,7 +136,7 @@ internal sealed class NotifyEscalationHandler(
         }
 
         var reference = application.Reference;
-        var subject = $"Application {reference}: escalated";
+        var subject = $"CreditFlow · Application {reference}: escalated";
         var body = $"Application {reference} has waited in Underwriting for more than {LendingPolicy.EscalationWorkingDays} working days and now needs a Senior Underwriter.";
         foreach (var email in await users.ListActiveEmailsWithPermissionAsync(Permissions.Underwriting.DecideSenior, cancellationToken))
         {

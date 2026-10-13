@@ -41,7 +41,7 @@ internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) 
             _ => rows,
         };
 
-        rows = (query.Sort, query.Descending) switch
+        var ordered = (query.Sort, query.Descending) switch
         {
             (UserSortField.Role, false) => rows.OrderBy(u => u.RoleName).ThenBy(u => u.FullName),
             (UserSortField.Role, true) => rows.OrderByDescending(u => u.RoleName).ThenBy(u => u.FullName),
@@ -55,8 +55,9 @@ internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) 
             _ => rows.OrderBy(u => u.FullName),
         };
 
-        var total = await rows.CountAsync(cancellationToken);
-        var page = await rows
+        var total = await ordered.CountAsync(cancellationToken);
+        var page = await ordered
+            .ThenBy(u => u.Id) // tiebreaker: equal names never swap between pages
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .ToListAsync(cancellationToken);

@@ -70,12 +70,14 @@ public sealed class InfrastructureHost : IAsyncDisposable
     /// <param name="seedDevUsers">Seed the demo personas.</param>
     /// <param name="clock">A controllable clock (default: the system clock).</param>
     /// <param name="settings">Extra configuration (e.g. mock timeouts).</param>
+    /// <param name="configureServices">Last-minute service replacements (e.g. a unit of work that stages a race).</param>
     public static async Task<InfrastructureHost> StartAsync(
         string connectionString,
         string environment = "Testing",
         bool seedDevUsers = false,
         TimeProvider? clock = null,
-        IReadOnlyDictionary<string, string?>? settings = null)
+        IReadOnlyDictionary<string, string?>? settings = null,
+        Action<IServiceCollection>? configureServices = null)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -107,6 +109,7 @@ public sealed class InfrastructureHost : IAsyncDisposable
         services.AddSingleton<TestCurrentUser>();
         services.AddScoped<ScopedTestCurrentUser>();
         services.Replace(ServiceDescriptor.Scoped<ICurrentUser>(sp => sp.GetRequiredService<ScopedTestCurrentUser>()));
+        configureServices?.Invoke(services);
 
         var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         await provider.InitializeDatabaseAsync(TestContext.Current.CancellationToken);

@@ -62,6 +62,17 @@ internal sealed class LoanApplicationRepository(CreditFlowDbContext db) : ILoanA
             a => a.BorrowerId == borrowerId && a.ProductId == productId && a.IsOpen && a.Id != except,
             cancellationToken);
 
+    public async Task<string?> FindOpenApplicationReferenceAsync(
+        ClientId borrowerId, LoanProductId productId, CancellationToken cancellationToken)
+    {
+        var number = await db.LoanApplications
+            .Where(a => a.BorrowerId == borrowerId && a.ProductId == productId && a.IsOpen)
+            .OrderBy(a => a.Number)
+            .Select(a => (long?)a.Number)
+            .FirstOrDefaultAsync(cancellationToken);
+        return number is { } value ? LoanApplication.FormatReference(value) : null;
+    }
+
     public void Add(LoanApplication application) => db.LoanApplications.Add(application);
 }
 

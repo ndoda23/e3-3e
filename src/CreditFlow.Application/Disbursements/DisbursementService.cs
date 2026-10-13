@@ -204,7 +204,7 @@ public sealed class DisbursementProcessor(
                 return Result.Failure<DisbursementStatus>(saved.Error!);
             }
         }
-        catch (ConcurrencyConflictException)
+        catch (Exception exception) when (exception is ConcurrencyConflictException or UniqueConstraintViolationException)
         {
             // Someone else recorded the outcome in the meantime; read it.
         }
