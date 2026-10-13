@@ -1,0 +1,89 @@
+@model ScoringRulesViewModel
+@{
+    ViewData["Title"] = T["Nav.ScoringRules"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    var current = Model.Current;
+    var latest = Model.Versions.Count > 0 ? Model.Versions[0].Version : 0;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["ScoringRules.Description"]</p>
+    </div>
+</div>
+<partial name="_Notices" />
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="versions-title" data-section="rule-versions">
+        <div class="card-head"><h2 class="card-title" id="versions-title">@T["ScoringRules.Versions"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var v in Model.Versions)
+                    {
+                        <tr data-rule-version="@v.Version">
+                            <td><a asp-action="Index" asp-route-version="@v.Version">v@(v.Version)</a>@(v.Version == latest ? " ✓" : null)</td>
+                            <td class="tnum">@DisplayFormat.DateTime(v.PublishedAt)</td>
+                            <td class="num">@T["ScoringRules.RuleCount", v.RuleCount]</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section class="card" aria-labelledby="shown-title">
+        <div class="card-head"><h2 class="card-title" id="shown-title">@T["ScoringRules.VersionRules", current?.Version ?? 0]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var rule in current?.Rules ?? [])
+                    {
+                        <tr data-rule="@rule.Code">
+                            <td><span class="mono">@rule.Code</span><div class="small muted">@T.TextOrDefault($"Rule.{rule.Code}", rule.Code)</div></td>
+                            <td>@(rule.Overridable ? T["ScoringRules.Overridable"] : T["ScoringRules.Hard"])</td>
+                            <td class="mono small">@rule.ParametersJson</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+<section class="card" aria-labelledby="next-title" data-section="next-rule-version">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="next-title">@T["ScoringRules.NextVersion", latest + 1]</h2>
+            <p class="card-sub">@T["ScoringRules.NextVersionHint"]</p>
+        </div>
+    </div>
+    <form method="post" asp-action="Publish" class="card-body form" novalidate>
+        <div asp-validation-summary="All" role="alert"></div>
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["ScoringRules.Included"]</th>
+                    <th scope="col">@T["Applications.Rule"]</th>
+                    <th scope="col">@T["ScoringRules.Overridable"]</th>
+                    <th scope="col">@T["ScoringRules.Parameters"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.NextVersion.Count; i++)
+                {
+                    var row = Model.NextVersion[i];
+                    <tr>
+                        <td>
+                            <input type="hidden" name="rows[@i].Code" value="@row.Code" />
+                            <input type="checkbox" name="rows[@i].Included" value="true" class="cb" checked="@row.Included" aria-label="@T["ScoringRules.Included"] @row.Code" />
+                        </td>
+                        <td><span class="mono">@row.Code</span><div class="small muted">@T.TextOrDefault($"Rule.{row.Code}", row.Code)</div></td>
+                        <td><input type="checkbox" name="rows[@i].Overridable" value="true" class="cb" checked="@row.Overridable" aria-label="@T["ScoringRules.Overridable"] @row.Code" /></td>
+                        <td><textarea name="rows[@i].ParametersJson" class="inp mono" rows="2" spellcheck="false" aria-label="@T["ScoringRules.Parameters"] @row.Code">@row.ParametersJson</textarea></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="form-actions">
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["ScoringRules.Publish"]</button>
+        </div>
+    </form>
+</section>

@@ -1,0 +1,55 @@
+@model HolidaysViewModel
+@{
+    ViewData["Title"] = T["Nav.Holidays"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@T["Holidays.Title", Model.Year]</h1>
+        <p class="page-desc">@T["Holidays.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index" asp-route-year="@(Model.Year - 1)"><icon name="chevron-left" size="15" />@(Model.Year - 1)</a>
+        <a class="btn" asp-action="Index" asp-route-year="@(Model.Year + 1)">@(Model.Year + 1)<icon name="chevron-right" size="15" /></a>
+    </div>
+</div>
+<partial name="_Notices" />
+<section class="card mb" data-section="holiday-add">
+    <form method="post" asp-action="Add" class="card-body form row wrap">
+        <input name="date" type="date" class="inp" aria-label="@T["Holidays.Date"]" title="@T["Holidays.Date"]" />
+        <input name="name" class="inp grow" placeholder="@T["Holidays.Name"]" aria-label="@T["Holidays.Name"]" />
+        <button type="submit" class="btn primary sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+    </form>
+</section>
+<section class="card">
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var holiday in Model.Holidays)
+                {
+                    <tr data-holiday="@Iso(holiday.Date)">
+                        <td class="tnum nowrap">@DisplayFormat.Date(holiday.Date) <span class="muted small">@holiday.Date.DayOfWeek</span></td>
+                        <td>
+                            <form method="post" asp-action="Rename" class="row">
+                                <input type="hidden" name="date" value="@Iso(holiday.Date)" />
+                                <input name="name" value="@holiday.Name" class="inp grow" aria-label="@T["Holidays.Name"]" />
+                                <button type="submit" class="btn sm">@T["Common.Save"]</button>
+                            </form>
+                        </td>
+                        <td class="actions">
+                            <form method="post" asp-action="Remove">
+                                <input type="hidden" name="date" value="@Iso(holiday.Date)" />
+                                <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.Holidays.Count == 0)
+        {
+            <div class="empty">@T["Holidays.None"]</div>
+        }
+    </div>
+</section>

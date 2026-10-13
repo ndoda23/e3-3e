@@ -1,0 +1,44 @@
+@model ProductCreateForm
+@using CreditFlow.Domain.Products
+@{
+    ViewData["Title"] = T["Products.Create"].Value;
+    ViewData["Section"] = T["Nav.Products"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Products.CreateHint"]</p>
+    </div>
+</div>
+<section class="card form-card">
+    <form method="post" asp-action="Create" class="card-body form" novalidate>
+        <div asp-validation-summary="All" role="alert"></div>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Code" class="required"></label>
+                <input asp-for="Code" class="inp mono" autocomplete="off" maxlength="@LoanProduct.CodeMaxLength" />
+                <span asp-validation-for="Code"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Name" class="required"></label>
+                <input asp-for="Name" class="inp" autocomplete="off" maxlength="@LoanProduct.NameMaxLength" />
+                <span asp-validation-for="Name"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Type" class="required"></label>
+                <select asp-for="Type" class="select">
+                    @foreach (var type in Enum.GetValues<ProductType>())
+                    {
+                        <option value="@type" selected="@(Model.Type == type)">@T.EnumText(type)</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <h2 class="card-title">@T["Products.TermsOfVersion", 1]</h2>
+        <partial name="_TermsFields" model="Model.Terms" view-data='new ViewDataDictionary(ViewData) { ["Prefix"] = "Terms." }' />
+        <div class="form-actions">
+            <a class="btn" asp-action="Index">@T["Common.Cancel"]</a>
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Products.Create"]</button>
+        </div>
+    </form>
+</section>

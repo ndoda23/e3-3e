@@ -1096,6 +1096,10 @@ Decisions taken during implementation:
     document checklist comes from the product's current version; from submission on, the snapshot rules.
 48. **Payout on the page** — Pending shows "check again" and Failed shows "retry"; both post the same Disburse action,
     which reuses the payout and its idempotency key.
+49. **Reference-data admin** — product terms and scoring rule sets are append-only versions (the newest is in force,
+    nothing is edited in place, an unchanged form publishes nothing); approval thresholds, FX rates and holidays are
+    edited in place with before/after in the data audit. An FX CSV import is all or nothing and names every wrong line.
+    The admin services re-check their `admin.*` permission behind the controller attribute.
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1173,7 +1177,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [x] **P12** Jobs: escalation, offer expiry (+ idempotency tests).
 - [x] **P13** Web polish of the P10/P11 pages: multi-step application wizard, scoring explanation, decisions panel,
   contract + schedule PDF, loans list.
-- [ ] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
+- [x] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
   holidays.
 - [ ] **P15** Reports + Excel/CSV export.
 - [ ] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
@@ -1209,22 +1213,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P11 — Contract, disbursement, loans, repayments | done; build 0 warnings, 1,190 tests green (Domain 646, Application 353, Architecture 13, Integration 178), no pending EF model changes. Gapless contract numbers from a locked counter row in the signing transaction; idempotent payout (deterministic key, Pending row committed before core banking, rejection → retry with the same key, timeout → background retry returns the same transaction); exposure re-check under per-party `sp_getapplock` in id order; loan booking via the outbox; installments and early repayment (partial recalculation, full closes loan and application). Tests: parallel signing + rollback, double payout sequential and parallel, error and timeout, exposure race over a shared guarantor, repayments, loan IDOR, pages. Decisions #41–#44. | `8633e23` |
 | P12 — Escalation and offer-expiry jobs | done; build 0 warnings, 1,197 tests green (Domain 646, Application 353, Architecture 13, Integration 185), no pending EF model changes. One `BackgroundService` (`Jobs:Enabled`, `Jobs:Interval`) runs both jobs; candidates claimed with `UPDLOCK, READPAST, ROWLOCK` per batch (keyset by id); escalation after 2 working days (weekends and holidays skipped) notifies the Senior Underwriters; expiry after 30 days notifies operator and client. Tests: deadline across a weekend and a holiday, run twice and two parallel runners → one effect each, inbox and authority after escalation, notifications. Index for the escalation claim added. Seen once: `LoggingTests.A_log_event_reaches_the_database…` timed out (15 s poll for the batched SQL sink) during a full run under load; it passed alone and in the next full run. | `0aa641f` |
 | P13 — Pages: wizard, application page, contract and payout, loans, PDFs | done; build 0 warnings, 1,206 tests green (Domain 646, Application 353, Architecture 13, Integration 194), no pending EF model changes. Application wizard (borrower and terms → parties and collateral → documents → review and submit) on the normal actions; application page split into cards (scoring verdict and per-rule explanation, history, decisions with committee tally, conditions, counter-offer, contract and payout with Pending / Failed states and check-again / retry); loans list (SQL-side filter and paging, scope); client page lists the client's applications; contract and schedule PDFs (PDFsharp-MigraDoc 6.2.4, embedded DejaVu Sans). Web tests walk the whole process role by role (operator, underwriter, compliance, two committee members, auditor), payout rejection and timeout, PDF permissions and IDOR. `LoggingTests` now polls the batched SQL sink against a 60 s deadline (assertions unchanged). Decisions #46–#48. | `fe583a9` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** … P13 `fe583a9`. **Current steps: P14, then P15** (one commit each, no stop between unless a decision is
-  the user's); stop after the P15 commit with a 3–5 line summary. Bug reports from the user's P13 browser test come first.
-- **P14 design:** Application `Administration/LendingAdministration.cs` — services per area, each checking its
-  `admin.*` permission (AccessDenied otherwise): products (create with v1, publish a new version = new terms, rename,
-  activate/deactivate; the newest version is the one in force), scoring rule sets (new version from the current one with
-  edited parameters / overridable flags, validated by `ScoringEngine`), approval thresholds, FX rates (set = create or
-  change, delete, CSV import `Currency,EffectiveDate,GelPerUnit` all-or-nothing with line errors), holidays (add, rename,
-  remove). Read side `ILendingAdminQueries` in Infrastructure. Audit: `AuditTrailInterceptor` already covers these
-  entities (add `AuditEntity.*` texts). Web: Admin area controllers + views + menu entries by permission. Tests:
-  integration per area (change + audit row + AccessDenied for a non-admin), CSV import (valid, invalid line → nothing
-  saved), web admin POSTs covered by the Auditor POST test, pages render for the admin.
-- **P15 design:** `IReportQueries` filtered by `ApplicationAccessFilter` in SQL: applications by status, approval and
-  rejection rates per period/product, average time per stage (status history), rejection reasons, disbursed volume and
-  portfolio by product/branch, overdue installments and escalations; Reports page with period/product filters; exports
-  Excel (ClosedXML, MIT) and CSV (RFC 4180, formula-injection safe) from the same queries; tests incl. scope in exports.
-- **Open questions for the user:** none.
+| P14 — Admin: products, scoring rules, thresholds, FX rates, holidays | done; build 0 warnings, 1,233 tests green (Domain 646, Application 364, Architecture 13, Integration 210), no pending EF model changes. Admin › Products (create with v1, publish the next version, rename, (de)activate), Scoring rules (versions, publish the next version with edited parameters / overridable flags, validated by the engine), Approval thresholds, FX rates (set, delete, CSV import all or nothing), Holidays (add, rename, remove). Services re-check `admin.*`; every change is in the data audit. Tests: per area incl. snapshot unaffected by a new product version, invalid input changes nothing, business roles get AccessDenied; pages render, forms and CSV upload round-trip; the Auditor POST sweep covers the new actions. Decision #49. | (this commit) |

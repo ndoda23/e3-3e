@@ -1,3 +1,4 @@
+using CreditFlow.Application.Administration;
 using CreditFlow.Application.Applications;
 using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Authorization;
@@ -148,6 +149,7 @@ public static class DependencyInjection
         services.AddScoped<IContractNumberGenerator, ContractNumberGenerator>();
         services.AddScoped<IExposureLock, SqlExposureLock>();
         services.AddScoped<ILoanQueries, LoanQueries>();
+        services.AddScoped<ILendingAdminQueries, LendingAdminQueries>();
         services.AddSingleton<IContractDocumentRenderer, PdfContractRenderer>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();

@@ -639,4 +639,89 @@
   <data name="Rule.FX_INCOME_CURRENCY" xml:space="preserve"><value>Foreign-currency loan needs income in that currency</value></data>
   <data name="Rule.EXPOSURE_LIMIT" xml:space="preserve"><value>Total exposure within the limit</value></data>
   <data name="Rule.PRODUCT_LIMITS" xml:space="preserve"><value>Amount, term and rate within the product</value></data>
+  <data name="Nav.Products" xml:space="preserve"><value>Products</value></data>
+  <data name="Nav.ScoringRules" xml:space="preserve"><value>Scoring rules</value></data>
+  <data name="Nav.ApprovalThresholds" xml:space="preserve"><value>Approval thresholds</value></data>
+  <data name="Nav.FxRates" xml:space="preserve"><value>FX rates</value></data>
+  <data name="Nav.Holidays" xml:space="preserve"><value>Holidays</value></data>
+  <data name="Products.Description" xml:space="preserve"><value>Loan products and their versioned terms. Saving terms publishes a new version; submitted applications keep the version they were submitted with.</value></data>
+  <data name="Products.Create" xml:space="preserve"><value>New product</value></data>
+  <data name="Products.CreateHint" xml:space="preserve"><value>The code cannot be changed later. The terms become version 1.</value></data>
+  <data name="Products.Created" xml:space="preserve"><value>The product was created.</value></data>
+  <data name="Products.Saved" xml:space="preserve"><value>The product was saved.</value></data>
+  <data name="Products.VersionPublished" xml:space="preserve"><value>A new version was published; it applies to applications submitted from now on.</value></data>
+  <data name="Products.Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Products.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Products.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Products.Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Products.Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Products.Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Products.Limits" xml:space="preserve"><value>Amount (GEL) · term · rate</value></data>
+  <data name="Products.Fees" xml:space="preserve"><value>Upfront / monthly fee / penalty</value></data>
+  <data name="Products.InForce" xml:space="preserve"><value>version {0} in force</value></data>
+  <data name="Products.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Products.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Products.TermsOfVersion" xml:space="preserve"><value>Terms of version {0}</value></data>
+  <data name="Products.NextVersionHint" xml:space="preserve"><value>Change the terms and publish them as the next version. Nothing is published when nothing changed.</value></data>
+  <data name="Products.Publish" xml:space="preserve"><value>Publish new version</value></data>
+  <data name="Products.MinAmountGel" xml:space="preserve"><value>Minimum amount (GEL)</value></data>
+  <data name="Products.MaxAmountGel" xml:space="preserve"><value>Maximum amount (GEL)</value></data>
+  <data name="Products.MinTermMonths" xml:space="preserve"><value>Minimum term (months)</value></data>
+  <data name="Products.MaxTermMonths" xml:space="preserve"><value>Maximum term (months)</value></data>
+  <data name="Products.MinRate" xml:space="preserve"><value>Minimum rate (%)</value></data>
+  <data name="Products.MaxRate" xml:space="preserve"><value>Maximum rate (%)</value></data>
+  <data name="Products.UpfrontFeePercent" xml:space="preserve"><value>Upfront fee (% of the amount)</value></data>
+  <data name="Products.MonthlyFeePercent" xml:space="preserve"><value>Monthly fee (% of the amount)</value></data>
+  <data name="Products.EarlyRepaymentPenaltyPercent" xml:space="preserve"><value>Early repayment penalty (%)</value></data>
+  <data name="Products.CollateralRequired" xml:space="preserve"><value>Collateral required</value></data>
+  <data name="Products.MaxLtvPercent" xml:space="preserve"><value>Maximum LTV (%)</value></data>
+  <data name="Products.Currencies" xml:space="preserve"><value>Currencies</value></data>
+  <data name="Products.ScheduleTypes" xml:space="preserve"><value>Schedule types</value></data>
+  <data name="Products.StandardConditions" xml:space="preserve"><value>Standard conditions of every approval</value></data>
+  <data name="Products.Checklist" xml:space="preserve"><value>Document checklist</value></data>
+  <data name="Products.FromAmount" xml:space="preserve"><value>from amount (GEL)</value></data>
+  <data name="ScoringRules.Description" xml:space="preserve"><value>The rules of each rule-set version, their parameters and whether a failure can be overridden. The rule logic is code; a version is immutable and every scoring run records the version it used.</value></data>
+  <data name="ScoringRules.Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="ScoringRules.RuleCount" xml:space="preserve"><value>{0} rules</value></data>
+  <data name="ScoringRules.VersionRules" xml:space="preserve"><value>Rules of version {0}</value></data>
+  <data name="ScoringRules.Overridable" xml:space="preserve"><value>Overridable</value></data>
+  <data name="ScoringRules.Hard" xml:space="preserve"><value>Hard (rejects)</value></data>
+  <data name="ScoringRules.NextVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="ScoringRules.NextVersionHint" xml:space="preserve"><value>Edit the rules and publish them as the next version; new scoring runs use it.</value></data>
+  <data name="ScoringRules.Included" xml:space="preserve"><value>Included</value></data>
+  <data name="ScoringRules.Parameters" xml:space="preserve"><value>Parameters (JSON)</value></data>
+  <data name="ScoringRules.Publish" xml:space="preserve"><value>Publish version</value></data>
+  <data name="ScoringRules.Published" xml:space="preserve"><value>Version {0} was published.</value></data>
+  <data name="Thresholds.Description" xml:space="preserve"><value>Who decides which amount (GEL): up to the first limit an Underwriter, up to the second a Senior Underwriter, above it the Credit Committee.</value></data>
+  <data name="Thresholds.UnderwriterMax" xml:space="preserve"><value>Underwriter up to (GEL)</value></data>
+  <data name="Thresholds.SeniorMax" xml:space="preserve"><value>Senior Underwriter up to (GEL)</value></data>
+  <data name="Thresholds.RequiredVotes" xml:space="preserve"><value>Matching committee votes that decide</value></data>
+  <data name="Thresholds.Hint" xml:space="preserve"><value>The tier is fixed when an application is scored; files already routed keep their tier.</value></data>
+  <data name="Thresholds.Saved" xml:space="preserve"><value>The thresholds were saved.</value></data>
+  <data name="FxRates.Description" xml:space="preserve"><value>GEL per unit of USD and EUR from an effective date. Submission and scoring use the latest rate on or before their date.</value></data>
+  <data name="FxRates.Set" xml:space="preserve"><value>Set a rate</value></data>
+  <data name="FxRates.EffectiveDate" xml:space="preserve"><value>Effective date</value></data>
+  <data name="FxRates.GelPerUnit" xml:space="preserve"><value>GEL per unit</value></data>
+  <data name="FxRates.Import" xml:space="preserve"><value>Import from CSV</value></data>
+  <data name="FxRates.ImportHint" xml:space="preserve"><value>One rate per line: Currency,EffectiveDate,GelPerUnit (e.g. USD,2026-10-13,2.7150). Any wrong line rejects the whole file.</value></data>
+  <data name="FxRates.ImportButton" xml:space="preserve"><value>Import</value></data>
+  <data name="FxRates.Imported" xml:space="preserve"><value>{0} rates were imported.</value></data>
+  <data name="FxRates.Saved" xml:space="preserve"><value>The rate was saved.</value></data>
+  <data name="FxRates.Deleted" xml:space="preserve"><value>The rate was deleted.</value></data>
+  <data name="FxRates.Rates" xml:space="preserve"><value>Rates</value></data>
+  <data name="FxRates.AllCurrencies" xml:space="preserve"><value>All currencies</value></data>
+  <data name="FxRates.None" xml:space="preserve"><value>No rates.</value></data>
+  <data name="Holidays.Title" xml:space="preserve"><value>Holidays {0}</value></data>
+  <data name="Holidays.Description" xml:space="preserve"><value>Public holidays do not count as working days (escalation after two working days in Underwriting).</value></data>
+  <data name="Holidays.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Holidays.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Holidays.Added" xml:space="preserve"><value>The holiday was added.</value></data>
+  <data name="Holidays.Saved" xml:space="preserve"><value>The holiday was saved.</value></data>
+  <data name="Holidays.Removed" xml:space="preserve"><value>The holiday was removed.</value></data>
+  <data name="Holidays.None" xml:space="preserve"><value>No holidays in this year.</value></data>
+  <data name="AuditEntity.LoanProductVersion" xml:space="preserve"><value>Product version</value></data>
+  <data name="AuditEntity.ScoringRuleSet" xml:space="preserve"><value>Scoring rule set</value></data>
+  <data name="AuditEntity.ApprovalThresholds" xml:space="preserve"><value>Approval thresholds</value></data>
+  <data name="AuditEntity.FxRate" xml:space="preserve"><value>FX rate</value></data>
+  <data name="AuditEntity.Holiday" xml:space="preserve"><value>Holiday</value></data>
 </root>

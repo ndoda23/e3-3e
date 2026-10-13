@@ -1,4 +1,5 @@
 using FluentValidation;
+using CreditFlow.Application.Administration;
 using CreditFlow.Application.Applications;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Branches;
@@ -35,6 +36,12 @@ public static class DependencyInjection
         services.AddScoped<DisbursementProcessor>();
         services.AddScoped<LoanService>();
         services.AddScoped<ContractDocumentService>();
+        services.AddScoped<AdminGuard>();
+        services.AddScoped<ProductAdministrationService>();
+        services.AddScoped<ScoringRuleAdministrationService>();
+        services.AddScoped<ApprovalThresholdsAdministrationService>();
+        services.AddScoped<FxRateAdministrationService>();
+        services.AddScoped<HolidayAdministrationService>();
         services.AddScoped<ApplicationLifecycleJobs>();
 
         AddOutboxHandlers(services);

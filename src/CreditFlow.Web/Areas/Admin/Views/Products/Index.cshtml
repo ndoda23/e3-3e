@@ -1,0 +1,47 @@
+@model IReadOnlyList<CreditFlow.Application.Administration.ProductAdminItem>
+@{
+    ViewData["Title"] = T["Nav.Products"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Products.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn primary" asp-action="Create"><icon name="plus" size="15" />@T["Products.Create"]</a>
+    </div>
+</div>
+<partial name="_Notices" />
+<section class="card">
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Products.Code"]</th>
+                    <th scope="col">@T["Products.Name"]</th>
+                    <th scope="col">@T["Products.Type"]</th>
+                    <th scope="col">@T["Products.Version"]</th>
+                    <th scope="col">@T["Products.Limits"]</th>
+                    <th scope="col" class="num">@T["Nav.Applications"]</th>
+                    <th scope="col">@T["Field.Status"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var t = p.CurrentTerms;
+                    <tr class="@(p.IsActive ? null : "inactive")" data-product="@p.Code">
+                        <td><a class="row-link mono" asp-action="Details" asp-route-id="@p.Id.Value">@p.Code</a></td>
+                        <td>@p.Name</td>
+                        <td>@T.EnumText(p.Type)</td>
+                        <td>v@(p.CurrentVersion) <span class="muted small">@DisplayFormat.DateTime(p.CurrentVersionPublishedAt)</span></td>
+                        <td class="small">@DisplayFormat.Money(CreditFlow.Domain.Common.Currency.GEL, t.MinAmountGel)–@DisplayFormat.Money(CreditFlow.Domain.Common.Currency.GEL, t.MaxAmountGel) · @t.MinTermMonths–@t.MaxTermMonths · @DisplayFormat.Percent(t.MinRate)–@DisplayFormat.Percent(t.MaxRate)</td>
+                        <td class="num">@p.ApplicationCount</td>
+                        <td><span class="pill @(p.IsActive ? "success" : "neutral")"><span class="dot"></span>@(p.IsActive ? T["Users.State.Active"] : T["Users.State.Inactive"])</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -19,7 +19,7 @@ public sealed class MenuTests
         { RoleCodes.CreditCommittee, ["Dashboard", "Inbox", "Applications", "Clients", "Loans", "Reports"], false },
         { RoleCodes.Compliance, ["Dashboard", "Inbox", "Applications", "Clients"], false },
         { RoleCodes.Auditor, ["Dashboard", "Applications", "Clients", "Loans", "Reports", "Audit"], false },
-        { RoleCodes.Admin, ["Users", "Roles", "Branches", "AuditLog"], false },
+        { RoleCodes.Admin, ["Users", "Roles", "Branches", "Products", "ScoringRules", "ApprovalThresholds", "FxRates", "Holidays", "AuditLog"], false },
     };
 
     [Theory]

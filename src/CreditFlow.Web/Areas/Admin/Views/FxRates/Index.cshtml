@@ -1,0 +1,61 @@
+@model FxRatesViewModel
+@using CreditFlow.Domain.Common
+@{
+    ViewData["Title"] = T["Nav.FxRates"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    var foreign = Enum.GetValues<Currency>().Where(c => c != Currency.GEL).ToList();
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["FxRates.Description"]</p>
+    </div>
+</div>
+<partial name="_Notices" />
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="fx-set-title" data-section="fx-set">
+        <div class="card-head"><h2 class="card-title" id="fx-set-title">@T["FxRates.Set"]</h2></div>
+        <form method="post" asp-action="Set" class="card-body form row wrap">
+            <select name="currency" class="select" aria-label="@T["Field.Currency"]">
+                @foreach (var currency in foreign)
+                {
+                    <option value="@currency">@currency</option>
+                }
+            </select>
+            <input name="effectiveDate" type="date" class="inp" aria-label="@T["FxRates.EffectiveDate"]" title="@T["FxRates.EffectiveDate"]" />
+            <input name="gelPerUnit" type="number" step="0.000001" min="0" class="inp" placeholder="@T["FxRates.GelPerUnit"]" aria-label="@T["FxRates.GelPerUnit"]" />
+            <button type="submit" class="btn primary sm">@T["Common.Save"]</button>
+        </form>
+    </section>
+    <section class="card" aria-labelledby="fx-import-title" data-section="fx-import">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="fx-import-title">@T["FxRates.Import"]</h2>
+                <p class="card-sub">@T["FxRates.ImportHint"]</p>
+            </div>
+        </div>
+        <form method="post" asp-action="Import" enctype="multipart/form-data" class="card-body form row wrap">
+            <input name="file" type="file" accept=".csv,text/csv,text/plain" aria-label="@T["Applications.File"]" />
+            <button type="submit" class="btn sm">@T["FxRates.ImportButton"]</button>
+        </form>
+    </section>
+</div>
+<section class="card">
+    <div class="card-head">
+        <h2 class="card-title">@T["FxRates.Rates"]</h2>
+        <form method="get" asp-action="Index" class="card-tools filters">
+            <label class="sr-only" for="fx-currency">@T["Field.Currency"]</label>
+            <select id="fx-currency" name="currency" class="select">
+                <option value="">@T["FxRates.AllCurrencies"]</option>
+                @foreach (var currency in foreign)
+                {
+                    <option value="@currency" selected="@(Model.Currency == currency)">@currency</option>
+                }
+            </select>
+            <button type="submit" class="btn sm">@T["Users.Filter"]</button>
+        </form>
+    </div>
+    <div id="fx-rows" class="tbl-body">
+        <partial name="_FxRows" model="Model" />
+    </div>
+</section>

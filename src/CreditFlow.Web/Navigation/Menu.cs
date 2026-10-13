@@ -36,6 +36,11 @@ public static class Menu
         new("Users", "Admin", "Users", "users", p => p.HasPermission(P.Admin.UsersView)),
         new("Roles", "Admin", "Roles", "shield-check", p => p.HasPermission(P.Admin.RolesManage)),
         new("Branches", "Admin", "Branches", "building", p => p.HasPermission(P.Admin.BranchesManage)),
+        new("Products", "Admin", "Products", "wallet", p => p.HasPermission(P.Admin.ProductsManage)),
+        new("ScoringRules", "Admin", "ScoringRules", "sliders", p => p.HasPermission(P.Admin.ScoringRulesManage)),
+        new("ApprovalThresholds", "Admin", "ApprovalThresholds", "shield-alert", p => p.HasPermission(P.Admin.ApprovalThresholdsManage)),
+        new("FxRates", "Admin", "FxRates", "refresh", p => p.HasPermission(P.Admin.FxRatesManage)),
+        new("Holidays", "Admin", "Holidays", "clock", p => p.HasPermission(P.Admin.HolidaysManage)),
         new("AuditLog", "Admin", "AuditLog", "history", p => p.HasPermission(P.Admin.AuditView)),
     ];
 
