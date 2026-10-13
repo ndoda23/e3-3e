@@ -34,9 +34,11 @@ Sign-in works since Step 6 (accounts: see README in Step 8; for now the seeded `
 | 7c — Admin › Authority limits | done | `2c98a18` |
 | 7d — Admin › Branches | done | `68148fc` |
 | 7e — Admin › Audit log | done | `319312b` |
-| 8 — Integration tests and docs (light) | done | `24ae829` |
+| 8 — Integration tests and docs (light) | done | `67435b9` |
 
 Test status after Step 8: build with 0 warnings; 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135 — Testcontainers SQL Server).
+
+The Phase 1 commits above are on branch `old-main-with-docs`; the Phase 2 branch `phase2-creditflow` starts from the squashed commit `b77ef6a` ("Phase1") of the same code.
 
 ### Seed versioning (SeedHistory, seed units)
 **Fully implemented and tested.** `SeedHistory` table (migration `AddSeedHistory`); units `0001_initial_roles_permissions`, `0002_initial_branches`, `0003_initial_authority_limits` run once each, in their own transaction; fixed role definitions re-applied on every start; `SeedOperations` helpers (`GrantAsync` enforces known permissions and segregation of duties); README documents adding a role / a grant.
@@ -1194,7 +1196,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
   holidays.
 - [x] **P15** Reports + Excel/CSV export.
 - [x] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
-- [ ] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
+- [x] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
   mocks, accounts, ambiguities, licences); final verification.
   Also replace the "(this commit)" placeholders in the Phase 1 history table (§0 Progress) with the real commit hashes.
 
@@ -1229,9 +1231,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P14 — Admin: products, scoring rules, thresholds, FX rates, holidays | done; build 0 warnings, 1,233 tests green (Domain 646, Application 364, Architecture 13, Integration 210), no pending EF model changes. Admin › Products (create with v1, publish the next version, rename, (de)activate), Scoring rules (versions, publish the next version with edited parameters / overridable flags, validated by the engine), Approval thresholds, FX rates (set, delete, CSV import all or nothing), Holidays (add, rename, remove). Services re-check `admin.*`; every change is in the data audit. Tests: per area incl. snapshot unaffected by a new product version, invalid input changes nothing, business roles get AccessDenied; pages render, forms and CSV upload round-trip; the Auditor POST sweep covers the new actions. Decision #49. | `4156d51` |
 | P15 — Reports and Excel / CSV export | done; build 0 warnings, 1,239 tests green (Domain 646, Application 364, Architecture 13, Integration 216), no pending EF model changes. Eight reports (applications by status, approval / rejection rate, average time per stage with `LEAD` in parameterised SQL, rejection reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations), period and product filters, the viewer's data scope in SQL; Excel (ClosedXML, every report a sheet) and CSV (one report, injection-safe). The placeholder "coming soon" page is gone. Tests: figures on a two-branch data set, operator = branch / auditor = bank on the page model and in both exports, CSV escaping, permissions, page and downloads over HTTP. Decision #50. | `d7b84d7` |
 | P16 — Development demo data | done; build 0 warnings, 1,243 tests green (Domain 646, Application 364, Architecture 13, Integration 220), no pending EF model changes. 24 demo applications in both branches through the domain (scoring engine, contract numbers, payouts, loans), backdated; five left to the live pre-check with the mock personal numbers. Every lasting status incl. escalated, committee with one vote, Pending and Failed payouts, an active loan paid on time, one with overdue installments, one closed early. Once per database, Development only (`Seed:DemoData:Enabled`). Tests: every status after the pre-check, consistent with the jobs (nothing to escalate or expire), seeded once, nothing outside Development. Decision #51. | `b9609fd` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** … P16 `b9609fd`. **Current step: P17** (README complete, PLAN placeholders → hashes, clean-clone
-  build + full suite + EF check); stop after the P17 commit with the final summary.
-- **Open questions for the user:** none.
+| P17 — README complete, final verification | done; README covers running (Docker, `.env`, user secrets, restore, migrations), the architecture choice, authentication, EF Core instead of Dapper, UoW / outbox / jobs, concurrency and idempotency, rounding, every mock with its personal numbers, accounts, demo data, the manual test script, every ambiguity and decision (#1–#51), libraries and licences, known limitations. Phase 1 table fixed (Step 8 is `67435b9`; a wrong hash had been filled in) and every placeholder replaced. Verified on a clean clone: build 0 warnings, 1,243 tests green (Domain 646, Application 364, Architecture 13, Integration 220), no pending EF model changes. | the commit "docs: complete the README and record the final verification" (it cannot name its own hash) |
