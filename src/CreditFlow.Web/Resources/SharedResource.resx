@@ -41,8 +41,29 @@
   <data name="Dashboard.Audit.Description" xml:space="preserve"><value>Read-only access to applications, loans, reports and the audit log.</value></data>
   <data name="Dashboard.Administration" xml:space="preserve"><value>Administration</value></data>
   <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, branches and reference data.</value></data>
-  <data name="Dashboard.Placeholder.Title" xml:space="preserve"><value>Your work queue is on its way</value></data>
-  <data name="Dashboard.Placeholder.Description" xml:space="preserve"><value>Your queues and shortcuts appear here as the loan process screens are added. Your access is already set up.</value></data>
+  <data name="Dashboard.Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Dashboard.Attention" xml:space="preserve"><value>Needs your attention</value></data>
+  <data name="Dashboard.NothingWaiting" xml:space="preserve"><value>Nothing is waiting for you.</value></data>
+  <data name="Dashboard.OldestWaiting" xml:space="preserve"><value>Oldest waiting {0}</value></data>
+  <data name="Dashboard.Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="Dashboard.Metric.Drafts" xml:space="preserve"><value>Drafts</value></data>
+  <data name="Dashboard.Metric.DocumentsPending" xml:space="preserve"><value>Documents pending</value></data>
+  <data name="Dashboard.Metric.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
+  <data name="Dashboard.Metric.AwaitingDisbursement" xml:space="preserve"><value>Conditions met, awaiting payout</value></data>
+  <data name="Dashboard.Metric.PayoutsPending" xml:space="preserve"><value>Payouts pending</value></data>
+  <data name="Dashboard.Metric.PayoutsFailed" xml:space="preserve"><value>Payouts failed</value></data>
+  <data name="Dashboard.Metric.StuckInPreCheck" xml:space="preserve"><value>Stuck in pre-check</value></data>
+  <data name="Dashboard.Metric.Inbox" xml:space="preserve"><value>My inbox</value></data>
+  <data name="Dashboard.Metric.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Dashboard.Metric.Overridable" xml:space="preserve"><value>Need an override</value></data>
+  <data name="Dashboard.Metric.AwaitingVote" xml:space="preserve"><value>Awaiting my vote</value></data>
+  <data name="Dashboard.Metric.ComplianceReviews" xml:space="preserve"><value>Reviews waiting</value></data>
+  <data name="Dashboard.Metric.RecentOverrides" xml:space="preserve"><value>Overrides</value></data>
+  <data name="Dashboard.Metric.RecentRejections" xml:space="preserve"><value>Rejections</value></data>
+  <data name="Dashboard.Metric.RecentDisbursements" xml:space="preserve"><value>Disbursements</value></data>
+  <data name="Dashboard.Metric.LockedUsers" xml:space="preserve"><value>Locked users</value></data>
+  <data name="Dashboard.Metric.UsersWithoutMfa" xml:space="preserve"><value>Users without MFA</value></data>
+  <data name="Dashboard.Metric.RecentAccessChanges" xml:space="preserve"><value>Role and permission changes</value></data>
 
   <!-- Placeholders -->
 

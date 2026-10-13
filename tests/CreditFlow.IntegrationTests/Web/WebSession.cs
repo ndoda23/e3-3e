@@ -75,7 +75,7 @@ public sealed partial class WebSession(HttpClient client) : IDisposable
     public async Task<HttpResponseMessage> PostWithSessionTokenAsync(string action, IDictionary<string, string> fields)
     {
         var home = await Client.GetAsync("/", Ct);
-        var page = home.StatusCode == HttpStatusCode.Redirect ? home.Headers.Location!.OriginalString : "/"; // Admin lands on /Admin
+        var page = home.StatusCode == HttpStatusCode.Redirect ? home.Headers.Location!.OriginalString : "/"; // a role whose home redirects
         var token = FormToken(await GetPageAsync(page), "/Account/Logout");
         return await Client.PostAsync(action, new FormUrlEncodedContent(fields.Append(KeyValuePair.Create(TokenField, token))), Ct);
     }

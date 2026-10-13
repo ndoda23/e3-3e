@@ -162,6 +162,7 @@ public static class DependencyInjection
         services.AddSingleton<IReportExcelWriter, ExcelReportWriter>();
         services.AddSingleton<IContractDocumentRenderer, PdfContractRenderer>();
         services.AddScoped<IApplicationQueries, ApplicationQueries>();
+        services.AddScoped<CreditFlow.Application.Dashboard.IDashboardQueries, DashboardQueries>();
         services.AddScoped<IClientQueries, ClientQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();
         services.AddScoped<IExposureQueries, ExposureQueries>();

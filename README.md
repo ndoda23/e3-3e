@@ -246,7 +246,7 @@ There is no self-registration. The Admin creates accounts (Admin › Users) and 
 once, valid 72 hours) that the user changes at first sign-in.
 
 - **Admin** — seeded in every environment from configuration: user name `sysadmin` (`Seed:Admin:UserName`), password
-  from the user secret **`Seed:Admin:Password`**. It must change the password at first sign-in, lands on Admin › Users
+  from the user secret **`Seed:Admin:Password`**. It must change the password at first sign-in, lands on the administration dashboard (locked users, users without MFA, recent access changes)
   and sees no business data.
 - **Demo personas** — Development only (`Seed:DevUsers:Enabled`), all with the password from the user secret
   **`Seed:DevUsers:Password`**, no forced change, no MFA. Sign in with the user name or the email.

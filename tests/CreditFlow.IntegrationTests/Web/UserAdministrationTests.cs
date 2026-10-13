@@ -319,6 +319,10 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         Assert.Contains("data-user-role>Operator<", html, StringComparison.Ordinal);
         Assert.Contains(">Vake<", html, StringComparison.Ordinal);
         Assert.Contains("<div class=\"brand-name\">CreditFlow</div>", html, StringComparison.Ordinal);
+        Assert.Contains("data-tile=\"Drafts\"", html, StringComparison.Ordinal);
+        Assert.Contains("href=\"/Applications?status=Draft\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-section=\"attention\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("on its way", html, StringComparison.Ordinal);
         Assert.DoesNotContain("PCB LOS", html, StringComparison.Ordinal);
         Assert.DoesNotContain("Credit Operations", html, StringComparison.Ordinal);
     }

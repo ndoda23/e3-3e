@@ -48,7 +48,7 @@
                 }
             </dd>
             <dt>@T["Field.LastLogin"]</dt>
-            <dd>@(d.LastLoginAt?.ToLocalTime().ToString("g") ?? "—")</dd>
+            <dd>@DisplayFormat.DateTime(d.LastLoginAt)</dd>
         </dl>
     </div>
 </section>

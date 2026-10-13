@@ -21,7 +21,7 @@
     </div>
     <div class="card-body">
         <dl class="dl">
-            <dt>@T["Audit.When"]</dt><dd>@r.OccurredAt.ToLocalTime().ToString("F") <span class="small mono">(@r.OccurredAt.UtcDateTime.ToString("u"))</span></dd>
+            <dt>@T["Audit.When"]</dt><dd>@DisplayFormat.FullDateTime(r.OccurredAt) <span class="small mono">(@r.OccurredAt.UtcDateTime.ToString("u"))</span></dd>
             <dt>@T["Audit.By"]</dt>
             <dd>
                 @(r.UserName ?? T["Audit.System"].Value)

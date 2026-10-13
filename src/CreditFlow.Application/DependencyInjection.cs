@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<CurrentAccessProfile>();
         services.AddScoped<ClientService>();
         services.AddScoped<ApplicationService>();
+        services.AddScoped<Dashboard.DashboardService>();
         services.AddScoped<DecisionService>();
         services.AddScoped<ContractService>();
         services.AddScoped<DisbursementService>();

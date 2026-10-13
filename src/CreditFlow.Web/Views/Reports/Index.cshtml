@@ -63,7 +63,7 @@
                             @for (var c = 0; c < table.Columns.Count; c++)
                             {
                                 var column = table.Columns[c];
-                                <td class="@(column.Kind == ReportColumnKind.Text ? null : "num tnum")">@CsvReportWriter.Format(row[c], column.Kind)</td>
+                                <td class="@(column.Kind == ReportColumnKind.Text ? null : "num tnum")">@(row[c] is decimal amount && column.Kind == ReportColumnKind.Amount ? DisplayFormat.Amount(amount) : CsvReportWriter.Format(row[c], column.Kind))</td>
                             }
                         </tr>
                     }

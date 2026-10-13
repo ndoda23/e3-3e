@@ -199,11 +199,8 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
     }
 
     /// <summary>The access filter as SQL: nothing, one branch, or the whole bank.</summary>
-    private IQueryable<LoanApplication> Visible(ApplicationAccessFilter access)
-    {
-        var applications = db.LoanApplications.AsNoTracking();
-        return access.Branch is { } branch ? applications.Where(a => a.BranchId == branch) : applications;
-    }
+    private IQueryable<LoanApplication> Visible(ApplicationAccessFilter access) =>
+        db.LoanApplications.AsNoTracking().VisibleTo(access);
 
     private IQueryable<Row> Rows(IQueryable<LoanApplication> applications) =>
         from a in applications
@@ -284,4 +281,13 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
 
         public DateTimeOffset? OfferExpiresAt { get; init; }
     }
+}
+
+/// <summary>The SQL form of <see cref="ApplicationAccessFilter"/>: every list, inbox and dashboard count uses it.</summary>
+internal static class ApplicationScope
+{
+    public static IQueryable<LoanApplication> VisibleTo(this IQueryable<LoanApplication> applications, ApplicationAccessFilter access) =>
+        access.SeesNothing ? applications.Where(_ => false)
+        : access.Branch is { } branch ? applications.Where(a => a.BranchId == branch)
+        : applications;
 }

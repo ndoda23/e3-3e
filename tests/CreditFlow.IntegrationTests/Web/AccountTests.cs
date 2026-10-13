@@ -140,9 +140,8 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
         });
         Assert.Equal(HttpStatusCode.Redirect, changed.StatusCode);
 
-        // Administrators land on Admin › Users ("/Admin": Users is the area's default controller).
-        var home = await browser.GetAsync("/");
-        Assert.Equal("/Admin", home.Headers.Location!.OriginalString);
+        // Administrators land on their dashboard (locked users, users without MFA, access changes).
+        Assert.Contains("data-dashboard=\"Administration\"", await browser.GetPageAsync("/"), StringComparison.Ordinal);
         var users = await browser.GetPageAsync("/Admin");
         Assert.Contains("data-nav=\"Users\"", users, StringComparison.Ordinal);
         Assert.Contains("aria-current=\"page\"", users, StringComparison.Ordinal);

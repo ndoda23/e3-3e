@@ -29,7 +29,7 @@ public sealed partial class DefinitionOfDoneTests(SqlServerContainer sql) : WebT
         using var admin = NewSession();
         await admin.LoginAsync(InfrastructureHost.AdminUserName, InfrastructureHost.AdminPassword);
         await ChangePasswordAsync(admin, InfrastructureHost.AdminPassword, AdminNewPassword);
-        Assert.Equal("/Admin", (await admin.GetAsync("/")).Headers.Location!.OriginalString);
+        Assert.Contains("data-tile=\"LockedUsers\"", await admin.GetPageAsync("/"), StringComparison.Ordinal);
 
         // 2. Create the Senior Underwriter through the form; the temporary password is shown once.
         var seniorRole = await QueryAsync(db =>
