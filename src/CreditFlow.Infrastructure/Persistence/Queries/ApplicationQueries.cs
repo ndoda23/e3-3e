@@ -1,4 +1,5 @@
 using CreditFlow.Application.Applications;
+using CreditFlow.Application.Dashboard;
 using CreditFlow.Application.Common;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
@@ -6,6 +7,7 @@ using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CreditFlow.Infrastructure.Persistence.Queries;
 
@@ -13,7 +15,8 @@ namespace CreditFlow.Infrastructure.Persistence.Queries;
 /// Application lists, inboxes and details. The access filter is applied in SQL (<see cref="Visible"/>) before paging,
 /// so the database returns only rows the viewer may see and the counts are right.
 /// </summary>
-internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider clock) : IApplicationQueries
+internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider clock, IOptions<DashboardOptions> dashboard)
+    : IApplicationQueries
 {
     public async Task<PagedResult<ApplicationListItem>> SearchAsync(
         ApplicationSearch search, ApplicationAccessFilter access, CancellationToken cancellationToken)
@@ -23,7 +26,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider cl
             return new PagedResult<ApplicationListItem>([], 0, search.Page, search.PageSize);
         }
 
-        var rows = Rows(search.Queue is { } queue ? Visible(access).InQueue(queue, clock.GetUtcNow(), db) : Visible(access));
+        var rows = Rows(search.Queue is { } queue ? Visible(access).InQueue(queue, clock.GetUtcNow(), db, dashboard.Value.LargeDisbursementGel) : Visible(access));
         if (search.Status is { } status)
         {
             rows = rows.Where(r => r.Status == status);
@@ -96,8 +99,8 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider cl
         };
         candidates = filter switch
         {
-            InboxFilter.Escalated => candidates.InQueue(ApplicationQueueKind.Escalated, clock.GetUtcNow(), db),
-            InboxFilter.NeedsOverride => candidates.InQueue(ApplicationQueueKind.NeedsOverride, clock.GetUtcNow(), db),
+            InboxFilter.Escalated => candidates.InQueue(ApplicationQueueKind.Escalated, clock.GetUtcNow(), db, dashboard.Value.LargeDisbursementGel),
+            InboxFilter.NeedsOverride => candidates.InQueue(ApplicationQueueKind.NeedsOverride, clock.GetUtcNow(), db, dashboard.Value.LargeDisbursementGel),
             _ => candidates,
         };
 
@@ -302,7 +305,8 @@ internal static class ApplicationScope
     /// The one definition of each <see cref="ApplicationQueueKind"/>: the list filter and the dashboard count both use it.
     /// </summary>
     public static IQueryable<LoanApplication> InQueue(
-        this IQueryable<LoanApplication> applications, ApplicationQueueKind queue, DateTimeOffset now, CreditFlowDbContext db)
+        this IQueryable<LoanApplication> applications, ApplicationQueueKind queue, DateTimeOffset now, CreditFlowDbContext db,
+        decimal largeDisbursementGel)
     {
         var stuckBefore = now - ApplicationQueues.StuckInPreCheckAfter;
         var since = ApplicationQueues.RecentSince(now);
@@ -325,6 +329,16 @@ internal static class ApplicationScope
                 a.Decisions.Any(d => d.OverrideReason != null && d.DecidedAt >= since)),
             ApplicationQueueKind.RecentlyDisbursed => applications.Where(a =>
                 db.Disbursements.Any(d => d.ApplicationId == a.Id && d.Status == DisbursementStatus.Succeeded && d.CompletedAt >= since)),
+            ApplicationQueueKind.RecentComplianceClearances => applications.Where(a =>
+                a.Decisions.Any(d => d.Kind == DecisionKind.ComplianceClear && d.DecidedAt >= since)),
+            ApplicationQueueKind.LargeDisbursements => applications.Where(a =>
+                a.AmountGel >= largeDisbursementGel
+                && db.Disbursements.Any(d => d.ApplicationId == a.Id && d.Status == DisbursementStatus.Succeeded && d.CompletedAt >= since)),
+            ApplicationQueueKind.PayoutIncidents => applications.Where(a => db.Disbursements.Any(d =>
+                d.ApplicationId == a.Id
+                && (d.Status == DisbursementStatus.Failed || d.Attempts > 1 || d.LastError != null)
+                && (d.CompletedAt ?? d.RequestedAt) >= since)),
+            ApplicationQueueKind.RecentlyEscalated => applications.Where(a => a.EscalatedAt >= since),
             _ => applications.Where(_ => false),
         };
     }

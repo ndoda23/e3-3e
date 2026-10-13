@@ -275,6 +275,12 @@ once, valid 72 hours) that the user changes at first sign-in.
   one with overdue installments, one Closed after early repayment; Rejected (KYC, scoring rule, underwriter);
   Cancelled; Expired. Submitted, Scoring and Disbursed last seconds (the background pipeline moves them on) and are
   visible in every history.
+- **Dashboards.** Each role's home page has KPI tiles; every tile opens a list (a status, a named queue, an inbox
+  filter, a user status or an audit category) whose total is the tile's number. Work lists (Operator, inboxes) are
+  oldest first. The Auditor and the Administrator get one feed, newest first, of the last 30 days: for the Auditor
+  overrides, rejections, compliance clearances, large payouts (loan amount ≥ `Dashboard:LargeDisbursementGel`,
+  100,000 GEL by default), payout incidents, escalations and access changes, each with reference, borrower, amount,
+  actor, time and reason; for the Administrator lockouts and access changes.
 
 ## Manual test script
 

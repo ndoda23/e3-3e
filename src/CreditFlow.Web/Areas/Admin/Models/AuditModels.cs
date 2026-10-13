@@ -19,6 +19,9 @@ public sealed class AuditListQuery
 
     public string? Entity { get; set; }
 
+    /// <summary>A named group of actions (e.g. access changes).</summary>
+    public AuditCategory? Category { get; set; }
+
     public DateOnly? From { get; set; }
 
     public DateOnly? To { get; set; }
@@ -32,6 +35,7 @@ public sealed class AuditListQuery
     {
         Search = Search,
         Action = Event,
+        Category = Category,
         EntityType = Entity,
         From = From is { } from ? StartOfBankDay(from) : null,
         To = To is { } to ? StartOfBankDay(to.AddDays(1)).AddTicks(-1) : null,
@@ -53,6 +57,7 @@ public sealed class AuditListQuery
         Add("search", Search);
         Add("event", Event);
         Add("entity", Entity);
+        Add("category", Category?.ToString());
         Add("from", From?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         Add("to", To?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         Add("user", User?.ToString());

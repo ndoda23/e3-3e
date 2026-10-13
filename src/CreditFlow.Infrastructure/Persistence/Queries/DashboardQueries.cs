@@ -1,26 +1,33 @@
 using CreditFlow.Application.Applications;
+using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Dashboard;
 using CreditFlow.Application.Users;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Auditing;
 using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Roles;
+using CreditFlow.Infrastructure.Auditing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CreditFlow.Infrastructure.Persistence.Queries;
 
 /// <summary>
-/// Dashboard counts and short lists. Every count is the total of the list its tile links to: one status, one
+/// Dashboard counts and lists. Every count is the total of the list its tile links to: one status, one
 /// <see cref="ApplicationQueueKind"/> (<see cref="ApplicationScope.InQueue"/>), one user status
-/// (<see cref="UserStatusFilters.WithStatus"/>) or one audit filter — always within the viewer's access filter.
+/// (<see cref="UserStatusFilters.WithStatus"/>) or one audit category (<see cref="AuditScope.InCategory"/>) — always
+/// within the viewer's access filter. A list is one ordering over all its kinds, so no kind can crowd out another:
+/// a work list oldest first, an event feed newest first.
 /// </summary>
-internal sealed class DashboardQueries(CreditFlowDbContext db) : IDashboardQueries
+internal sealed class DashboardQueries(CreditFlowDbContext db, IOptions<DashboardOptions> options) : IDashboardQueries
 {
     /// <summary>Statuses where the operator has the next step.</summary>
     private static readonly ApplicationStatus[] OperatorActionable =
     [
         ApplicationStatus.DocumentsPending, ApplicationStatus.Approved, ApplicationStatus.ConditionallyApproved, ApplicationStatus.ConditionsMet,
     ];
+
+    private decimal LargeDisbursementGel => options.Value.LargeDisbursementGel;
 
     public async Task<DashboardData> OperatorAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken)
     {
@@ -41,16 +48,16 @@ internal sealed class DashboardQueries(CreditFlowDbContext db) : IDashboardQueri
             new(DashboardMetric.StuckInPreCheck, await CountAsync(access, ApplicationQueueKind.StuckInPreCheck, now, cancellationToken), Alert: true),
         ];
 
-        // Failed payouts first, then stuck pre-checks, then whatever waits longest for the operator.
-        var failed = visible.InQueue(ApplicationQueueKind.PayoutFailed, now, db).Select(a => a.Id);
-        var stuck = visible.InQueue(ApplicationQueueKind.StuckInPreCheck, now, db).Select(a => a.Id);
+        // One work list, oldest waiting first; failed payouts and stuck pre-checks are marked, not moved ahead.
+        var failed = visible.InQueue(ApplicationQueueKind.PayoutFailed, now, db, LargeDisbursementGel).Select(a => a.Id);
+        var stuck = visible.InQueue(ApplicationQueueKind.StuckInPreCheck, now, db, LargeDisbursementGel).Select(a => a.Id);
         var rows = await (
                 from a in visible
                 join c in db.Clients on a.BorrowerId equals c.Id
                 let payoutFailed = failed.Contains(a.Id)
                 let stuckInPreCheck = stuck.Contains(a.Id)
                 where payoutFailed || stuckInPreCheck || OperatorActionable.Contains(a.Status)
-                orderby payoutFailed descending, stuckInPreCheck descending, a.StatusChangedAt, a.Id
+                orderby a.StatusChangedAt, a.Id
                 select new { a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.StatusChangedAt, a.AmountGel, payoutFailed, stuckInPreCheck })
             .Take(take)
             .ToListAsync(cancellationToken);
@@ -65,79 +72,142 @@ internal sealed class DashboardQueries(CreditFlowDbContext db) : IDashboardQueri
 
     public async Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken)
     {
+        var since = ApplicationQueues.RecentSince(now);
+        var accessChanges = AccessChanges(since);
         DashboardTile[] tiles =
         [
             new(DashboardMetric.RecentOverrides, await CountAsync(access, ApplicationQueueKind.RecentOverrides, now, cancellationToken)),
             new(DashboardMetric.RecentRejections, await CountAsync(access, ApplicationQueueKind.RecentlyRejected, now, cancellationToken)),
-            new(DashboardMetric.RecentDisbursements, await CountAsync(access, ApplicationQueueKind.RecentlyDisbursed, now, cancellationToken)),
+            new(DashboardMetric.ComplianceClearances, await CountAsync(access, ApplicationQueueKind.RecentComplianceClearances, now, cancellationToken)),
+            new(DashboardMetric.LargeDisbursements, await CountAsync(access, ApplicationQueueKind.LargeDisbursements, now, cancellationToken)),
+            new(DashboardMetric.PayoutIncidents, await CountAsync(access, ApplicationQueueKind.PayoutIncidents, now, cancellationToken), Alert: true),
+            new(DashboardMetric.RecentEscalations, await CountAsync(access, ApplicationQueueKind.RecentlyEscalated, now, cancellationToken)),
+            new(DashboardMetric.RecentAccessChanges, await accessChanges.CountAsync(cancellationToken)),
         ];
 
-        var since = ApplicationQueues.RecentSince(now);
+        // Each kind newest first, at most `take` of it; then all kinds merged by time. The newest `take` events overall
+        // are always among these, whatever the mix.
         var visible = Visible(access);
-        var latestOverrides = await (
-                from a in visible
-                from d in a.Decisions
-                where d.OverrideReason != null && d.DecidedAt >= since
-                join c in db.Clients on a.BorrowerId equals c.Id
-                orderby d.DecidedAt descending, d.Id
-                select new { a.Id, a.Number, c.FirstName, c.LastName, a.Status, d.OverrideReason, d.DecidedAt, a.AmountGel })
-            .Take(take / 2)
-            .ToListAsync(cancellationToken);
-        var largest = await (
-                from d in db.Disbursements
-                join a in visible on d.ApplicationId equals a.Id
-                join c in db.Clients on a.BorrowerId equals c.Id
-                where d.Status == DisbursementStatus.Succeeded && d.CompletedAt >= since
-                orderby a.AmountGel descending, d.Id
-                select new { a.Id, a.Number, c.FirstName, c.LastName, a.Status, d.CompletedAt, a.AmountGel })
-            .Take(take - latestOverrides.Count)
-            .ToListAsync(cancellationToken);
-
-        AttentionItem[] attention =
+        var large = LargeDisbursementGel;
+        List<FeedRow> events =
         [
-            .. latestOverrides.Select(o => new AttentionItem(
-                AttentionKind.Application, o.Id.Value.ToString(), $"{LoanApplication.FormatReference(o.Number)} · {o.FirstName} {o.LastName}",
-                o.Status, o.OverrideReason, o.DecidedAt, o.AmountGel, DashboardMetric.RecentOverrides)),
-            .. largest.Select(p => new AttentionItem(
-                AttentionKind.Application, p.Id.Value.ToString(), $"{LoanApplication.FormatReference(p.Number)} · {p.FirstName} {p.LastName}",
-                p.Status, null, p.CompletedAt, p.AmountGel, DashboardMetric.RecentDisbursements)),
+            .. await (
+                    from a in visible
+                    from d in a.Decisions
+                    where d.OverrideReason != null && d.DecidedAt >= since
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    orderby d.DecidedAt descending, d.Id
+                    select new FeedRow(DashboardMetric.RecentOverrides, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        d.DecidedAt, d.DecidedBy.Value, d.OverrideReason))
+                .Take(take).ToListAsync(cancellationToken),
+            .. await (
+                    from a in visible
+                    from h in a.History
+                    where h.To == ApplicationStatus.Rejected && h.At >= since
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    orderby h.At descending, h.Id
+                    select new FeedRow(DashboardMetric.RecentRejections, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        h.At, h.By == null ? null : h.By.Value.Value, h.Reason))
+                .Take(take).ToListAsync(cancellationToken),
+            .. await (
+                    from a in visible
+                    from d in a.Decisions
+                    where d.Kind == DecisionKind.ComplianceClear && d.DecidedAt >= since
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    orderby d.DecidedAt descending, d.Id
+                    select new FeedRow(DashboardMetric.ComplianceClearances, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        d.DecidedAt, d.DecidedBy.Value, d.Reason))
+                .Take(take).ToListAsync(cancellationToken),
+            .. await (
+                    from d in db.Disbursements
+                    join a in visible on d.ApplicationId equals a.Id
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    where d.Status == DisbursementStatus.Succeeded && d.CompletedAt >= since && a.AmountGel >= large
+                    orderby d.CompletedAt descending, d.Id
+                    select new FeedRow(DashboardMetric.LargeDisbursements, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        d.CompletedAt!.Value, d.RequestedBy.Value, null))
+                .Take(take).ToListAsync(cancellationToken),
+            .. await (
+                    from d in db.Disbursements
+                    join a in visible on d.ApplicationId equals a.Id
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    where (d.Status == DisbursementStatus.Failed || d.Attempts > 1 || d.LastError != null)
+                          && (d.CompletedAt ?? d.RequestedAt) >= since
+                    orderby d.CompletedAt ?? d.RequestedAt descending, d.Id
+                    select new FeedRow(DashboardMetric.PayoutIncidents, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        d.CompletedAt ?? d.RequestedAt, d.RequestedBy.Value,
+                        d.Status + ", attempt " + d.Attempts + (d.LastError == null ? string.Empty : ": " + d.LastError)))
+                .Take(take).ToListAsync(cancellationToken),
+            .. await (
+                    from a in visible
+                    where a.EscalatedAt >= since
+                    join c in db.Clients on a.BorrowerId equals c.Id
+                    orderby a.EscalatedAt descending, a.Id
+                    select new FeedRow(DashboardMetric.RecentEscalations, a.Id, a.Number, c.FirstName, c.LastName, a.Status, a.AmountGel,
+                        a.EscalatedAt!.Value, null, null))
+                .Take(take).ToListAsync(cancellationToken),
         ];
-        return new DashboardData(DashboardKind.Audit, tiles, attention);
+
+        var actorIds = events.Select(e => e.By).OfType<Guid>().Distinct().ToList();
+        var actors = await db.UserDirectory.AsNoTracking().Where(u => actorIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.FullName, cancellationToken);
+        var changes = await AuditFeedAsync(accessChanges, take, cancellationToken);
+
+        var feed = events
+            .Select(e => new AttentionItem(
+                AttentionKind.Application, e.ApplicationId.Value.ToString(),
+                $"{LoanApplication.FormatReference(e.Number)} · {e.FirstName} {e.LastName}", e.Status, e.Reason, e.At, e.AmountGel, e.Kind,
+                e.By is { } by ? actors.GetValueOrDefault(by) : null))
+            .Concat(changes)
+            .OrderByDescending(i => i.At)
+            .ThenBy(i => i.Id, StringComparer.Ordinal)
+            .Take(take)
+            .ToList();
+        return new DashboardData(DashboardKind.Audit, tiles, feed);
     }
 
     public async Task<DashboardData> AdministrationAsync(DateTimeOffset now, int take, CancellationToken cancellationToken)
     {
+        var since = ApplicationQueues.RecentSince(now);
         var users = db.UserDirectory.AsNoTracking();
-        var locked = users.WithStatus(UserStatusFilter.LockedOut, now);
-        var since = ApplicationQueues.RecentSince(now); // the audit log's "from" filter: midnight in Tbilisi
-        var changes = db.AuditLogs.AsNoTracking()
-            .Where(l => l.Action == AuditActions.RolePermissionsChanged && l.OccurredAt >= since);
-
+        var accessChanges = AccessChanges(since);
         DashboardTile[] tiles =
         [
-            new(DashboardMetric.LockedUsers, await locked.CountAsync(cancellationToken), Alert: true),
+            new(DashboardMetric.LockedUsers, await users.WithStatus(UserStatusFilter.LockedOut, now).CountAsync(cancellationToken), Alert: true),
             new(DashboardMetric.UsersWithoutMfa, await users.WithStatus(UserStatusFilter.WithoutMfa, now).CountAsync(cancellationToken)),
-            new(DashboardMetric.RecentAccessChanges, await changes.CountAsync(cancellationToken)),
+            new(DashboardMetric.RecentAccessChanges, await accessChanges.CountAsync(cancellationToken)),
         ];
 
-        var lockedUsers = await locked.OrderBy(u => u.FullName).ThenBy(u => u.Id).Take(take / 2)
-            .Select(u => new { u.Id, u.FullName, u.UserName, u.LockoutEnd }).ToListAsync(cancellationToken);
-        var latestChanges = await changes.OrderByDescending(l => l.OccurredAt).ThenByDescending(l => l.Id).Take(take - lockedUsers.Count)
-            .Select(l => new { l.Id, l.Action, l.UserName, l.EntityId, l.OccurredAt }).ToListAsync(cancellationToken);
-        AttentionItem[] attention =
-        [
-            .. lockedUsers.Select(u => new AttentionItem(
-                AttentionKind.User, u.Id.ToString(), u.FullName, null, u.UserName, u.LockoutEnd, null, DashboardMetric.LockedUsers)),
-            .. latestChanges.Select(l => new AttentionItem(
+        // One feed, newest first: lockouts and access changes together.
+        var lockouts = db.AuditLogs.AsNoTracking().Where(l => l.Action == AuditActions.LockedOut && l.OccurredAt >= since);
+        var feed = await AuditFeedAsync(lockouts.Concat(accessChanges), take, cancellationToken);
+        return new DashboardData(DashboardKind.Administration, tiles, feed);
+    }
+
+    /// <summary>Access changes of the recent window — the audit log's <c>AccessChanges</c> category from its first day.</summary>
+    private IQueryable<AuditLog> AccessChanges(DateTimeOffset since) =>
+        db.AuditLogs.AsNoTracking().InCategory(AuditCategory.AccessChanges).Where(l => l.OccurredAt >= since);
+
+    private static async Task<List<AttentionItem>> AuditFeedAsync(IQueryable<AuditLog> logs, int take, CancellationToken cancellationToken)
+    {
+        var rows = await logs.OrderByDescending(l => l.OccurredAt).ThenByDescending(l => l.Id).Take(take)
+            .Select(l => new { l.Id, l.Action, l.UserName, l.EntityType, l.EntityId, l.OccurredAt })
+            .ToListAsync(cancellationToken);
+        return rows.Select(l => new AttentionItem(
                 AttentionKind.AuditRecord, l.Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture), l.Action, null,
-                $"{l.UserName} · {l.EntityId}", l.OccurredAt, null, DashboardMetric.RecentAccessChanges)),
-        ];
-        return new DashboardData(DashboardKind.Administration, tiles, attention);
+                l.EntityType is null ? null : $"{l.EntityType} {l.EntityId}", l.OccurredAt, null,
+                l.Action == AuditActions.LockedOut ? DashboardMetric.LockedUsers : DashboardMetric.RecentAccessChanges, l.UserName))
+            .ToList();
     }
 
     private Task<int> CountAsync(ApplicationAccessFilter access, ApplicationQueueKind queue, DateTimeOffset now, CancellationToken cancellationToken) =>
-        Visible(access).InQueue(queue, now, db).CountAsync(cancellationToken);
+        Visible(access).InQueue(queue, now, db, LargeDisbursementGel).CountAsync(cancellationToken);
 
     private IQueryable<LoanApplication> Visible(ApplicationAccessFilter access) =>
         db.LoanApplications.AsNoTracking().VisibleTo(access);
+
+    /// <summary>One exception event of an application.</summary>
+    private sealed record FeedRow(
+        DashboardMetric Kind, LoanApplicationId ApplicationId, long Number, string FirstName, string LastName, ApplicationStatus Status,
+        decimal? AmountGel, DateTimeOffset At, Guid? By, string? Reason);
 }

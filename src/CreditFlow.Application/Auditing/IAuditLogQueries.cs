@@ -4,8 +4,18 @@ using CreditFlow.Domain.Users;
 
 namespace CreditFlow.Application.Auditing;
 
+/// <summary>Named groups of audited actions (what a dashboard tile counts).</summary>
+public enum AuditCategory
+{
+    /// <summary>Changes to who may do what: role permissions, MFA requirements, user accounts (created, changed,
+    /// activated, deactivated, unlocked, password reset, forced sign-out).</summary>
+    AccessChanges = 1,
+}
+
 public sealed record AuditLogSearchQuery
 {
+    public AuditCategory? Category { get; init; }
+
     public DateTimeOffset? From { get; init; }
 
     public DateTimeOffset? To { get; init; }

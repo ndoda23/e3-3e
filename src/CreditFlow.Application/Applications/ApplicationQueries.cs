@@ -51,6 +51,18 @@ public enum ApplicationQueueKind
 
     /// <summary>Paid out within the recent window.</summary>
     RecentlyDisbursed = 9,
+
+    /// <summary>A sanctions / PEP match cleared by Compliance within the recent window.</summary>
+    RecentComplianceClearances = 10,
+
+    /// <summary>Paid out within the recent window, loan amount at least the large-payout threshold (GEL equivalent).</summary>
+    LargeDisbursements = 11,
+
+    /// <summary>A payout failed, timed out or was retried, within the recent window.</summary>
+    PayoutIncidents = 12,
+
+    /// <summary>Escalated to a Senior Underwriter within the recent window.</summary>
+    RecentlyEscalated = 13,
 }
 
 /// <summary>A narrower view of the Underwriting inbox (what the Senior Underwriter's dashboard tiles count).</summary>

@@ -1,10 +1,10 @@
 using System.Globalization;
 using CreditFlow.Application.Applications;
+using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Dashboard;
 using CreditFlow.Application.Users;
 using CreditFlow.Domain.Applications;
-using CreditFlow.Domain.Auditing;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CreditFlow.Web.Models;
@@ -36,13 +36,16 @@ public sealed record DashboardViewModel(UserAccessProfile Profile, DashboardData
             DashboardMetric.ComplianceReviews => url.Action("Index", "Inbox", new { area = "", inbox = Inbox.Compliance }),
             DashboardMetric.RecentOverrides => Queue(url, ApplicationQueueKind.RecentOverrides),
             DashboardMetric.RecentRejections => Queue(url, ApplicationQueueKind.RecentlyRejected),
-            DashboardMetric.RecentDisbursements => Queue(url, ApplicationQueueKind.RecentlyDisbursed),
+            DashboardMetric.ComplianceClearances => Queue(url, ApplicationQueueKind.RecentComplianceClearances),
+            DashboardMetric.LargeDisbursements => Queue(url, ApplicationQueueKind.LargeDisbursements),
+            DashboardMetric.PayoutIncidents => Queue(url, ApplicationQueueKind.PayoutIncidents),
+            DashboardMetric.RecentEscalations => Queue(url, ApplicationQueueKind.RecentlyEscalated),
             DashboardMetric.LockedUsers => url.Action("Index", "Users", new { area = "Admin", status = UserStatusFilter.LockedOut }),
             DashboardMetric.UsersWithoutMfa => url.Action("Index", "Users", new { area = "Admin", status = UserStatusFilter.WithoutMfa }),
             DashboardMetric.RecentAccessChanges => url.Action("Index", "AuditLog", new
             {
                 area = "Admin",
-                @event = AuditActions.RolePermissionsChanged,
+                category = AuditCategory.AccessChanges,
                 from = ApplicationQueues.RecentFrom(now).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             }),
             _ => null,

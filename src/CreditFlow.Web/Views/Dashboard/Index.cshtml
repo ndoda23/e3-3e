@@ -29,7 +29,9 @@
                 {
                     <div class="kpi-foot" data-oldest>@T["Dashboard.OldestWaiting", DashboardViewModel.Age(oldest, now)]</div>
                 }
-                else if (tile.Metric is DashboardMetric.RecentOverrides or DashboardMetric.RecentRejections or DashboardMetric.RecentDisbursements or DashboardMetric.RecentAccessChanges)
+                else if (tile.Metric is DashboardMetric.RecentOverrides or DashboardMetric.RecentRejections or DashboardMetric.ComplianceClearances
+                         or DashboardMetric.LargeDisbursements or DashboardMetric.PayoutIncidents or DashboardMetric.RecentEscalations
+                         or DashboardMetric.RecentAccessChanges)
                 {
                     <div class="kpi-foot">@T["Dashboard.Last30Days"]</div>
                 }
@@ -40,7 +42,7 @@
 
 <section class="card" aria-labelledby="attention-title" data-section="attention">
     <div class="card-head">
-        <h2 class="card-title" id="attention-title">@T["Dashboard.Attention"]</h2>
+        <h2 class="card-title" id="attention-title">@T[data.Kind is CreditFlow.Domain.Roles.DashboardKind.Audit or CreditFlow.Domain.Roles.DashboardKind.Administration ? "Dashboard.Feed" : "Dashboard.Attention"]</h2>
     </div>
     @if (data.Attention.Count == 0)
     {
@@ -64,7 +66,7 @@
                         }
                         @if (item.Note is not null)
                         {
-                            <span class="muted">@item.Note</span>
+                            <span class="muted" data-note>@item.Note</span>
                         }
                     </span>
                     <span class="attention-side">
@@ -75,6 +77,10 @@
                         @if (item.At is { } at)
                         {
                             <span class="small muted" title="@DisplayFormat.DateTime(at)">@DisplayFormat.DateTime(at)</span>
+                        }
+                        @if (data.Kind is CreditFlow.Domain.Roles.DashboardKind.Audit or CreditFlow.Domain.Roles.DashboardKind.Administration)
+                        {
+                            <span class="small muted" data-actor>@(item.Actor ?? T["Dashboard.System"].Value)</span>
                         }
                     </span>
                 </li>

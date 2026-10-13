@@ -22,7 +22,10 @@ public enum DashboardMetric
     ComplianceReviews,
     RecentOverrides,
     RecentRejections,
-    RecentDisbursements,
+    ComplianceClearances,
+    LargeDisbursements,
+    PayoutIncidents,
+    RecentEscalations,
     LockedUsers,
     UsersWithoutMfa,
     RecentAccessChanges,
@@ -40,7 +43,16 @@ public enum AttentionKind
     AuditRecord,
 }
 
-/// <summary>One line of the "needs your attention" list.</summary>
+/// <summary>Settings of the dashboards (configuration section <c>Dashboard</c>).</summary>
+public sealed class DashboardOptions
+{
+    public const string SectionName = "Dashboard";
+
+    /// <summary>A payout counts as large for the Auditor from this loan amount (GEL equivalent at approval).</summary>
+    public decimal LargeDisbursementGel { get; set; } = 100_000m;
+}
+
+/// <summary>One line of the "needs your attention" list or of a chronological feed.</summary>
 /// <param name="Kind">What the line links to.</param>
 /// <param name="Id">The application, user or audit record id, as used in its link.</param>
 /// <param name="Title">Reference and borrower, user name, or the audited action.</param>
@@ -48,14 +60,15 @@ public enum AttentionKind
 /// <param name="Note">Why it is listed (override reason, payout error, who changed what).</param>
 /// <param name="At">Since when it waits, or when it happened.</param>
 /// <param name="AmountGel">The amount in GEL, when relevant.</param>
-/// <param name="Reason">The tile this line explains (e.g. a failed payout), when it is listed for that reason.</param>
+/// <param name="Reason">The tile this line belongs to (its kind: override, rejection, failed payout …).</param>
+/// <param name="Actor">Who did it; <c>null</c> for the system (a scoring rule, a job).</param>
 public sealed record AttentionItem(
     AttentionKind Kind, string Id, string Title, ApplicationStatus? Status, string? Note, DateTimeOffset? At, decimal? AmountGel,
-    DashboardMetric? Reason = null);
+    DashboardMetric? Reason = null, string? Actor = null);
 
 /// <param name="Kind">The role's dashboard.</param>
 /// <param name="Tiles">The KPI row.</param>
-/// <param name="Attention">The short list, most urgent first.</param>
+/// <param name="Attention">The short list: a work list oldest first, or an event feed newest first.</param>
 /// <param name="OldestWaitingSince">For decision inboxes: since when the oldest item waits.</param>
 public sealed record DashboardData(
     DashboardKind Kind, IReadOnlyList<DashboardTile> Tiles, IReadOnlyList<AttentionItem> Attention, DateTimeOffset? OldestWaitingSince = null);
@@ -65,8 +78,14 @@ public interface IDashboardQueries
 {
     Task<DashboardData> OperatorAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Exception events of the recent window, newest first: overrides, rejections, compliance clearances, large
+    /// payouts, payout incidents, escalations and access changes. Each kind is read newest first up to
+    /// <paramref name="take"/> and the kinds are merged, so no kind can crowd out a newer event of another.
+    /// </summary>
     Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
+    /// <summary>Locked accounts, accounts without MFA, access changes; the feed is lockouts and access changes, newest first.</summary>
     Task<DashboardData> AdministrationAsync(DateTimeOffset now, int take, CancellationToken cancellationToken);
 }
 
@@ -78,6 +97,9 @@ public sealed class DashboardService(
     CurrentAccessProfile access, IDashboardQueries queries, IApplicationQueries applications, TimeProvider clock)
 {
     public const int AttentionSize = 6;
+
+    /// <summary>The length of the Auditor's and Administrator's event feeds.</summary>
+    public const int FeedSize = 15;
 
     /// <summary>The dashboard, or <c>null</c> when nobody (active) is signed in.</summary>
     public async Task<DashboardData?> GetAsync(CancellationToken cancellationToken)
@@ -98,9 +120,9 @@ public sealed class DashboardService(
                 DashboardKind.Committee, Inbox.Committee, DashboardMetric.AwaitingVote, profile, filter, Permissions.Committee.Vote, [], cancellationToken),
             DashboardKind.Compliance => await InboxDashboardAsync(
                 DashboardKind.Compliance, Inbox.Compliance, DashboardMetric.ComplianceReviews, profile, filter, Permissions.Compliance.Review, [], cancellationToken),
-            DashboardKind.Audit => await queries.AuditAsync(filter, now, AttentionSize, cancellationToken),
+            DashboardKind.Audit => await queries.AuditAsync(filter, now, FeedSize, cancellationToken),
             DashboardKind.Administration when profile.HasPermission(Permissions.Admin.UsersView) =>
-                await queries.AdministrationAsync(now, AttentionSize, cancellationToken),
+                await queries.AdministrationAsync(now, FeedSize, cancellationToken),
             _ => new DashboardData(profile.Dashboard, [], []),
         };
     }

@@ -39,6 +39,11 @@ internal sealed class AuditLogQueries(CreditFlowDbContext db) : IAuditLogQueries
             logs = logs.Where(l => l.Action == action);
         }
 
+        if (query.Category is { } category)
+        {
+            logs = logs.InCategory(category);
+        }
+
         if (query.EntityType is { } entityType)
         {
             logs = logs.Where(l => l.EntityType == entityType);
@@ -95,4 +100,24 @@ internal sealed class AuditLogQueries(CreditFlowDbContext db) : IAuditLogQueries
             .Distinct()
             .OrderBy(t => t)
             .ToListAsync(cancellationToken);
+}
+
+/// <summary>The one definition of each <see cref="AuditCategory"/>: the audit log filter and the dashboard tiles use it.</summary>
+internal static class AuditScope
+{
+    private const string UserEntityType = "User";
+
+    private static readonly string[] AccessActions =
+    [
+        AuditActions.RolePermissionsChanged, AuditActions.MfaRequirementChanged, AuditActions.UserActivated,
+        AuditActions.UserDeactivated, AuditActions.UserUnlocked, AuditActions.ForcedSignOut, AuditActions.PasswordReset,
+    ];
+
+    public static IQueryable<AuditLog> InCategory(this IQueryable<AuditLog> logs, AuditCategory category) => category switch
+    {
+        AuditCategory.AccessChanges => logs.Where(l =>
+            AccessActions.Contains(l.Action)
+            || (l.EntityType == UserEntityType && (l.Action == AuditActions.Created || l.Action == AuditActions.Updated))),
+        _ => logs.Where(_ => false),
+    };
 }

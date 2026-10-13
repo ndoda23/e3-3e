@@ -7,6 +7,7 @@ using CreditFlow.Infrastructure.Identity;
 using CreditFlow.Infrastructure.Outbox;
 using CreditFlow.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CreditFlow.IntegrationTests.Web;
@@ -25,6 +26,7 @@ public sealed partial class DashboardLinkTests(SqlServerContainer sql) : WebTest
         ["Seed:DevUsers:Password"] = InfrastructureHost.DevPassword,
         ["Seed:DemoData:Enabled"] = "true",
         ["Mocks:BureauTimeout"] = "00:00:00.200",
+        ["Dashboard:LargeDisbursementGel"] = "20000", // so that the demo payouts include large ones
     };
 
     public static TheoryData<string, string?, DashboardMetric> Tiles => new()
@@ -44,7 +46,11 @@ public sealed partial class DashboardLinkTests(SqlServerContainer sql) : WebTest
         { RoleCodes.Compliance, null, DashboardMetric.ComplianceReviews },
         { RoleCodes.Auditor, null, DashboardMetric.RecentOverrides },
         { RoleCodes.Auditor, null, DashboardMetric.RecentRejections },
-        { RoleCodes.Auditor, null, DashboardMetric.RecentDisbursements },
+        { RoleCodes.Auditor, null, DashboardMetric.ComplianceClearances },
+        { RoleCodes.Auditor, null, DashboardMetric.LargeDisbursements },
+        { RoleCodes.Auditor, null, DashboardMetric.PayoutIncidents },
+        { RoleCodes.Auditor, null, DashboardMetric.RecentEscalations },
+        { RoleCodes.Auditor, null, DashboardMetric.RecentAccessChanges },
         { RoleCodes.Admin, null, DashboardMetric.LockedUsers },
         { RoleCodes.Admin, null, DashboardMetric.UsersWithoutMfa },
         { RoleCodes.Admin, null, DashboardMetric.RecentAccessChanges },
@@ -78,6 +84,32 @@ public sealed partial class DashboardLinkTests(SqlServerContainer sql) : WebTest
 
         Assert.True(total.Success, $"{href} shows no total.");
         Assert.Equal(int.Parse(tile.Groups["count"].Value, System.Globalization.CultureInfo.InvariantCulture), int.Parse(total.Groups["total"].Value, System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task The_auditor_sees_every_application_regardless_of_status_and_branch_read_only()
+    {
+        await Factory.Services.GetRequiredService<OutboxProcessor>().ProcessAllDueAsync(Ct);
+        var (userName, _, password) = await CreateUserAsync(RoleCodes.Auditor);
+        using var browser = NewSession();
+        await browser.LoginAsync(userName, password);
+        var all = await QueryAsync(db => db.LoanApplications.CountAsync(Ct));
+        var oneOfEach = await QueryAsync(db => db.LoanApplications
+            .GroupBy(a => new { a.Status, a.BranchId }).Select(g => g.Min(a => a.Id)).ToListAsync(Ct));
+
+        var list = await browser.GetPageAsync("/Applications");
+
+        Assert.Equal(all.ToString(System.Globalization.CultureInfo.InvariantCulture), TotalPattern().Match(list).Groups["total"].Value);
+        Assert.True(oneOfEach.Count > 20, "The demo data covers every status in both branches.");
+        foreach (var page in oneOfEach.Select(id => $"/Applications/Details/{id.Value}").Concat(["/Applications", "/Loans", "/Reports", "/Admin/AuditLog", "/Clients"]))
+        {
+            var html = await browser.GetPageAsync(page);
+            Assert.Equal(["/Account/Logout"], WebSession.PostForms(html).Select(f => f.Action)); // read-only: no action forms
+            Assert.DoesNotContain("hx-post", html, StringComparison.Ordinal);
+        }
+
+        var loan = await QueryAsync(db => db.Loans.OrderBy(l => l.Id).Select(l => l.Id.Value).FirstAsync(Ct));
+        Assert.Equal(["/Account/Logout"], WebSession.PostForms(await browser.GetPageAsync($"/Loans/Details/{loan}")).Select(f => f.Action));
     }
 
     private async Task LockDemoUserAsync()

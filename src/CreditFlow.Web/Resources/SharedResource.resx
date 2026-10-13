@@ -43,6 +43,15 @@
   <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, branches and reference data.</value></data>
   <data name="Dashboard.Overview" xml:space="preserve"><value>Overview</value></data>
   <data name="Dashboard.Attention" xml:space="preserve"><value>Needs your attention</value></data>
+  <data name="Dashboard.Feed" xml:space="preserve"><value>Recent exceptions (newest first)</value></data>
+  <data name="Dashboard.System" xml:space="preserve"><value>System</value></data>
+  <data name="Audit.Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Audit.AllCategories" xml:space="preserve"><value>Any category</value></data>
+  <data name="Enum.AuditCategory.AccessChanges" xml:space="preserve"><value>Access changes</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentComplianceClearances" xml:space="preserve"><value>Compliance cleared (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.LargeDisbursements" xml:space="preserve"><value>Large payouts (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutIncidents" xml:space="preserve"><value>Payout incidents (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyEscalated" xml:space="preserve"><value>Escalated (last 30 days)</value></data>
   <data name="Dashboard.NothingWaiting" xml:space="preserve"><value>Nothing is waiting for you.</value></data>
   <data name="Dashboard.OldestWaiting" xml:space="preserve"><value>Oldest waiting {0}</value></data>
   <data name="Dashboard.Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
@@ -75,10 +84,13 @@
   <data name="Dashboard.Metric.ComplianceReviews" xml:space="preserve"><value>Reviews waiting</value></data>
   <data name="Dashboard.Metric.RecentOverrides" xml:space="preserve"><value>Overrides</value></data>
   <data name="Dashboard.Metric.RecentRejections" xml:space="preserve"><value>Rejections</value></data>
-  <data name="Dashboard.Metric.RecentDisbursements" xml:space="preserve"><value>Disbursements</value></data>
+  <data name="Dashboard.Metric.ComplianceClearances" xml:space="preserve"><value>Compliance clearances</value></data>
+  <data name="Dashboard.Metric.LargeDisbursements" xml:space="preserve"><value>Large disbursements</value></data>
+  <data name="Dashboard.Metric.PayoutIncidents" xml:space="preserve"><value>Payout incidents</value></data>
+  <data name="Dashboard.Metric.RecentEscalations" xml:space="preserve"><value>Escalations</value></data>
   <data name="Dashboard.Metric.LockedUsers" xml:space="preserve"><value>Locked users</value></data>
   <data name="Dashboard.Metric.UsersWithoutMfa" xml:space="preserve"><value>Users without MFA</value></data>
-  <data name="Dashboard.Metric.RecentAccessChanges" xml:space="preserve"><value>Role and permission changes</value></data>
+  <data name="Dashboard.Metric.RecentAccessChanges" xml:space="preserve"><value>Access changes</value></data>
 
   <!-- Placeholders -->
 
