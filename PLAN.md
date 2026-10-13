@@ -437,7 +437,7 @@ Each step ends with a green build and tests, a summary and a suggested commit me
 - TOTP MFA: QR via QRCoder as SVG, a 2FA login step, recovery codes. Enrolment is enforced when the role or the user requires MFA.
 - The "My account" pages.
 - Every security event is audited, and LastLoginAt is set.
-- Post-login redirect by DashboardKind; SYSADMIN goes to Admin › Users. Access denied page.
+- Post-login landing by DashboardKind (since the UI polish SYSADMIN lands on the administration dashboard, not Admin › Users). Access denied page.
 
 **Implementation notes (as built)**
 - `AccountService` (Infrastructure/Identity) holds sign-in, 2FA, logout, password change and MFA management, with an audit record per security event (`LoginSucceeded`, `LoginFailed` with reason `UnknownUser`/`InvalidPassword`/`NotAllowed`/`InvalidAuthenticatorCode`/`InvalidRecoveryCode`, `LockedOut`, `LoginFailed:TemporaryPasswordExpired`, `Logout`, `PasswordChanged`, `MfaEnabled`, `MfaDisabled`, `MfaReset`, `RecoveryCodesGenerated`). Controllers stay thin.
@@ -447,7 +447,7 @@ Each step ends with a green build and tests, a summary and a suggested commit me
 - Sign-in rate limit: fixed window per client IP, `Security:SignInAttemptsPerMinute` (default 10) on the password, 2FA and recovery-code posts; rejected requests get the 429 page.
 - Administrators land on their dashboard (locked users, users without MFA, role/permission changes); Admin › Users is one click away.
 - View inventory deviation: no separate `SessionEnded` page; an expired or ended session simply returns to the sign-in page (with the return URL). The Lockout, AccessDenied, ChangePassword (forced), EnableAuthenticator and ShowRecoveryCodes pages exist; "My account" has Index, ChangePassword, TwoFactor and ResetAuthenticator.
-- Tests (17 web + 1 unit): sign-in by user name and email, success audit and LastLoginAt, generic failure message for wrong password and unknown user (audited with reasons), inactive user, lockout after 5 failures (lockout page also with the correct password), forced password change for the seeded SYSADMIN and landing on Admin › Users, reuse and wrong-current-password errors, expired temporary password and re-issue, local vs external return URLs, logout (405 for GET, 400 without token, cookie cleared, audited), cookie flags, UW denied the admin area with no admin menu / Create button, role-required MFA end to end with real TOTP codes, MFA cannot be turned off when required, My account page, rate limit (429).
+- Tests (17 web + 1 unit): sign-in by user name and email, success audit and LastLoginAt, generic failure message for wrong password and unknown user (audited with reasons), inactive user, lockout after 5 failures (lockout page also with the correct password), forced password change for the seeded SYSADMIN and landing on the administration dashboard, reuse and wrong-current-password errors, expired temporary password and re-issue, local vs external return URLs, logout (405 for GET, 400 without token, cookie cleared, audited), cookie flags, UW denied the admin area with no admin menu / Create button, role-required MFA end to end with real TOTP codes, MFA cannot be turned off when required, My account page, rate limit (429).
 
 ### Step 7 — [x] Admin area
 Done in five sub-steps, each with a green build and tests, its own commit and a PLAN.md update:
@@ -539,7 +539,7 @@ The list below is the original plan; the inventory after it records what exists.
   (forced change) and after 72 h + 1 min (expiry message, audit, works again after an admin reset); branch change
   rotates the security stamp (`UserAdministrationTests`); profile cache invalidation (`AuditAndSecurityPersistenceTests`).
 - *Added in Step 8:* `DefinitionOfDoneTests` — entirely through the UI: seeded `sysadmin` signs in, changes the
-  password, lands on `/Admin`, creates "Tamta Tatishvili" as Senior UW in Vake; she signs in with the one-time
+  password, lands on the administration dashboard, creates "Tamta Tatishvili" as Senior UW in Vake; she signs in with the one-time
   password, is forced to change it, sees exactly Dashboard / Applications / Packages / Reports, no Create Application,
   the "Sr UW" chip, ₾50,000 and "Senior Underwriter"; `/Admin/Users` → Access denied, and an htmx admin request as
   UW → 403 with `HX-Redirect: /Account/AccessDenied` (the htmx-403 case was not covered before).
@@ -631,7 +631,7 @@ Integration tests use Testcontainers, WebApplicationFactory and FakeTimeProvider
   1. Run `docker compose up -d`.
   2. Set user-secrets: connection string, SYSADMIN credentials, dev password.
   3. Run `dotnet run --project src/Lams.Web`.
-  4. Log in as SYSADMIN, change the password, and land on Admin › Users.
+  4. Log in as SYSADMIN, change the password, and land on the administration dashboard (locked users, users without MFA, role/permission changes); open Admin › Users from the sidebar.
   5. Create a Senior UW in Vake.
   6. Log in as that user in another browser and change the password. The sidebar shows Dashboard, Applications, Packages and Reports only. `/Admin/Users` shows Access denied.
   7. As admin, remove `reports.view` from UW. Within one minute, with no logout, Reports disappears for that user.

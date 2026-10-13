@@ -63,14 +63,15 @@ public sealed record DashboardData(
 /// <summary>The SQL side of the dashboards; every application count is limited by the viewer's access filter.</summary>
 public interface IDashboardQueries
 {
-    Task<DashboardData> OperatorAsync(ApplicationAccessFilter access, DateTimeOffset stuckBefore, int take, CancellationToken cancellationToken);
+    Task<DashboardData> OperatorAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
     /// <summary>Escalated files and, when <paramref name="withOverridable"/>, files whose latest scoring needs an override.</summary>
-    Task<IReadOnlyList<DashboardTile>> UnderwritingAsync(ApplicationAccessFilter access, bool withOverridable, CancellationToken cancellationToken);
+    Task<IReadOnlyList<DashboardTile>> UnderwritingAsync(
+        ApplicationAccessFilter access, DateTimeOffset now, bool withOverridable, CancellationToken cancellationToken);
 
-    Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset since, int take, CancellationToken cancellationToken);
+    Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
-    Task<DashboardData> AdministrationAsync(DateTimeOffset now, DateTimeOffset since, int take, CancellationToken cancellationToken);
+    Task<DashboardData> AdministrationAsync(DateTimeOffset now, int take, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -81,12 +82,6 @@ public sealed class DashboardService(
     CurrentAccessProfile access, IDashboardQueries queries, IApplicationQueries applications, TimeProvider clock)
 {
     public const int AttentionSize = 6;
-
-    /// <summary>The live pre-check answers within minutes; longer than this it waits for a service that is down.</summary>
-    public static readonly TimeSpan StuckInPreCheckAfter = TimeSpan.FromMinutes(30);
-
-    /// <summary>The window of the Auditor's and Administrator's "recent" tiles.</summary>
-    public static readonly TimeSpan RecentWindow = TimeSpan.FromDays(30);
 
     /// <summary>The dashboard, or <c>null</c> when nobody (active) is signed in.</summary>
     public async Task<DashboardData?> GetAsync(CancellationToken cancellationToken)
@@ -101,24 +96,25 @@ public sealed class DashboardService(
         var now = clock.GetUtcNow();
         return profile.Dashboard switch
         {
-            DashboardKind.Operator => await queries.OperatorAsync(filter, now - StuckInPreCheckAfter, AttentionSize, cancellationToken),
-            DashboardKind.Underwriting => await UnderwritingAsync(profile, filter, cancellationToken),
+            DashboardKind.Operator => await queries.OperatorAsync(filter, now, AttentionSize, cancellationToken),
+            DashboardKind.Underwriting => await UnderwritingAsync(profile, filter, now, cancellationToken),
             DashboardKind.Committee => await InboxDashboardAsync(
                 DashboardKind.Committee, Inbox.Committee, DashboardMetric.AwaitingVote, profile, filter, Permissions.Committee.Vote, [], cancellationToken),
             DashboardKind.Compliance => await InboxDashboardAsync(
                 DashboardKind.Compliance, Inbox.Compliance, DashboardMetric.ComplianceReviews, profile, filter, Permissions.Compliance.Review, [], cancellationToken),
-            DashboardKind.Audit => await queries.AuditAsync(filter, now - RecentWindow, AttentionSize, cancellationToken),
+            DashboardKind.Audit => await queries.AuditAsync(filter, now, AttentionSize, cancellationToken),
             DashboardKind.Administration when profile.HasPermission(Permissions.Admin.UsersView) =>
-                await queries.AdministrationAsync(now, now - RecentWindow, AttentionSize, cancellationToken),
+                await queries.AdministrationAsync(now, AttentionSize, cancellationToken),
             _ => new DashboardData(profile.Dashboard, [], []),
         };
     }
 
-    private async Task<DashboardData> UnderwritingAsync(UserAccessProfile profile, ApplicationAccessFilter filter, CancellationToken cancellationToken)
+    private async Task<DashboardData> UnderwritingAsync(
+        UserAccessProfile profile, ApplicationAccessFilter filter, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var senior = CurrentAccessProfile.AuthorityOf(profile)?.MaxTier == ApprovalTier.SeniorUnderwriter;
         var extra = profile.HasPermission(Permissions.Underwriting.Decide)
-            ? await queries.UnderwritingAsync(filter, withOverridable: senior, cancellationToken)
+            ? await queries.UnderwritingAsync(filter, now, withOverridable: senior, cancellationToken)
             : [];
         return await InboxDashboardAsync(
             DashboardKind.Underwriting, Inbox.Underwriting, DashboardMetric.Inbox, profile, filter, Permissions.Underwriting.Decide, extra, cancellationToken);

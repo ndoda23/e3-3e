@@ -33,13 +33,7 @@ internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) 
             rows = rows.Where(u => u.BranchId == branchId.Value);
         }
 
-        rows = query.Status switch
-        {
-            UserStatusFilter.Active => rows.Where(u => u.IsActive),
-            UserStatusFilter.Inactive => rows.Where(u => !u.IsActive),
-            UserStatusFilter.LockedOut => rows.Where(u => u.LockoutEnd != null && u.LockoutEnd > now),
-            _ => rows,
-        };
+        rows = rows.WithStatus(query.Status, now);
 
         var ordered = (query.Sort, query.Descending) switch
         {
@@ -120,4 +114,18 @@ internal sealed class UserDirectory(CreditFlowDbContext db, TimeProvider clock) 
             u.CreatedAt,
             u.UpdatedAt);
     }
+}
+
+/// <summary>The one definition of each <see cref="UserStatusFilter"/>: the user list and the dashboard tiles use it.</summary>
+internal static class UserStatusFilters
+{
+    public static IQueryable<UserDirectoryRow> WithStatus(this IQueryable<UserDirectoryRow> rows, UserStatusFilter status, DateTimeOffset now) =>
+        status switch
+        {
+            UserStatusFilter.Active => rows.Where(u => u.IsActive),
+            UserStatusFilter.Inactive => rows.Where(u => !u.IsActive),
+            UserStatusFilter.LockedOut => rows.Where(u => u.LockoutEnd != null && u.LockoutEnd > now),
+            UserStatusFilter.WithoutMfa => rows.Where(u => u.IsActive && !u.TwoFactorEnabled),
+            _ => rows,
+        };
 }

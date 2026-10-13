@@ -240,6 +240,7 @@ internal sealed class ReportQueries(CreditFlowDbContext db) : IReportQueries
 
         public int Transitions { get; set; }
 
+        [Precision(19, 1)] // matches the CAST in the SQL
         public decimal AverageHours { get; set; }
     }
 }

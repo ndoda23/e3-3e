@@ -1,7 +1,10 @@
+using System.Globalization;
 using CreditFlow.Application.Applications;
 using CreditFlow.Application.Authorization;
 using CreditFlow.Application.Dashboard;
+using CreditFlow.Application.Users;
 using CreditFlow.Domain.Applications;
+using CreditFlow.Domain.Auditing;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CreditFlow.Web.Models;
@@ -10,27 +13,38 @@ namespace CreditFlow.Web.Models;
 /// <param name="Data">The role's tiles and attention list.</param>
 public sealed record DashboardViewModel(UserAccessProfile Profile, DashboardData Data)
 {
-    /// <summary>Where a tile leads: the list or inbox filtered to what it counts (<c>null</c>: no list for it).</summary>
-    public static string? Link(IUrlHelper url, DashboardMetric metric)
+    /// <summary>
+    /// Where a tile leads: the list filtered to exactly what the tile counts — one status, one named queue, one inbox,
+    /// one user status or one audit filter — so the list's total is the tile's number.
+    /// </summary>
+    public static string? Link(IUrlHelper url, DashboardMetric metric, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(url);
         return metric switch
         {
-            DashboardMetric.Drafts => Applications(url, ApplicationStatus.Draft),
-            DashboardMetric.DocumentsPending => Applications(url, ApplicationStatus.DocumentsPending),
-            DashboardMetric.AwaitingSignature => Applications(url, ApplicationStatus.Approved),
-            DashboardMetric.AwaitingDisbursement or DashboardMetric.PayoutsPending or DashboardMetric.PayoutsFailed =>
-                Applications(url, ApplicationStatus.ConditionsMet),
-            DashboardMetric.StuckInPreCheck => Applications(url, ApplicationStatus.PreCheck),
-            DashboardMetric.Inbox or DashboardMetric.Escalated or DashboardMetric.Overridable =>
-                url.Action("Index", "Inbox", new { area = "", inbox = Inbox.Underwriting }),
+            DashboardMetric.Drafts => Status(url, ApplicationStatus.Draft),
+            DashboardMetric.DocumentsPending => Status(url, ApplicationStatus.DocumentsPending),
+            DashboardMetric.AwaitingSignature => Queue(url, ApplicationQueueKind.AwaitingSignature),
+            DashboardMetric.AwaitingDisbursement => Status(url, ApplicationStatus.ConditionsMet),
+            DashboardMetric.PayoutsPending => Queue(url, ApplicationQueueKind.PayoutPending),
+            DashboardMetric.PayoutsFailed => Queue(url, ApplicationQueueKind.PayoutFailed),
+            DashboardMetric.StuckInPreCheck => Queue(url, ApplicationQueueKind.StuckInPreCheck),
+            DashboardMetric.Inbox => url.Action("Index", "Inbox", new { area = "", inbox = Inbox.Underwriting }),
+            DashboardMetric.Escalated => Queue(url, ApplicationQueueKind.Escalated),
+            DashboardMetric.Overridable => Queue(url, ApplicationQueueKind.NeedsOverride),
             DashboardMetric.AwaitingVote => url.Action("Index", "Inbox", new { area = "", inbox = Inbox.Committee }),
             DashboardMetric.ComplianceReviews => url.Action("Index", "Inbox", new { area = "", inbox = Inbox.Compliance }),
-            DashboardMetric.RecentRejections => Applications(url, ApplicationStatus.Rejected),
-            DashboardMetric.RecentDisbursements => url.Action("Index", "Loans", new { area = "" }),
-            DashboardMetric.LockedUsers => url.Action("Index", "Users", new { area = "Admin", status = "LockedOut" }),
-            DashboardMetric.UsersWithoutMfa => url.Action("Index", "Users", new { area = "Admin" }),
-            DashboardMetric.RecentAccessChanges => url.Action("Index", "AuditLog", new { area = "Admin", @event = "RolePermissionsChanged" }),
+            DashboardMetric.RecentOverrides => Queue(url, ApplicationQueueKind.RecentOverrides),
+            DashboardMetric.RecentRejections => Queue(url, ApplicationQueueKind.RecentlyRejected),
+            DashboardMetric.RecentDisbursements => Queue(url, ApplicationQueueKind.RecentlyDisbursed),
+            DashboardMetric.LockedUsers => url.Action("Index", "Users", new { area = "Admin", status = UserStatusFilter.LockedOut }),
+            DashboardMetric.UsersWithoutMfa => url.Action("Index", "Users", new { area = "Admin", status = UserStatusFilter.WithoutMfa }),
+            DashboardMetric.RecentAccessChanges => url.Action("Index", "AuditLog", new
+            {
+                area = "Admin",
+                @event = AuditActions.RolePermissionsChanged,
+                from = ApplicationQueues.RecentFrom(now).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            }),
             _ => null,
         };
     }
@@ -58,6 +72,9 @@ public sealed record DashboardViewModel(UserAccessProfile Profile, DashboardData
             : $"{Math.Max(0, (int)age.TotalMinutes)} min";
     }
 
-    private static string? Applications(IUrlHelper url, ApplicationStatus status) =>
+    private static string? Status(IUrlHelper url, ApplicationStatus status) =>
         url.Action("Index", "Applications", new { area = "", status });
+
+    private static string? Queue(IUrlHelper url, ApplicationQueueKind queue) =>
+        url.Action("Index", "Applications", new { area = "", queue });
 }

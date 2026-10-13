@@ -3,6 +3,7 @@ using CreditFlow.Application.Common;
 using CreditFlow.Domain.Applications;
 using CreditFlow.Domain.Clients;
 using CreditFlow.Domain.Common;
+using CreditFlow.Domain.Disbursements;
 using CreditFlow.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ namespace CreditFlow.Infrastructure.Persistence.Queries;
 /// Application lists, inboxes and details. The access filter is applied in SQL (<see cref="Visible"/>) before paging,
 /// so the database returns only rows the viewer may see and the counts are right.
 /// </summary>
-internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQueries
+internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider clock) : IApplicationQueries
 {
     public async Task<PagedResult<ApplicationListItem>> SearchAsync(
         ApplicationSearch search, ApplicationAccessFilter access, CancellationToken cancellationToken)
@@ -22,7 +23,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
             return new PagedResult<ApplicationListItem>([], 0, search.Page, search.PageSize);
         }
 
-        var rows = Rows(Visible(access));
+        var rows = Rows(search.Queue is { } queue ? Visible(access).InQueue(queue, clock.GetUtcNow(), db) : Visible(access));
         if (search.Status is { } status)
         {
             rows = rows.Where(r => r.Status == status);
@@ -140,8 +141,8 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db) : IApplicationQ
         var payout = await db.Disbursements.AsNoTracking()
             .Where(d => d.ApplicationId == id)
             .Select(d => new PayoutView(d.Status, d.Amount, d.Attempts, d.TransactionId, d.LastError, d.RequestedAt, d.CompletedAt))
-            .FirstOrDefaultAsync(cancellationToken);
-        var requiredVotes = await db.ApprovalThresholds.AsNoTracking().Select(t => t.RequiredVotes).FirstAsync(cancellationToken);
+            .SingleOrDefaultAsync(cancellationToken); // one payout per application (unique index)
+        var requiredVotes = await db.ApprovalThresholds.AsNoTracking().Select(t => t.RequiredVotes).SingleAsync(cancellationToken); // one row
 
         string NameOf(UserId? user) => user is { } u ? names.GetValueOrDefault(u.Value, "Unknown user") : "System";
 
@@ -290,4 +291,54 @@ internal static class ApplicationScope
         access.SeesNothing ? applications.Where(_ => false)
         : access.Branch is { } branch ? applications.Where(a => a.BranchId == branch)
         : applications;
+
+    /// <summary>
+    /// The one definition of each <see cref="ApplicationQueueKind"/>: the list filter and the dashboard count both use it.
+    /// </summary>
+    public static IQueryable<LoanApplication> InQueue(
+        this IQueryable<LoanApplication> applications, ApplicationQueueKind queue, DateTimeOffset now, CreditFlowDbContext db)
+    {
+        var stuckBefore = now - ApplicationQueues.StuckInPreCheckAfter;
+        var since = ApplicationQueues.RecentSince(now);
+        return queue switch
+        {
+            ApplicationQueueKind.AwaitingSignature => applications.Where(a =>
+                a.Status == ApplicationStatus.Approved || a.Status == ApplicationStatus.ConditionallyApproved),
+            ApplicationQueueKind.PayoutPending => applications.Where(a =>
+                db.Disbursements.Any(d => d.ApplicationId == a.Id && d.Status == DisbursementStatus.Pending)),
+            ApplicationQueueKind.PayoutFailed => applications.Where(a =>
+                db.Disbursements.Any(d => d.ApplicationId == a.Id && d.Status == DisbursementStatus.Failed)),
+            ApplicationQueueKind.StuckInPreCheck => applications.Where(a =>
+                a.Status == ApplicationStatus.PreCheck && a.StatusChangedAt < stuckBefore),
+            ApplicationQueueKind.Escalated => applications.Where(a =>
+                a.Status == ApplicationStatus.Underwriting && a.EscalatedAt != null),
+            ApplicationQueueKind.NeedsOverride => applications.Where(a => NeedingOverride(db).Contains(a.Id)),
+            ApplicationQueueKind.RecentlyRejected => applications.Where(a =>
+                a.Status == ApplicationStatus.Rejected && a.StatusChangedAt >= since),
+            ApplicationQueueKind.RecentOverrides => applications.Where(a =>
+                a.Decisions.Any(d => d.OverrideReason != null && d.DecidedAt >= since)),
+            ApplicationQueueKind.RecentlyDisbursed => applications.Where(a =>
+                db.Disbursements.Any(d => d.ApplicationId == a.Id && d.Status == DisbursementStatus.Succeeded && d.CompletedAt >= since)),
+            _ => applications.Where(_ => false),
+        };
+    }
+
+    /// <summary>
+    /// Applications in Underwriting whose latest scoring run (the highest index of the JSON array) failed a rule. In
+    /// Underwriting a failure is always overridable: a hard failure rejects the application automatically.
+    /// </summary>
+    private static IQueryable<LoanApplicationId> NeedingOverride(CreditFlowDbContext db)
+    {
+        var underwriting = nameof(ApplicationStatus.Underwriting);
+        return db.LoanApplications
+            .FromSql($"""
+                SELECT a.* FROM LoanApplications AS a
+                WHERE a.Status = {underwriting} AND EXISTS (
+                    SELECT 1 FROM OPENJSON(a.ScoringRunsJson) AS run
+                    CROSS APPLY OPENJSON(run.value, '$.results') AS result
+                    WHERE CAST(run.[key] AS int) = (SELECT MAX(CAST(latest.[key] AS int)) FROM OPENJSON(a.ScoringRunsJson) AS latest)
+                      AND JSON_VALUE(result.value, '$.passed') = 'false')
+                """)
+            .Select(a => a.Id);
+    }
 }

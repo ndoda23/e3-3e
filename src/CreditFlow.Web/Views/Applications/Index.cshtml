@@ -29,6 +29,14 @@
                     <option value="@status" selected="@(q.Status == status)">@T.EnumText(status)</option>
                 }
             </select>
+            <label class="sr-only" for="application-queue">@T["Applications.Queue"]</label>
+            <select id="application-queue" name="queue" class="select" data-queue-filter>
+                <option value="">@T["Applications.AllQueues"]</option>
+                @foreach (var queue in Enum.GetValues<ApplicationQueueKind>())
+                {
+                    <option value="@queue" selected="@(q.Queue == queue)">@T.EnumText(queue)</option>
+                }
+            </select>
             <label class="sr-only" for="application-product">@T["Field.Product"]</label>
             <select id="application-product" name="product" class="select">
                 <option value="">@T["Applications.AllProducts"]</option>

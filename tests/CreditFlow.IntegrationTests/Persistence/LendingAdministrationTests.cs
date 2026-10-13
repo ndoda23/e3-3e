@@ -199,7 +199,7 @@ public sealed class LendingAdministrationTests(SqlServerContainer sql) : Databas
     {
         var user = await UserAsync(userName);
         var product = await Host.QueryAsync(db => db.LoanProducts.Include(p => p.Versions).SingleAsync(p => p.Code == LendingSeedCatalog.Consumer, Ct));
-        var rules = (await Host.QueryAsync(db => db.ScoringRuleSets.FirstAsync(Ct))).Rules;
+        var rules = (await Host.QueryAsync(db => db.ScoringRuleSets.OrderBy(s => s.Version).FirstAsync(Ct))).Rules;
         var day = new DateOnly(2026, 12, 30);
 
         var results = new List<Error?>

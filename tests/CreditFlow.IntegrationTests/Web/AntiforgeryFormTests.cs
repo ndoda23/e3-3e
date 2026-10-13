@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CreditFlow.IntegrationTests.Web;
 
@@ -54,6 +56,7 @@ public sealed partial class AntiforgeryFormTests(SqlServerContainer sql) : WebTe
         ["Seed:DevUsers:Password"] = InfrastructureHost.DevPassword,
         ["Seed:DemoData:Enabled"] = "true",
         ["Mocks:BureauTimeout"] = "00:00:00.200",
+        ["DatabaseLog:BatchPeriod"] = "00:00:00.200",
     };
 
     [GeneratedRegex("""\b(?<kind>href|hx-get)="(?<url>/[^"#]*)""")]
@@ -95,11 +98,37 @@ public sealed partial class AntiforgeryFormTests(SqlServerContainer sql) : WebTe
         }
 
         Assert.True(missing.Count == 0, "POST forms without __RequestVerificationToken:\n" + string.Join("\n", missing.Distinct()));
+
+        // The whole click-through logged no warning or error, except the one-line retries of a mock service that is down.
+        var warnings = await WarningsLoggedAsync();
+        Assert.True(warnings.Count == 0, "Unexpected warnings or errors during the click-through:\n" + string.Join("\n", warnings));
         var unreached = PostEndpoints().Where(e => !reached.Contains(e) && !NotReachedByCrawl.ContainsKey(e)).ToList();
         Assert.True(
             unreached.Count == 0,
             $"POST endpoints no crawled page renders a form for ({string.Join(", ", crawls)}):\n" + string.Join("\n", unreached));
     }
+
+    /// <summary>Warnings and errors in the <c>Logs</c> table, apart from transient retries (flushed by a marker first).</summary>
+    private async Task<List<string>> WarningsLoggedAsync()
+    {
+        var marker = Guid.NewGuid().ToString("N");
+        LogMarker(Factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger("CreditFlow.Tests"), marker);
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(60);
+        while (!await QueryAsync(db => db.Logs.AnyAsync(l => l.Message!.Contains(marker), Ct)) && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100), Ct);
+        }
+
+        return await QueryAsync(db => db.Logs.AsNoTracking()
+            .Where(l => l.Level == "Warning" || l.Level == "Error" || l.Level == "Fatal")
+            .Where(l => !l.Message!.Contains(marker) && !l.Message.Contains("will be retried"))
+            .OrderBy(l => l.Id)
+            .Select(l => l.Level + ": " + l.Message)
+            .ToListAsync(Ct));
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Marker {Marker}")]
+    private static partial void LogMarker(ILogger logger, string marker);
 
     [Fact]
     public async Task Create_application_posts_with_the_token_from_its_own_form()

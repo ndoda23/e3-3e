@@ -64,7 +64,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
         await Assert.ThrowsAsync<InvalidOperationException>(() => Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            var record = await db.AuditLogs.FirstAsync(Ct);
+            var record = await db.AuditLogs.OrderBy(l => l.Id).FirstAsync(Ct);
             db.Entry(record).Property(r => r.Action).CurrentValue = "Tampered";
             await db.SaveChangesAsync(Ct);
         }));
@@ -72,7 +72,7 @@ public sealed class AuditAndSecurityPersistenceTests(SqlServerContainer sql) : D
         await Assert.ThrowsAsync<InvalidOperationException>(() => Host.InScopeAsync(async sp =>
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
-            db.AuditLogs.Remove(await db.AuditLogs.FirstAsync(Ct));
+            db.AuditLogs.Remove(await db.AuditLogs.OrderBy(l => l.Id).FirstAsync(Ct));
             await db.SaveChangesAsync(Ct);
         }));
     }

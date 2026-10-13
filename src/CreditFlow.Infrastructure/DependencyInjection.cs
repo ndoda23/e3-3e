@@ -67,9 +67,22 @@ public static class DependencyInjection
         AddAccessCaching(services);
         AddOutboxAndExternalServices(services, configuration);
 
-        services.AddDataProtection()
+        // The keys protect the auth and antiforgery cookies; they are stored in the database and encrypted at rest:
+        // with a certificate when one is configured (servers, containers), otherwise with DPAPI on Windows.
+        var dataProtection = services.AddDataProtection()
             .SetApplicationName("CreditFlow")
             .PersistKeysToDbContext<CreditFlowDbContext>();
+        var keyCertificate = configuration["DataProtection:CertificatePath"];
+        if (!string.IsNullOrWhiteSpace(keyCertificate))
+        {
+            dataProtection.ProtectKeysWithCertificate(
+                System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadPkcs12FromFile(
+                    keyCertificate, configuration["DataProtection:CertificatePassword"]));
+        }
+        else if (OperatingSystem.IsWindows())
+        {
+            dataProtection.ProtectKeysWithDpapi();
+        }
 
         services.AddHealthChecks().AddDbContextCheck<CreditFlowDbContext>("database");
 
@@ -128,7 +141,10 @@ public static class DependencyInjection
             if (configuration.GetSection(DatabaseOptions.SectionName).GetValue<bool>(nameof(DatabaseOptions.ThrowOnQueryWarnings)))
             {
                 options.ConfigureWarnings(warnings => warnings.Throw(
-                    RelationalEventId.MultipleCollectionIncludeWarning, CoreEventId.RowLimitingOperationWithoutOrderByWarning));
+                    RelationalEventId.MultipleCollectionIncludeWarning,
+                    CoreEventId.RowLimitingOperationWithoutOrderByWarning,
+                    CoreEventId.FirstWithoutOrderByAndFilterWarning,
+                    SqlServerEventId.DecimalTypeDefaultWarning));
             }
 
             options.AddInterceptors(

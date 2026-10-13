@@ -11,6 +11,9 @@ public enum UserStatusFilter
     Active = 1,
     Inactive = 2,
     LockedOut = 3,
+
+    /// <summary>Active accounts that have not turned on an authenticator.</summary>
+    WithoutMfa = 4,
 }
 
 public enum UserSortField

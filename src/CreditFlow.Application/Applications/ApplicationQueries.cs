@@ -19,6 +19,56 @@ public enum ApplicationSortField
     Borrower = 4,
 }
 
+/// <summary>
+/// Named work queues of the application list. A dashboard tile counts exactly one queue (or one status) and links to
+/// the list filtered by it, so the tile and the list always agree.
+/// </summary>
+public enum ApplicationQueueKind
+{
+    /// <summary>Approved or conditionally approved: the client signs next.</summary>
+    AwaitingSignature = 1,
+
+    /// <summary>A payout was sent and its outcome is not known yet.</summary>
+    PayoutPending = 2,
+
+    /// <summary>Core banking rejected the payout; the operator retries.</summary>
+    PayoutFailed = 3,
+
+    /// <summary>In pre-check for longer than <see cref="ApplicationQueues.StuckInPreCheckAfter"/>.</summary>
+    StuckInPreCheck = 4,
+
+    /// <summary>In Underwriting and escalated to a Senior Underwriter.</summary>
+    Escalated = 5,
+
+    /// <summary>In Underwriting and the latest scoring failed an overridable rule.</summary>
+    NeedsOverride = 6,
+
+    /// <summary>Rejected within the recent window.</summary>
+    RecentlyRejected = 7,
+
+    /// <summary>Approved with an override within the recent window.</summary>
+    RecentOverrides = 8,
+
+    /// <summary>Paid out within the recent window.</summary>
+    RecentlyDisbursed = 9,
+}
+
+/// <summary>The time limits of the queues.</summary>
+public static class ApplicationQueues
+{
+    /// <summary>The live pre-check answers within minutes; longer than this it waits for a service that is down.</summary>
+    public static readonly TimeSpan StuckInPreCheckAfter = TimeSpan.FromMinutes(30);
+
+    /// <summary>The "recent" queues cover this many whole bank days (today included).</summary>
+    public const int RecentDays = 30;
+
+    /// <summary>The first bank day of the recent window.</summary>
+    public static DateOnly RecentFrom(DateTimeOffset now) => BankTime.DateOf(now).AddDays(-(RecentDays - 1));
+
+    /// <summary>The start of the recent window (midnight in Tbilisi).</summary>
+    public static DateTimeOffset RecentSince(DateTimeOffset now) => BankTime.ToInstant(RecentFrom(now), TimeOnly.MinValue);
+}
+
 /// <summary>Filters, sorting and paging of the application list (all applied in SQL).</summary>
 public sealed record ApplicationSearch
 {
@@ -26,6 +76,8 @@ public sealed record ApplicationSearch
     public string? Text { get; init; }
 
     public ApplicationStatus? Status { get; init; }
+
+    public ApplicationQueueKind? Queue { get; init; }
 
     /// <summary>Only applications where this client is a party (borrower, co-borrower or guarantor).</summary>
     public ClientId? ClientId { get; init; }
@@ -44,6 +96,7 @@ public sealed record ApplicationSearch
     {
         Text = string.IsNullOrWhiteSpace(Text) ? null : Text.Trim(),
         Sort = Enum.IsDefined(Sort) ? Sort : ApplicationSortField.Updated,
+        Queue = Queue is { } queue && Enum.IsDefined(queue) ? queue : null,
         Page = Paging.NormalizePage(Page),
         PageSize = Paging.NormalizePageSize(PageSize),
     };

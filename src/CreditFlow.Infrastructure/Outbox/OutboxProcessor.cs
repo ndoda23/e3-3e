@@ -111,8 +111,17 @@ public sealed partial class OutboxProcessor(
             message.Attempts++;
             message.AvailableAt = clock.GetUtcNow() + Backoff(message.Attempts);
             message.ClaimedUntil = null;
-            message.LastError = Truncate(SensitiveData.MaskText($"{exception.GetType().Name}: {exception.Message}"));
-            LogRetry(message.Type, messageId, message.Attempts, message.AvailableAt, exception);
+            var cause = Unwrap(exception);
+            message.LastError = Truncate(SensitiveData.MaskText($"{cause.GetType().Name}: {cause.Message}"));
+            if (IsTransient(cause))
+            {
+                // Expected (a mock service down or slow): one line, no stack trace; the retry is scheduled.
+                LogTransientRetry(message.Type, messageId, message.Attempts, message.AvailableAt, cause.Message);
+            }
+            else
+            {
+                LogRetry(message.Type, messageId, message.Attempts, message.AvailableAt, exception);
+            }
         }
 
         await db.SaveChangesAsync(CancellationToken.None);
@@ -159,12 +168,24 @@ public sealed partial class OutboxProcessor(
         return backoff < options.Value.MaxBackoff ? backoff : options.Value.MaxBackoff;
     }
 
+    /// <summary>The handler's own exception (handlers are invoked through reflection).</summary>
+    private static Exception Unwrap(Exception exception) =>
+        exception is System.Reflection.TargetInvocationException { InnerException: { } inner } ? Unwrap(inner) : exception;
+
+    /// <summary>An external service that was down or did not answer in time: retried with backoff, not a bug.</summary>
+    internal static bool IsTransient(Exception exception) =>
+        exception is ExternalServiceUnavailableException or TimeoutException;
+
     private static string Truncate(string text) =>
         text.Length <= OutboxMessage.ErrorMaxLength ? text : text[..OutboxMessage.ErrorMaxLength];
 
     [LoggerMessage(Level = LogLevel.Warning,
         Message = "Outbox message {Type} {MessageId} failed (attempt {Attempts}); next attempt at {AvailableAt}")]
     private partial void LogRetry(string type, Guid messageId, int attempts, DateTimeOffset availableAt, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Warning,
+        Message = "Outbox message {Type} {MessageId} will be retried (attempt {Attempts}) at {AvailableAt}: {Reason}")]
+    private partial void LogTransientRetry(string type, Guid messageId, int attempts, DateTimeOffset availableAt, string reason);
 }
 
 /// <summary>Runs the <see cref="OutboxProcessor"/> in the background.</summary>

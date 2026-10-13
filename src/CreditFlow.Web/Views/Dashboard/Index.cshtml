@@ -20,7 +20,7 @@
     <div class="kpis" role="list" aria-label="@T["Dashboard.Overview"]">
         @foreach (var tile in data.Tiles)
         {
-            var href = DashboardViewModel.Link(Url, tile.Metric);
+            var href = DashboardViewModel.Link(Url, tile.Metric, now);
             var alert = tile.Alert && tile.Count > 0;
             <a class="kpi @(href is null ? "static" : "link") @(alert ? "alert" : null)" href="@href" role="listitem" data-tile="@tile.Metric" data-count="@tile.Count">
                 <div class="kpi-label">@T[$"Dashboard.Metric.{tile.Metric}"]</div>

@@ -222,8 +222,8 @@ public sealed class OutboxTests(SqlServerContainer sql) : DatabaseTestBase(sql)
         db.Clients.Add(client);
 
         var product = await db.LoanProducts.Include(p => p.Versions).SingleAsync(p => p.Code == LendingSeedCatalog.Consumer, token);
-        var creator = await db.StaffMembers.Select(s => s.Id).FirstAsync(token);
-        var branch = await db.Branches.Select(b => b.Id).FirstAsync(token);
+        var creator = await db.StaffMembers.OrderBy(s => s.Id).Select(s => s.Id).FirstAsync(token);
+        var branch = await db.Branches.OrderBy(b => b.Code).Select(b => b.Id).FirstAsync(token);
         var terms = LoanTerms.Create(Money.Of(5_000m, Currency.GEL), 24, 18m, ScheduleType.Annuity).Value;
         var application = LoanApplication.Create(product, client.Id, terms, branch, creator, _clock.GetUtcNow()).Value;
         var submitted = application.Submit(

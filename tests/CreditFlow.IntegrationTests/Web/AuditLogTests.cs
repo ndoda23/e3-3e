@@ -116,7 +116,7 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
         using var _browser = browser;
         var page = await browser.GetPageAsync("/Admin/AuditLog");
         var before = await QueryAsync(db => db.AuditLogs.CountAsync(Ct));
-        var any = await QueryAsync(db => db.AuditLogs.Select(l => l.Id).FirstAsync(Ct));
+        var any = await QueryAsync(db => db.AuditLogs.OrderBy(l => l.Id).Select(l => l.Id).FirstAsync(Ct));
 
         foreach (var path in new[] { $"/Admin/AuditLog/Delete/{any.Value}", $"/Admin/AuditLog/Edit/{any.Value}", $"/Admin/AuditLog/Details/{any.Value}" })
         {

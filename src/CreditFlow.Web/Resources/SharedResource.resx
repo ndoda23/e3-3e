@@ -46,6 +46,17 @@
   <data name="Dashboard.NothingWaiting" xml:space="preserve"><value>Nothing is waiting for you.</value></data>
   <data name="Dashboard.OldestWaiting" xml:space="preserve"><value>Oldest waiting {0}</value></data>
   <data name="Dashboard.Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="Applications.Queue" xml:space="preserve"><value>Queue</value></data>
+  <data name="Applications.AllQueues" xml:space="preserve"><value>Any queue</value></data>
+  <data name="Enum.ApplicationQueueKind.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutPending" xml:space="preserve"><value>Payout pending</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutFailed" xml:space="preserve"><value>Payout failed</value></data>
+  <data name="Enum.ApplicationQueueKind.StuckInPreCheck" xml:space="preserve"><value>Stuck in pre-check</value></data>
+  <data name="Enum.ApplicationQueueKind.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Enum.ApplicationQueueKind.NeedsOverride" xml:space="preserve"><value>Needs an override</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyRejected" xml:space="preserve"><value>Rejected (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentOverrides" xml:space="preserve"><value>Overrides (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyDisbursed" xml:space="preserve"><value>Paid out (last 30 days)</value></data>
   <data name="Dashboard.Metric.Drafts" xml:space="preserve"><value>Drafts</value></data>
   <data name="Dashboard.Metric.DocumentsPending" xml:space="preserve"><value>Documents pending</value></data>
   <data name="Dashboard.Metric.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
@@ -198,6 +209,7 @@
   <data name="Users.Status.Active" xml:space="preserve"><value>Active</value></data>
   <data name="Users.Status.Inactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="Users.Status.LockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="Users.Status.WithoutMfa" xml:space="preserve"><value>Without MFA</value></data>
   <data name="Users.Column.User" xml:space="preserve"><value>User</value></data>
   <data name="Users.Column.Working" xml:space="preserve"><value>Working today</value></data>
   <data name="Users.State.Active" xml:space="preserve"><value>Active</value></data>

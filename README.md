@@ -448,6 +448,13 @@ CSV is written by a small RFC 4180 writer that neutralises spreadsheet formulas 
   wrapping sink masks every event before any sink sees it — template text, property values at any depth and exception
   text.
 - Content Security Policy `'self'` only (htmx and fonts are self-hosted), antiforgery on every POST, security headers.
+- **Data Protection keys** (they protect the auth and antiforgery cookies) are stored in the database and encrypted at
+  rest: with the certificate in `DataProtection:CertificatePath` / `DataProtection:CertificatePassword` when set
+  (servers, containers), otherwise with DPAPI on Windows.
+- **Warnings mean something.** A click-through of every page logs no warning; an external service that is down or
+  slow logs one line per scheduled retry ("… will be retried …"), without a stack trace. EF Core query warnings
+  (unordered row limits, `First` without `OrderBy`, multi-collection includes, decimals without a store type) throw in
+  Development and tests.
 - Lists, inboxes, reports and exports are paged / filtered / sorted on the server with parameterised SQL; indexes exist
   for the operator lists, the inboxes, the jobs and the reports.
 

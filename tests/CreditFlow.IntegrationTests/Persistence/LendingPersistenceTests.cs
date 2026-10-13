@@ -253,7 +253,7 @@ public sealed class LendingPersistenceTests(SqlServerContainer sql) : DatabaseTe
         Host.QueryAsync(db => db.LoanProducts.Where(p => p.Code == code).Select(p => p.Id).SingleAsync(Ct));
 
     private Task<UserId> OperatorAsync() =>
-        Host.QueryAsync(async db => (await db.StaffMembers.FirstAsync(Ct)).Id);
+        Host.QueryAsync(async db => (await db.StaffMembers.OrderBy(s => s.Id).FirstAsync(Ct)).Id);
 
     private async Task<(LoanApplicationId Id, UserId Operator)> CreateApplicationInUnderwritingAsync(bool committee = false)
     {
@@ -265,7 +265,7 @@ public sealed class LendingPersistenceTests(SqlServerContainer sql) : DatabaseTe
         {
             var db = sp.GetRequiredService<CreditFlowDbContext>();
             var product = await db.LoanProducts.Include(p => p.Versions).SingleAsync(p => p.Code == LendingSeedCatalog.Consumer, Ct);
-            var branch = await db.Branches.Select(b => b.Id).FirstAsync(Ct);
+            var branch = await db.Branches.OrderBy(b => b.Code).Select(b => b.Id).FirstAsync(Ct);
             var terms = committee ? LoanTerms.Create(Money.Of(45_000m, Currency.GEL), 24, 18m, ScheduleType.Annuity).Value : Terms();
             var application = LoanApplication.Create(product, borrower.Id, terms, branch, operatorId, Now).Value;
             var clients = new Dictionary<ClientId, Client> { [borrower.Id] = borrower };

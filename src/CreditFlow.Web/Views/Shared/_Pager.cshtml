@@ -1,6 +1,6 @@
 @model CreditFlow.Web.Models.PagerModel
 <nav class="pager" aria-label="@T["Pager.Label"]">
-    <span>@T["Pager.Showing", Model.FirstItem, Model.LastItem, Model.TotalCount]</span>
+    <span data-total="@Model.TotalCount">@T["Pager.Showing", Model.FirstItem, Model.LastItem, Model.TotalCount]</span>
     @if (Model.TotalPages > 1)
     {
         <div class="pager-right">

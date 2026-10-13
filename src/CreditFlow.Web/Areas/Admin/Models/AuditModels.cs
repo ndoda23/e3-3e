@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using CreditFlow.Application.Auditing;
 using CreditFlow.Application.Common;
+using CreditFlow.Domain.Common;
 using CreditFlow.Domain.Users;
 using Microsoft.AspNetCore.Routing;
 
@@ -32,8 +33,8 @@ public sealed class AuditListQuery
         Search = Search,
         Action = Event,
         EntityType = Entity,
-        From = From is { } from ? StartOfLocalDay(from) : null,
-        To = To is { } to ? StartOfLocalDay(to.AddDays(1)).AddTicks(-1) : null,
+        From = From is { } from ? StartOfBankDay(from) : null,
+        To = To is { } to ? StartOfBankDay(to.AddDays(1)).AddTicks(-1) : null,
         UserId = User is { } user ? new UserId(user) : null,
         Page = Page,
     }.Normalize();
@@ -63,8 +64,8 @@ public sealed class AuditListQuery
         return values;
     }
 
-    private static DateTimeOffset StartOfLocalDay(DateOnly date) =>
-        new(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Local));
+    private static DateTimeOffset StartOfBankDay(DateOnly date) =>
+        BankTime.ToInstant(date, TimeOnly.MinValue);
 }
 
 public sealed record AuditIndexViewModel(

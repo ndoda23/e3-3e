@@ -125,6 +125,9 @@ public sealed class ApplicationListQuery
 
     public ApplicationStatus? Status { get; set; }
 
+    /// <summary>A named work queue (what a dashboard tile counts).</summary>
+    public ApplicationQueueKind? Queue { get; set; }
+
     public Guid? Product { get; set; }
 
     public ApplicationSortField Sort { get; set; }
@@ -138,6 +141,7 @@ public sealed class ApplicationListQuery
     {
         Text = Search,
         Status = Status,
+        Queue = Queue,
         ProductId = Product is { } product ? new LoanProductId(product) : null,
         Sort = Sort,
         Descending = !Asc,
@@ -155,6 +159,11 @@ public sealed class ApplicationListQuery
         if (Status is { } status)
         {
             values["status"] = status;
+        }
+
+        if (Queue is { } queue)
+        {
+            values["queue"] = queue;
         }
 
         if (Product is { } product)
