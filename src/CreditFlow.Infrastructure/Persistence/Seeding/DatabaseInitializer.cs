@@ -26,10 +26,14 @@ public sealed class DatabaseInitializer(
         var accounts = services.GetRequiredService<AccountSeeder>();
         await accounts.SeedAdministratorAsync(cancellationToken);
 
-        // Demo users never reach other environments, whatever the configuration says.
+        // Demo users and demo applications never reach other environments, whatever the configuration says.
         if (environment.IsDevelopment() && seedOptions.Value.DevUsers.Enabled)
         {
             await accounts.SeedDevelopmentUsersAsync(cancellationToken);
+            if (seedOptions.Value.DemoData.Enabled)
+            {
+                await services.GetRequiredService<DevLendingDataSeeder>().SeedAsync(cancellationToken);
+            }
         }
     }
 }

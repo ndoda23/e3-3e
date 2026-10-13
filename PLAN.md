@@ -1108,6 +1108,11 @@ Decisions taken during implementation:
     A scoring rejection counts once per failed hard rule. One `ReportTable` feeds the page, the CSV (one report, UTF-8
     with BOM, formula injection neutralised) and the Excel workbook (ClosedXML 0.105, MIT; its dependencies are MIT /
     Apache-2.0, SixLabors.Fonts 1.0 is pre-split-licence). Export needs `reports.export` (not held by Operators).
+51. **Demo data** — Development only, behind `Seed:DemoData:Enabled` (on in `appsettings.Development.json`, off in the
+    tests that do not test it), once per database (`SeedHistory`), in one transaction, after the demo users. 24
+    applications built through the domain with backdated times; five are submitted and left to the live pre-check.
+    Submitted, Scoring and Disbursed are passing states (seconds) and are only seen in histories. A mock-scenario
+    client that already has an open application (a scenario tried by hand earlier) is skipped, not duplicated.
 
 ## P.5 Tests (added on top of the ported suite)
 - **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
@@ -1188,7 +1193,7 @@ Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end 
 - [x] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
   holidays.
 - [x] **P15** Reports + Excel/CSV export.
-- [ ] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
+- [x] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
 - [ ] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
   mocks, accounts, ambiguities, licences); final verification.
   Also replace the "(this commit)" placeholders in the Phase 1 history table (§0 Progress) with the real commit hashes.
@@ -1223,22 +1228,4 @@ QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus
 | P13 — Pages: wizard, application page, contract and payout, loans, PDFs | done; build 0 warnings, 1,206 tests green (Domain 646, Application 353, Architecture 13, Integration 194), no pending EF model changes. Application wizard (borrower and terms → parties and collateral → documents → review and submit) on the normal actions; application page split into cards (scoring verdict and per-rule explanation, history, decisions with committee tally, conditions, counter-offer, contract and payout with Pending / Failed states and check-again / retry); loans list (SQL-side filter and paging, scope); client page lists the client's applications; contract and schedule PDFs (PDFsharp-MigraDoc 6.2.4, embedded DejaVu Sans). Web tests walk the whole process role by role (operator, underwriter, compliance, two committee members, auditor), payout rejection and timeout, PDF permissions and IDOR. `LoggingTests` now polls the batched SQL sink against a 60 s deadline (assertions unchanged). Decisions #46–#48. | `fe583a9` |
 | P14 — Admin: products, scoring rules, thresholds, FX rates, holidays | done; build 0 warnings, 1,233 tests green (Domain 646, Application 364, Architecture 13, Integration 210), no pending EF model changes. Admin › Products (create with v1, publish the next version, rename, (de)activate), Scoring rules (versions, publish the next version with edited parameters / overridable flags, validated by the engine), Approval thresholds, FX rates (set, delete, CSV import all or nothing), Holidays (add, rename, remove). Services re-check `admin.*`; every change is in the data audit. Tests: per area incl. snapshot unaffected by a new product version, invalid input changes nothing, business roles get AccessDenied; pages render, forms and CSV upload round-trip; the Auditor POST sweep covers the new actions. Decision #49. | `4156d51` |
 | P15 — Reports and Excel / CSV export | done; build 0 warnings, 1,239 tests green (Domain 646, Application 364, Architecture 13, Integration 216), no pending EF model changes. Eight reports (applications by status, approval / rejection rate, average time per stage with `LEAD` in parameterised SQL, rejection reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations), period and product filters, the viewer's data scope in SQL; Excel (ClosedXML, every report a sheet) and CSV (one report, injection-safe). The placeholder "coming soon" page is gone. Tests: figures on a two-branch data set, operator = branch / auditor = bank on the page model and in both exports, CSV escaping, permissions, page and downloads over HTTP. Decision #50. | `d7b84d7` |
-
-
-## Resume notes (2026-10-13)
-- **Committed:** … P15 `d7b84d7`. **Current steps: P16, then P17**; stop after the P17 commit with the final summary
-  (Phase 2 commit count, test count, local steps, anything left out with the reason).
-- **P16 design:** `Infrastructure/Persistence/Seeding/DevLendingData.cs` — Development only (same switch as the demo
-  users), runs once (`SeedHistory` id `dev_0001_lending_demo_data`) in one transaction. Applications are built through
-  the domain (aggregates, `ScoringEngine` with real bureau facts, `IContractNumberGenerator`, `Disbursement`, `Loan`),
-  backdated with the domain's `at` parameters; early statuses (PreCheck via bureau-down 01001011006, ComplianceReview via
-  01001011002 / 01001011003, KYC rejection via 01001011004, DocumentsPending via 01001011001) are submitted and left to
-  the real pre-check pipeline. Persistent statuses: Draft, PreCheck, ComplianceReview, DocumentsPending, Underwriting
-  (plain and escalated), CreditCommittee (1 vote), CounterOffered, Approved, ConditionallyApproved, ContractSigned,
-  ConditionsMet (ready / Pending payout 01001011010 / Failed payout 01001011009), Active (paid installments; one
-  overdue), Closed, Rejected (scoring 01001011005, underwriter, KYC), Cancelled, Expired; both branches. Submitted,
-  Scoring and Disbursed are transient (the background pipeline moves them within seconds) and appear in histories.
-  Tests: every listed status present after seeding + outbox, runs once (second start adds nothing), not outside
-  Development.
-- **P17:** README complete (see user's list), PLAN "(this commit)" → hashes, clean-clone build + full suite + EF check.
-- **Open questions for the user:** none.
+| P16 — Development demo data | done; build 0 warnings, 1,243 tests green (Domain 646, Application 364, Architecture 13, Integration 220), no pending EF model changes. 24 demo applications in both branches through the domain (scoring engine, contract numbers, payouts, loans), backdated; five left to the live pre-check with the mock personal numbers. Every lasting status incl. escalated, committee with one vote, Pending and Failed payouts, an active loan paid on time, one with overdue installments, one closed early. Once per database, Development only (`Seed:DemoData:Enabled`). Tests: every status after the pre-check, consistent with the jobs (nothing to escalate or expire), seeded once, nothing outside Development. Decision #51. | (this commit) |

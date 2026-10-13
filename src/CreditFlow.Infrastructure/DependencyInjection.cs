@@ -164,6 +164,7 @@ public static class DependencyInjection
 
         services.AddScoped<ReferenceDataSeeder>();
         services.AddScoped<AccountSeeder>();
+        services.AddScoped<DevLendingDataSeeder>();
         services.AddScoped<DatabaseInitializer>();
     }
 

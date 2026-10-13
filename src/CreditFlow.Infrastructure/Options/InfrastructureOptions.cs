@@ -21,6 +21,8 @@ public sealed class SeedOptions
     public AdminSeedOptions Admin { get; set; } = new();
 
     public DevUserSeedOptions DevUsers { get; set; } = new();
+
+    public DemoDataSeedOptions DemoData { get; set; } = new();
 }
 
 /// <summary>The first System Administrator account, created once if it does not exist.</summary>
@@ -43,6 +45,14 @@ public sealed class DevUserSeedOptions
 
     /// <summary>Shared password of all demo users.</summary>
     public string? Password { get; set; }
+}
+
+/// <summary>
+/// Demo applications in every status (Development only, after the demo users; needs them as creators and deciders).
+/// </summary>
+public sealed class DemoDataSeedOptions
+{
+    public bool Enabled { get; set; }
 }
 
 internal sealed class SeedOptionsValidator : IValidateOptions<SeedOptions>
