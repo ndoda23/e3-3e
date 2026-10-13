@@ -167,7 +167,7 @@ Rules:
    ```csharp
    private sealed class AddCreditCommitteeRole : ISeedUnit
    {
-       public string Id => "0004_add_role_credit_committee";
+       public string Id => "0004_add_role_credit_committeee";
 
        public async Task ApplyAsync(LamsDbContext db, CancellationToken cancellationToken)
        {
