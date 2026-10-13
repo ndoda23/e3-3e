@@ -16,7 +16,7 @@ authority limits, branches, audit log). The implementation plan and progress are
    docker compose up -d
    ```
 
-2. **Secrets** (user-secrets of `src/Lams.Web`; nothing secret is committed):
+2. **Secrets**  (user-secrets of `src/Lams.Web`; nothing secret is committed):
 
    ```bash
    cd src/Lams.Web
