@@ -75,14 +75,13 @@ public sealed partial class LendingAdminPagesTests(SqlServerContainer sql) : Web
     {
         var (admin, _) = await SignInAsAdministratorAsync();
         using var _browser = admin;
-        var token = WebSession.Token(await admin.GetPageAsync("/Admin/FxRates"));
+        var page = await admin.GetPageAsync("/Admin/FxRates");
 
         using var form = new MultipartFormDataContent();
-        form.Add(new StringContent(token), "__RequestVerificationToken");
         var file = new ByteArrayContent(Encoding.UTF8.GetBytes("Currency,EffectiveDate,GelPerUnit\nUSD,2026-10-05,2.7111\nEUR,2026-10-05,3.1222\n"));
         file.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
         form.Add(file, "file", "rates.csv");
-        var response = await admin.Client.PostAsync("/Admin/FxRates/Import", form, Ct);
+        var response = await admin.SubmitMultipartFormAsync(page, "/Admin/FxRates/Import", form);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Contains("data-fx=\"USD-2026-10-05\"", await admin.GetPageAsync("/Admin/FxRates"), StringComparison.Ordinal);

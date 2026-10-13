@@ -23,9 +23,11 @@ public abstract class WebTestBase(SqlServerContainer sql) : IAsyncLifetime
 
     protected virtual IReadOnlyDictionary<string, string?>? Settings => null;
 
+    protected virtual string Environment => "Testing";
+
     public ValueTask InitializeAsync()
     {
-        Factory = new CreditFlowWebFactory(sql.NewDatabaseConnectionString(), settings: Settings);
+        Factory = new CreditFlowWebFactory(sql.NewDatabaseConnectionString(), Environment, Settings);
         _ = Factory.Server; // start the app (migrations + seeding)
         return ValueTask.CompletedTask;
     }

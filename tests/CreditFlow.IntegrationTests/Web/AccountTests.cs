@@ -231,9 +231,9 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
         var dashboard = await browser.GetPageAsync("/");
 
         Assert.Equal(HttpStatusCode.MethodNotAllowed, (await browser.GetAsync("/Account/Logout")).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await browser.PostWithTokenAsync("/Account/Logout", new Dictionary<string, string>(), null)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await browser.PostWithoutTokenAsync("/Account/Logout", new Dictionary<string, string>())).StatusCode);
 
-        var logout = await browser.PostWithTokenAsync("/Account/Logout", new Dictionary<string, string>(), WebSession.Token(dashboard));
+        var logout = await browser.SubmitFormAsync(dashboard, "/Account/Logout", new Dictionary<string, string>());
         Assert.Equal("/Account/Login", logout.Headers.Location!.OriginalString);
         Assert.Contains(
             logout.Headers.GetValues("Set-Cookie"),
@@ -298,8 +298,8 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
         Assert.Contains("<svg class=\"qr\"", setup, StringComparison.Ordinal);
         var key = SharedKeyPattern().Match(setup).Groups["key"].Value;
 
-        var enabled = await browser.PostWithTokenAsync(
-            "/Account/EnableAuthenticator", new Dictionary<string, string> { ["Code"] = Totp.Compute(key) }, WebSession.Token(setup));
+        var enabled = await browser.SubmitFormAsync(
+            setup, "/Account/EnableAuthenticator", new Dictionary<string, string> { ["Code"] = Totp.Compute(key) });
         var codesPage = await enabled.Content.ReadAsStringAsync(Ct);
         Assert.Contains("Your recovery codes", codesPage, StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.OK, (await browser.GetAsync("/")).StatusCode);
@@ -327,12 +327,12 @@ public sealed partial class AccountTests(SqlServerContainer sql) : WebTestBase(s
         await browser.LoginAsync(userName, password);
         var setup = await browser.GetPageAsync("/Account/EnableAuthenticator");
         var key = SharedKeyPattern().Match(setup).Groups["key"].Value;
-        await browser.PostWithTokenAsync("/Account/EnableAuthenticator", new Dictionary<string, string> { ["Code"] = Totp.Compute(key) }, WebSession.Token(setup));
+        await browser.SubmitFormAsync(setup, "/Account/EnableAuthenticator", new Dictionary<string, string> { ["Code"] = Totp.Compute(key) });
 
         var page = await browser.GetPageAsync("/Account/Manage/TwoFactor");
         Assert.DoesNotContain("Turn off", page, StringComparison.Ordinal);
 
-        var forced = await browser.PostWithTokenAsync("/Account/Manage/TwoFactor/Disable", new Dictionary<string, string>(), WebSession.Token(page));
+        var forced = await browser.PostWithSessionTokenAsync("/Account/Manage/TwoFactor/Disable", new Dictionary<string, string>());
         Assert.Equal(HttpStatusCode.Redirect, forced.StatusCode);
         Assert.Contains("cannot be turned off", await browser.GetPageAsync("/Account/Manage/TwoFactor"), StringComparison.Ordinal);
     }

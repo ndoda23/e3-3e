@@ -55,10 +55,10 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
             .Where(p => p.RoleId == roleId).Select(p => p.Permission).ToListAsync(Ct));
         var page = await admin.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
 
-        var response = await admin.PostPairsWithTokenAsync(
+        var response = await admin.SubmitFormAsync(
+            page,
             $"/Admin/Roles/Permissions/{roleId}",
-            granted.Where(p => p != Permissions.Reports.View).Select(p => KeyValuePair.Create("permissions", p)),
-            WebSession.Token(page));
+            granted.Where(p => p != Permissions.Reports.View).Select(p => KeyValuePair.Create("permissions", p)));
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var dashboard = await user.GetPageAsync("/");
@@ -76,10 +76,10 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
         var roleId = await RoleIdAsync(RoleCodes.Underwriter);
         var page = await browser.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
 
-        var response = await browser.PostPairsWithTokenAsync(
+        var response = await browser.SubmitFormAsync(
+            page,
             $"/Admin/Roles/Permissions/{roleId}",
-            [KeyValuePair.Create("permissions", Permissions.Reports.View), KeyValuePair.Create("permissions", Permissions.Admin.UsersView)],
-            WebSession.Token(page));
+            [KeyValuePair.Create("permissions", Permissions.Reports.View), KeyValuePair.Create("permissions", Permissions.Admin.UsersView)]);
         var html = await response.Content.ReadAsStringAsync(Ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -99,10 +99,10 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
         var roleId = await RoleIdAsync(RoleCodes.Admin);
         var page = await browser.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
 
-        var response = await browser.PostPairsWithTokenAsync(
+        var response = await browser.SubmitFormAsync(
+            page,
             $"/Admin/Roles/Permissions/{roleId}",
-            [KeyValuePair.Create("permissions", Permissions.Admin.RolesManage)],
-            WebSession.Token(page));
+            [KeyValuePair.Create("permissions", Permissions.Admin.RolesManage)]);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("must keep the permission", WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(Ct)), StringComparison.Ordinal);
@@ -121,8 +121,8 @@ public sealed class RoleAdministrationTests(SqlServerContainer sql) : WebTestBas
         using var _admin = admin;
         var roleId = await RoleIdAsync(RoleCodes.Operator);
         var page = await admin.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
-        await admin.PostWithTokenAsync(
-            $"/Admin/Roles/RequireMfa/{roleId}", new Dictionary<string, string> { ["require"] = "true" }, WebSession.Token(page));
+        await admin.SubmitFormAsync(
+            page, $"/Admin/Roles/RequireMfa/{roleId}", new Dictionary<string, string> { ["require"] = "true" });
 
         Assert.True(await QueryAsync(db => db.Roles.Where(r => r.Id == roleId).Select(r => r.RequireMfa).SingleAsync(Ct)));
         Assert.Equal("/Account/EnableAuthenticator", (await user.GetAsync("/")).Headers.Location!.OriginalString);

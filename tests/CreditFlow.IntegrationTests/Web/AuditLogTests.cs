@@ -82,10 +82,10 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
         var roleId = await QueryAsync(db => db.Roles.Where(r => r.Code == RoleCodes.Underwriter).Select(r => r.Id).SingleAsync(Ct));
         var granted = await QueryAsync(db => db.RolePermissions.Where(p => p.RoleId == roleId).Select(p => p.Permission).ToListAsync(Ct));
         var page = await browser.GetPageAsync($"/Admin/Roles/Permissions/{roleId}");
-        await browser.PostPairsWithTokenAsync(
+        await browser.SubmitFormAsync(
+            page,
             $"/Admin/Roles/Permissions/{roleId}",
-            granted.Where(p => p != Permissions.Reports.View).Append(Permissions.Reports.Export).Select(p => KeyValuePair.Create("permissions", p)),
-            WebSession.Token(page));
+            granted.Where(p => p != Permissions.Reports.View).Append(Permissions.Reports.Export).Select(p => KeyValuePair.Create("permissions", p)));
         var recordId = await QueryAsync(db => db.AuditLogs
             .Where(l => l.Action == AuditActions.RolePermissionsChanged).Select(l => l.Id).SingleAsync(Ct));
 
@@ -120,7 +120,7 @@ public sealed class AuditLogTests(SqlServerContainer sql) : WebTestBase(sql)
 
         foreach (var path in new[] { $"/Admin/AuditLog/Delete/{any.Value}", $"/Admin/AuditLog/Edit/{any.Value}", $"/Admin/AuditLog/Details/{any.Value}" })
         {
-            var response = await browser.PostWithTokenAsync(path, new Dictionary<string, string>(), WebSession.Token(page));
+            var response = await browser.PostWithSessionTokenAsync(path, new Dictionary<string, string>());
             Assert.True(response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.MethodNotAllowed, $"{path}: {response.StatusCode}");
         }
 

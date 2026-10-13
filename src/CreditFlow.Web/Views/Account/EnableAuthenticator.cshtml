@@ -32,7 +32,7 @@
 @section Footer {
     @if (Model.Required)
     {
-        <form method="post" action="/Account/Logout" class="row">
+        <form method="post" asp-area="" asp-controller="Account" asp-action="Logout" class="row">
             <span class="grow">@T["EnableAuthenticator.Footer"]</span>
             <button type="submit" class="btn sm ghost">@T["Layout.SignOut"]</button>
         </form>

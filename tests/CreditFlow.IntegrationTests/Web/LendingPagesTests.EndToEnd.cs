@@ -81,7 +81,7 @@ public sealed partial class LendingPagesTests
         var loanId = await QueryAsync(db => db.Loans.Where(l => l.ApplicationId == new LoanApplicationId(id)).Select(l => l.Id.Value).SingleAsync(Ct));
         Assert.Contains($"data-loan=\"{loanId}\"", await operatorSession.GetPageAsync("/Loans"), StringComparison.Ordinal);
         await PostAsync(operatorSession, $"/Loans/PayInstallment/{loanId}");
-        await PostAsync(operatorSession, $"/Loans/RepayEarly/{loanId}", new() { ["full"] = "true" });
+        await operatorSession.PostFormAsync($"/Loans/Details/{loanId}?full=true", $"/Loans/RepayEarly/{loanId}", new Dictionary<string, string> { ["full"] = "true" });
         await ProcessOutboxAsync();
         Assert.Contains("data-loan-status=\"Closed\"", await operatorSession.GetPageAsync($"/Loans/Details/{loanId}"), StringComparison.Ordinal);
         Assert.Equal(ApplicationStatus.Closed, await PageStatusAsync(id));

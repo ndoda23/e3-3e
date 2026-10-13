@@ -830,6 +830,14 @@ the 7 CreditFlow roles.
 unused `Branch.Create(BranchId, …)` overload removed; `.editorconfig` naming rules for private constants/static
 readonly (already in the working tree).
 
+**Known gap — antiforgery crawl coverage.** `AntiforgeryFormTests` browses the demo data as every role and checks
+each rendered POST form for its token, but the demo data has no record in the state that renders these forms, so
+they are allow-listed rather than crawled: MFA management (Disable / RecoveryCodes / Reset — needs a user with MFA
+on), Activate for an inactive branch, product or user, Unlock for a locked user, RemoveCollateral / RemoveParty
+(needs a draft with collateral or a co-borrower/guarantor), RemoveObligation (needs a client with an obligation),
+RepayEarly (rendered only after an early-repayment quote, a GET form the crawl does not submit). Closing it means
+creating those states before the crawl.
+
 ### P.2.4 Resource-based rules and SQL-side filtering
 - `ApplicationAccessPolicy` (Application, pure) turns a `UserAccessProfile` into an `ApplicationAccessFilter`
   (scope: none / branch X / all; `ExcludeCreatedBy`). Infrastructure translates it into a `Where` on the

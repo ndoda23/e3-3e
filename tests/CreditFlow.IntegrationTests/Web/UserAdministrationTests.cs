@@ -60,7 +60,8 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var (_, inactiveId, _) = await CreateUserAsync(RoleCodes.Auditor);
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        await PostActionAsync(browser, inactiveId, "Deactivate");
+        var modal = await (await browser.HtmxGetAsync($"/Admin/Users/Confirm/{inactiveId}?operation=Deactivate")).Content.ReadAsStringAsync(Ct);
+        await browser.SubmitFormAsync(modal, $"/Admin/Users/Deactivate/{inactiveId}", new Dictionary<string, string>());
 
         var html = await (await browser.HtmxGetAsync("/Admin/Users/Rows?status=Inactive&sort=LastLogin&desc=true"))
             .Content.ReadAsStringAsync(Ct);
@@ -193,7 +194,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         Assert.Contains("role=\"dialog\"", modal, StringComparison.Ordinal);
         Assert.Contains($"action=\"/Admin/Users/Deactivate/{id}\"", modal, StringComparison.Ordinal);
 
-        var response = await browser.PostWithTokenAsync($"/Admin/Users/Deactivate/{id}", new Dictionary<string, string>(), WebSession.Token(modal));
+        var response = await browser.SubmitFormAsync(modal, $"/Admin/Users/Deactivate/{id}", new Dictionary<string, string>());
 
         Assert.Equal($"/Admin/Users/Details/{id}", response.Headers.Location!.OriginalString);
         var (active, audited) = await QueryAsync(async db => (
@@ -212,7 +213,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var details = await browser.GetPageAsync($"/Admin/Users/Details/{adminId}");
         Assert.DoesNotContain("operation=Deactivate", details, StringComparison.Ordinal);
 
-        await PostActionAsync(browser, adminId, "Deactivate");
+        Assert.Equal(HttpStatusCode.Redirect, (await browser.PostWithSessionTokenAsync($"/Admin/Users/Deactivate/{adminId}", new Dictionary<string, string>())).StatusCode);
 
         Assert.Contains("You cannot deactivate your own account.", await browser.GetPageAsync($"/Admin/Users/Details/{adminId}"), StringComparison.Ordinal);
         Assert.True(await QueryAsync(db => db.StaffMembers.Where(s => s.Id == adminId).Select(s => s.IsActive).SingleAsync(Ct)));
@@ -224,9 +225,11 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var (_, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var token = WebSession.Token(await browser.GetPageAsync($"/Admin/Users/Details/{id}"));
+        var details = await browser.GetPageAsync($"/Admin/Users/Details/{id}");
+        var modal = await (await browser.HtmxGetAsync($"/Admin/Users/Confirm/{id}?operation=ResetPassword")).Content.ReadAsStringAsync(Ct);
+        Assert.Contains($"hx-post=\"/Admin/Users/ResetPassword/{id}\"", modal, StringComparison.Ordinal);
 
-        var response = await browser.HtmxPostAsync($"/Admin/Users/ResetPassword/{id}", new Dictionary<string, string>(), token);
+        var response = await browser.HtmxPostAsync($"/Admin/Users/ResetPassword/{id}", new Dictionary<string, string>(), details);
         var html = await response.Content.ReadAsStringAsync(Ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -253,7 +256,8 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var stampBefore = await QueryAsync(db => db.Users.Where(u => u.Id == id.Value).Select(u => u.SecurityStamp).SingleAsync(Ct));
 
         await PostActionAsync(browser, id, "Unlock");
-        await PostActionAsync(browser, id, "ForceSignOut");
+        var forceSignOut = await (await browser.HtmxGetAsync($"/Admin/Users/Confirm/{id}?operation=ForceSignOut")).Content.ReadAsStringAsync(Ct);
+        Assert.Equal(HttpStatusCode.Redirect, (await browser.SubmitFormAsync(forceSignOut, $"/Admin/Users/ForceSignOut/{id}", new Dictionary<string, string>())).StatusCode);
         await PostActionAsync(browser, id, "RequireMfa", new Dictionary<string, string> { ["require"] = "true" });
 
         var account = await QueryAsync(db => db.Users.SingleAsync(u => u.Id == id.Value, Ct));
@@ -272,10 +276,11 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var (_, id, _) = await CreateOperatorAsync();
         var (browser, _) = await SignInAsAdministratorAsync();
         using var _browser = browser;
-        var token = WebSession.Token(await browser.GetPageAsync("/Admin/Users"));
+        var list = await browser.GetPageAsync("/Admin/Users");
+        Assert.Contains($"hx-post=\"/Admin/Users/Availability/{id}\"", list, StringComparison.Ordinal);
 
         var response = await browser.HtmxPostAsync(
-            $"/Admin/Users/Availability/{id}", new Dictionary<string, string> { ["isAvailable"] = "false" }, token);
+            $"/Admin/Users/Availability/{id}", new Dictionary<string, string> { ["isAvailable"] = "false" }, list);
         var html = await response.Content.ReadAsStringAsync(Ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -291,9 +296,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
         var (userName, _, password) = await CreateOperatorAsync();
         using var browser = NewSession();
         await browser.LoginAsync(userName, password);
-        var token = WebSession.Token(await browser.GetPageAsync("/"));
-
-        var response = await browser.PostWithTokenAsync($"/Admin/Users/Deactivate/{targetId}", new Dictionary<string, string>(), token);
+        var response = await browser.PostWithSessionTokenAsync($"/Admin/Users/Deactivate/{targetId}", new Dictionary<string, string>());
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal("/Account/AccessDenied", response.Headers.Location!.AbsolutePath);
@@ -337,8 +340,7 @@ public sealed partial class UserAdministrationTests(SqlServerContainer sql) : We
     private static async Task PostActionAsync(
         WebSession browser, UserId id, string action, IDictionary<string, string>? fields = null)
     {
-        var token = WebSession.Token(await browser.GetPageAsync($"/Admin/Users/Details/{id}"));
-        var response = await browser.PostWithTokenAsync($"/Admin/Users/{action}/{id}", fields ?? new Dictionary<string, string>(), token);
+        var response = await browser.PostFormAsync($"/Admin/Users/Details/{id}", $"/Admin/Users/{action}/{id}", fields ?? new Dictionary<string, string>());
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
     }
 }

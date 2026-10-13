@@ -89,8 +89,8 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         Assert.DoesNotContain(id.ToString(), await batumi.GetPageAsync("/Applications"), StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.NotFound, (await batumi.GetAsync($"/Applications/Details/{id}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await batumi.GetAsync(documentLink)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(batumi, $"/Applications/Cancel/{id}", new() { ["reason"] = "Not mine." })).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(batumi, $"/Applications/Submit/{id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await batumi.PostWithSessionTokenAsync($"/Applications/Cancel/{id}", new Dictionary<string, string> { ["reason"] = "Not mine." })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await batumi.PostWithSessionTokenAsync($"/Applications/Submit/{id}", new Dictionary<string, string>())).StatusCode);
         Assert.Equal(ApplicationStatus.Draft, await StatusAsync(id));
     }
 
@@ -110,7 +110,9 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         Assert.Contains("LN-2026-000001", signed, StringComparison.Ordinal);
 
         Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Applications/Disburse/{id}")).StatusCode);
-        Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(browser, $"/Applications/Disburse/{id}")).StatusCode);
+
+        // A repeated submit (double click, back button): the form is gone, the stale post must not pay twice.
+        Assert.Equal(HttpStatusCode.Redirect, (await browser.PostWithSessionTokenAsync($"/Applications/Disburse/{id}", new Dictionary<string, string>())).StatusCode);
         Assert.Equal(1, await QueryAsync(db => db.Disbursements.CountAsync(Ct)));
         await Factory.Services.GetRequiredService<OutboxProcessor>().ProcessAllDueAsync(Ct); // the dispatcher is off in web tests
 
@@ -149,7 +151,7 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         var (userName, auditorId, password) = await CreateUserAsync(RoleCodes.Auditor);
         using var auditor = NewSession();
         await auditor.LoginAsync(userName, password);
-        var token = WebSession.Token(await auditor.GetPageAsync("/"));
+        var dashboard = await auditor.GetPageAsync("/");
         Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/Applications/Details/{applicationId}")).StatusCode);
         var auditBefore = await QueryAsync(db => db.AuditLogs.CountAsync(a => a.UserId == auditorId.Value, Ct));
 
@@ -158,7 +160,7 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         var allowed = new List<string>();
         foreach (var action in protectedPosts)
         {
-            var response = await auditor.HtmxPostAsync(action.Path(applicationId), new Dictionary<string, string>(), token);
+            var response = await auditor.HtmxPostAsync(action.Path(applicationId), new Dictionary<string, string>(), dashboard);
             if (response.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.NotFound))
             {
                 allowed.Add($"{action.Path(applicationId)} → {(int)response.StatusCode}");
@@ -217,8 +219,12 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         return browser;
     }
 
-    private static async Task<HttpResponseMessage> PostAsync(WebSession browser, string path, Dictionary<string, string>? fields = null) =>
-        await browser.PostWithTokenAsync(path, fields ?? [], WebSession.Token(await browser.GetPageAsync("/")));
+    /// <summary>Submits the form posting to <paramref name="path"/> (<c>/Controller/Action/{id}</c>) from that record's details page.</summary>
+    private static Task<HttpResponseMessage> PostAsync(WebSession browser, string path, Dictionary<string, string>? fields = null)
+    {
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return browser.PostFormAsync($"/{segments[0]}/Details/{segments[2]}", path, fields ?? []);
+    }
 
     private static Guid IdFrom(HttpResponseMessage response)
     {
@@ -269,9 +275,8 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
     private static async Task<HttpResponseMessage> UploadAsync(
         WebSession browser, Guid id, DocumentType type, byte[]? content = null, int? wizardStep = null)
     {
-        var token = WebSession.Token(await browser.GetPageAsync($"/Applications/Details/{id}"));
+        var page = await browser.GetPageAsync(wizardStep is { } shown ? $"/Applications/Wizard/{id}?step={shown}" : $"/Applications/Details/{id}");
         using var form = new MultipartFormDataContent();
-        form.Add(new StringContent(token), "__RequestVerificationToken");
         form.Add(new StringContent(type.ToString()), "type");
         if (wizardStep is { } step)
         {
@@ -281,7 +286,7 @@ public sealed partial class LendingPagesTests(SqlServerContainer sql) : WebTestB
         var file = new ByteArrayContent(content ?? Pdf);
         file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         form.Add(file, "file", $"{type}.pdf");
-        var response = await browser.Client.PostAsync($"/Applications/Upload/{id}", form, Ct);
+        var response = await browser.SubmitMultipartFormAsync(page, $"/Applications/Upload/{id}", form);
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         return response;
     }

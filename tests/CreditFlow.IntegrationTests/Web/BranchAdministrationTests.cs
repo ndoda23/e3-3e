@@ -83,7 +83,7 @@ public sealed class BranchAdministrationTests(SqlServerContainer sql) : WebTestB
 
         var modal = await (await browser.HtmxGetAsync($"/Admin/Branches/Confirm/{id}?delete=false")).Content.ReadAsStringAsync(Ct);
         Assert.Contains("1 user(s)", modal, StringComparison.Ordinal);
-        await browser.PostWithTokenAsync($"/Admin/Branches/Deactivate/{id}", new Dictionary<string, string>(), WebSession.Token(modal));
+        await browser.SubmitFormAsync(modal, $"/Admin/Branches/Deactivate/{id}", new Dictionary<string, string>());
 
         Assert.False(await QueryAsync(db => db.Branches.Where(b => b.Id == new BranchId(id)).Select(b => b.IsActive).SingleAsync(Ct)));
         var newUserFields = await (await browser.HtmxGetAsync($"/Admin/Users/RoleFields?RoleId={operatorRole}")).Content.ReadAsStringAsync(Ct);
@@ -107,9 +107,9 @@ public sealed class BranchAdministrationTests(SqlServerContainer sql) : WebTestB
         Assert.DoesNotContain($"Confirm/{used}?delete=true", list, StringComparison.Ordinal);
         Assert.Contains($"Confirm/{unused}?delete=true", list, StringComparison.Ordinal);
 
-        var token = WebSession.Token(list);
-        await browser.PostWithTokenAsync($"/Admin/Branches/Delete/{used}", new Dictionary<string, string>(), token);
-        await browser.PostWithTokenAsync($"/Admin/Branches/Delete/{unused}", new Dictionary<string, string>(), token);
+        await browser.PostWithSessionTokenAsync($"/Admin/Branches/Delete/{used}", new Dictionary<string, string>());
+        var modal = await (await browser.HtmxGetAsync($"/Admin/Branches/Confirm/{unused}?delete=true")).Content.ReadAsStringAsync(Ct);
+        await browser.SubmitFormAsync(modal, $"/Admin/Branches/Delete/{unused}", new Dictionary<string, string>());
 
         Assert.True(await QueryAsync(db => db.Branches.AnyAsync(b => b.Id == new BranchId(used), Ct)));
         Assert.False(await QueryAsync(db => db.Branches.AnyAsync(b => b.Id == new BranchId(unused), Ct)));
