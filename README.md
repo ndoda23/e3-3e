@@ -61,7 +61,6 @@ forced password change. Sign in with the user name or the email.
 | `lasha.chkheidze` | Business Development Manager (BDM) | — | — |
 | `keti.nadiradze` | Back Office (BO) | — | — |
 | `nino.kvaratskhelia` | AML / KYC Analyst (AML) | — | — |
-| `levan.abashidze` | Financial Analysis & Budgeting (FAB) | — | — |
 | `irakli.tsereteli` | Head (HD) | — | Business |
 | `sophio.gogichaishvili` | Head (HD) | — | Retail |
 | `zurab.kapanadze` | Bank Director (DIR) | — | — |
