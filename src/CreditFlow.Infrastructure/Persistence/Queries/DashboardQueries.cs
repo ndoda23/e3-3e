@@ -63,15 +63,6 @@ internal sealed class DashboardQueries(CreditFlowDbContext db) : IDashboardQueri
         return new DashboardData(DashboardKind.Operator, tiles, attention);
     }
 
-    public async Task<IReadOnlyList<DashboardTile>> UnderwritingAsync(
-        ApplicationAccessFilter access, DateTimeOffset now, bool withOverridable, CancellationToken cancellationToken)
-    {
-        var escalated = new DashboardTile(DashboardMetric.Escalated, await CountAsync(access, ApplicationQueueKind.Escalated, now, cancellationToken));
-        return withOverridable
-            ? [escalated, new DashboardTile(DashboardMetric.Overridable, await CountAsync(access, ApplicationQueueKind.NeedsOverride, now, cancellationToken))]
-            : [escalated];
-    }
-
     public async Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken)
     {
         DashboardTile[] tiles =

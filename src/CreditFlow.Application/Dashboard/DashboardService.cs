@@ -65,10 +65,6 @@ public interface IDashboardQueries
 {
     Task<DashboardData> OperatorAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
-    /// <summary>Escalated files and, when <paramref name="withOverridable"/>, files whose latest scoring needs an override.</summary>
-    Task<IReadOnlyList<DashboardTile>> UnderwritingAsync(
-        ApplicationAccessFilter access, DateTimeOffset now, bool withOverridable, CancellationToken cancellationToken);
-
     Task<DashboardData> AuditAsync(ApplicationAccessFilter access, DateTimeOffset now, int take, CancellationToken cancellationToken);
 
     Task<DashboardData> AdministrationAsync(DateTimeOffset now, int take, CancellationToken cancellationToken);
@@ -97,7 +93,7 @@ public sealed class DashboardService(
         return profile.Dashboard switch
         {
             DashboardKind.Operator => await queries.OperatorAsync(filter, now, AttentionSize, cancellationToken),
-            DashboardKind.Underwriting => await UnderwritingAsync(profile, filter, now, cancellationToken),
+            DashboardKind.Underwriting => await UnderwritingAsync(profile, filter, cancellationToken),
             DashboardKind.Committee => await InboxDashboardAsync(
                 DashboardKind.Committee, Inbox.Committee, DashboardMetric.AwaitingVote, profile, filter, Permissions.Committee.Vote, [], cancellationToken),
             DashboardKind.Compliance => await InboxDashboardAsync(
@@ -109,13 +105,23 @@ public sealed class DashboardService(
         };
     }
 
-    private async Task<DashboardData> UnderwritingAsync(
-        UserAccessProfile profile, ApplicationAccessFilter filter, DateTimeOffset now, CancellationToken cancellationToken)
+    /// <summary>
+    /// The underwriting inbox; a Senior Underwriter also sees how much of it is escalated or needs an override (the
+    /// inbox with that filter). A plain Underwriter never gets escalated files, so has no such tiles.
+    /// </summary>
+    private async Task<DashboardData> UnderwritingAsync(UserAccessProfile profile, ApplicationAccessFilter filter, CancellationToken cancellationToken)
     {
-        var senior = CurrentAccessProfile.AuthorityOf(profile)?.MaxTier == ApprovalTier.SeniorUnderwriter;
-        var extra = profile.HasPermission(Permissions.Underwriting.Decide)
-            ? await queries.UnderwritingAsync(filter, now, withOverridable: senior, cancellationToken)
-            : [];
+        var authority = CurrentAccessProfile.AuthorityOf(profile);
+        List<DashboardTile> extra = [];
+        if (profile.HasPermission(Permissions.Underwriting.Decide) && authority?.MaxTier == ApprovalTier.SeniorUnderwriter)
+        {
+            foreach (var (metric, inboxFilter) in new[] { (DashboardMetric.Escalated, InboxFilter.Escalated), (DashboardMetric.Overridable, InboxFilter.NeedsOverride) })
+            {
+                var page = await applications.InboxAsync(Inbox.Underwriting, filter, authority.MaxTier, 1, 1, inboxFilter, cancellationToken);
+                extra.Add(new DashboardTile(metric, page.TotalCount));
+            }
+        }
+
         return await InboxDashboardAsync(
             DashboardKind.Underwriting, Inbox.Underwriting, DashboardMetric.Inbox, profile, filter, Permissions.Underwriting.Decide, extra, cancellationToken);
     }
@@ -131,7 +137,7 @@ public sealed class DashboardService(
         }
 
         var page = await applications.InboxAsync(
-            inbox, filter, CurrentAccessProfile.AuthorityOf(profile)?.MaxTier, 1, AttentionSize, cancellationToken);
+            inbox, filter, CurrentAccessProfile.AuthorityOf(profile)?.MaxTier, 1, AttentionSize, null, cancellationToken);
         var items = page.Items
             .Select(i => new AttentionItem(AttentionKind.Application, i.Id.Value.ToString(), $"{i.Reference} · {i.BorrowerName}", i.Status, i.ProductName, i.StatusChangedAt, i.AmountGel))
             .ToList();

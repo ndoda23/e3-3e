@@ -24,7 +24,7 @@ public sealed class InboxController(DecisionService decisions, CurrentAccess cur
     ];
 
     [HttpGet]
-    public async Task<IActionResult> Index(Inbox? inbox, int page, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(Inbox? inbox, InboxFilter? filter, int page, CancellationToken cancellationToken)
     {
         var available = Available(await currentAccess.GetAsync());
         if (available.Count == 0)
@@ -33,7 +33,8 @@ public sealed class InboxController(DecisionService decisions, CurrentAccess cur
         }
 
         var current = inbox is { } requested && available.Contains(requested) ? requested : available[0];
-        var model = new InboxViewModel(current, available, await decisions.InboxAsync(current, page, cancellationToken));
+        var active = current == Inbox.Underwriting && filter is { } wanted && Enum.IsDefined(wanted) ? wanted : (InboxFilter?)null;
+        var model = new InboxViewModel(current, available, await decisions.InboxAsync(current, page, cancellationToken, active), active);
         return Request.IsHtmx() ? PartialView("_InboxRows", model) : View(model);
     }
 

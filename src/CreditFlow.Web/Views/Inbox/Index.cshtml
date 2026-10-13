@@ -19,6 +19,20 @@
     </nav>
 }
 <section class="card" aria-label="@T[$"Inbox.{Model.Current}"]" data-current-inbox="@Model.Current">
+    @if (Model.Current == CreditFlow.Application.Applications.Inbox.Underwriting)
+    {
+        <div class="card-head">
+            <nav class="segmented" aria-label="@T["Inbox.Filter"]">
+                <a class="seg @(Model.Filter is null ? "active" : null)" href="@Url.Action("Index", new { inbox = Model.Current })"
+                   aria-current="@(Model.Filter is null ? "true" : null)">@T["Inbox.Filter.All"]</a>
+                @foreach (var option in Enum.GetValues<CreditFlow.Application.Applications.InboxFilter>())
+                {
+                    <a class="seg @(Model.Filter == option ? "active" : null)" href="@Url.Action("Index", new { inbox = Model.Current, filter = option })"
+                       aria-current="@(Model.Filter == option ? "true" : null)" data-inbox-filter="@option">@T[$"Inbox.Filter.{option}"]</a>
+                }
+            </nav>
+        </div>
+    }
     <div id="inbox-rows" class="tbl-body">
         <partial name="_InboxRows" model="Model" />
     </div>

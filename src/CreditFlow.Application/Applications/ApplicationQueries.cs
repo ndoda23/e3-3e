@@ -53,6 +53,16 @@ public enum ApplicationQueueKind
     RecentlyDisbursed = 9,
 }
 
+/// <summary>A narrower view of the Underwriting inbox (what the Senior Underwriter's dashboard tiles count).</summary>
+public enum InboxFilter
+{
+    /// <summary>Files escalated to a Senior Underwriter.</summary>
+    Escalated = 1,
+
+    /// <summary>Files whose latest scoring failed an overridable rule.</summary>
+    NeedsOverride = 2,
+}
+
 /// <summary>The time limits of the queues.</summary>
 public static class ApplicationQueues
 {
@@ -216,8 +226,9 @@ public interface IApplicationQueries
     /// <param name="page">Page number.</param>
     /// <param name="pageSize">Page size.</param>
     /// <param name="cancellationToken">Cancellation.</param>
+    /// <param name="filter">Underwriting only: just the escalated files, or just those that need an override.</param>
     Task<PagedResult<ApplicationListItem>> InboxAsync(
-        Inbox inbox, ApplicationAccessFilter access, ApprovalTier? maxTier, int page, int pageSize,
+        Inbox inbox, ApplicationAccessFilter access, ApprovalTier? maxTier, int page, int pageSize, InboxFilter? filter,
         CancellationToken cancellationToken);
 
     /// <summary>The application, or <c>null</c> when it does not exist or the viewer may not see it.</summary>

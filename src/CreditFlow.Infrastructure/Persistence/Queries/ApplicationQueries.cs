@@ -71,7 +71,7 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider cl
     }
 
     public async Task<PagedResult<ApplicationListItem>> InboxAsync(
-        Inbox inbox, ApplicationAccessFilter access, ApprovalTier? maxTier, int page, int pageSize,
+        Inbox inbox, ApplicationAccessFilter access, ApprovalTier? maxTier, int page, int pageSize, InboxFilter? filter,
         CancellationToken cancellationToken)
     {
         if (access.SeesNothing)
@@ -93,6 +93,12 @@ internal sealed class ApplicationQueries(CreditFlowDbContext db, TimeProvider cl
                 candidates.Where(a => a.Status == ApplicationStatus.Underwriting
                                       && a.Tier == ApprovalTier.Underwriter && a.EscalatedAt == null),
             _ => candidates.Where(_ => false),
+        };
+        candidates = filter switch
+        {
+            InboxFilter.Escalated => candidates.InQueue(ApplicationQueueKind.Escalated, clock.GetUtcNow(), db),
+            InboxFilter.NeedsOverride => candidates.InQueue(ApplicationQueueKind.NeedsOverride, clock.GetUtcNow(), db),
+            _ => candidates,
         };
 
         // Oldest first: the queue order.

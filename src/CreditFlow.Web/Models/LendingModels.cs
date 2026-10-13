@@ -364,7 +364,9 @@ public sealed record ApplicationPageViewModel(
     ApplicationDetails Application, ApplicationActions Actions, bool CanOverride, CreditFlow.Domain.Loans.LoanId? Loan);
 
 /// <summary>One decision queue of the viewer and the other queues they may open.</summary>
-public sealed record InboxViewModel(Inbox Current, IReadOnlyList<Inbox> Available, PagedResult<ApplicationListItem> Applications);
+/// <param name="Filter">The active Underwriting filter (escalated / needs override), shown above the list.</param>
+public sealed record InboxViewModel(
+    Inbox Current, IReadOnlyList<Inbox> Available, PagedResult<ApplicationListItem> Applications, InboxFilter? Filter = null);
 
 /// <summary>
 /// The loan page: the loan, whether the viewer may record repayments, and an early-repayment quote when one was asked

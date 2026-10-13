@@ -81,7 +81,7 @@ public sealed class DashboardTests(SqlServerContainer sql) : DatabaseTestBase(sq
         Assert.Equal(1, Count(underwriter, DashboardMetric.Inbox));
         Assert.Equal(small.Value.ToString(), Assert.Single(underwriter.Attention).Id);
         Assert.Equal(_clock.GetUtcNow().AddHours(-5), underwriter.OldestWaitingSince);
-        Assert.DoesNotContain(underwriter.Tiles, t => t.Metric == DashboardMetric.Overridable);
+        Assert.Equal([DashboardMetric.Inbox], underwriter.Tiles.Select(t => t.Metric)); // escalated files never reach a plain UW
         Assert.Equal(1, Count(senior, DashboardMetric.Overridable));
         Assert.Equal(0, Count(senior, DashboardMetric.Escalated));
 

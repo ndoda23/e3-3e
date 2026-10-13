@@ -47,6 +47,10 @@
   <data name="Dashboard.OldestWaiting" xml:space="preserve"><value>Oldest waiting {0}</value></data>
   <data name="Dashboard.Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
   <data name="Applications.Queue" xml:space="preserve"><value>Queue</value></data>
+  <data name="Inbox.Filter" xml:space="preserve"><value>Show</value></data>
+  <data name="Inbox.Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="Inbox.Filter.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Inbox.Filter.NeedsOverride" xml:space="preserve"><value>Needs an override</value></data>
   <data name="Applications.AllQueues" xml:space="preserve"><value>Any queue</value></data>
   <data name="Enum.ApplicationQueueKind.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
   <data name="Enum.ApplicationQueueKind.PayoutPending" xml:space="preserve"><value>Payout pending</value></data>

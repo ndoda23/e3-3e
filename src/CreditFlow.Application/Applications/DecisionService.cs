@@ -22,7 +22,8 @@ public sealed class DecisionService(
     IUnitOfWork unitOfWork,
     TimeProvider clock)
 {
-    public async Task<PagedResult<ApplicationListItem>> InboxAsync(Inbox inbox, int page, CancellationToken cancellationToken)
+    public async Task<PagedResult<ApplicationListItem>> InboxAsync(
+        Inbox inbox, int page, CancellationToken cancellationToken, InboxFilter? filter = null)
     {
         var profile = await access.GetAsync(cancellationToken);
         if (profile is null || !profile.HasPermission(PermissionFor(inbox)))
@@ -32,7 +33,7 @@ public sealed class DecisionService(
 
         return await queries.InboxAsync(
             inbox, ApplicationAccessFilter.For(profile), CurrentAccessProfile.AuthorityOf(profile)?.MaxTier,
-            Paging.NormalizePage(page), Paging.DefaultPageSize, cancellationToken);
+            Paging.NormalizePage(page), Paging.DefaultPageSize, inbox == Inbox.Underwriting ? filter : null, cancellationToken);
     }
 
     public Task<Result> DecideComplianceAsync(LoanApplicationId id, bool clear, string? reason, CancellationToken cancellationToken) =>
