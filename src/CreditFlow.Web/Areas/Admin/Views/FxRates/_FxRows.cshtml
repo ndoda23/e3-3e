@@ -1,0 +1,43 @@
+@model FxRatesViewModel
+@{
+    var page = Model.Rates;
+    var pager = new CreditFlow.Web.Models.PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => Url.Action("Index", new { currency = Model.Currency, page = n })!,
+        n => Url.Action("Index", new { currency = Model.Currency, page = n })!,
+        "#fx-rows");
+}
+<div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr>
+                <th scope="col">@T["Field.Currency"]</th>
+                <th scope="col">@T["FxRates.EffectiveDate"]</th>
+                <th scope="col" class="num">@T["FxRates.GelPerUnit"]</th>
+                <th scope="col"><span class="sr-only">@T["Common.Actions"]</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rate in page.Items)
+            {
+                <tr data-fx="@rate.Currency-@rate.EffectiveDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)">
+                    <td>@rate.Currency</td>
+                    <td class="tnum">@DisplayFormat.Date(rate.EffectiveDate)</td>
+                    <td class="num tnum">@rate.GelPerUnit.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)</td>
+                    <td class="actions">
+                        <form method="post" asp-action="Delete">
+                            <input type="hidden" name="currency" value="@rate.Currency" />
+                            <input type="hidden" name="effectiveDate" value="@rate.EffectiveDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" />
+                            <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (page.TotalCount == 0)
+    {
+        <div class="empty">@T["FxRates.None"]</div>
+    }
+</div>
+<partial name="_Pager" model="pager" />

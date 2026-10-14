@@ -1,0 +1,74 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Products
+@{
+    var a = Model.Application;
+    var act = Model.Actions;
+    var id = a.Summary.Id.Value;
+}
+<section class="card" aria-labelledby="documents-title" data-section="documents">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="documents-title">@T["Applications.Documents"]</h2>
+            @if (a.MissingDocuments.Count > 0)
+            {
+                <p class="card-sub" data-missing>@T["Applications.MissingDocuments", string.Join(", ", a.MissingDocuments.Select(d => T.EnumText(d)))]</p>
+            }
+            else
+            {
+                <p class="card-sub" data-checklist-complete>@T["Applications.ChecklistComplete"]</p>
+            }
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var document in a.Documents)
+                {
+                    <tr data-document="@document.Type">
+                        <td>@T.EnumText(document.Type)</td>
+                        <td>
+                            @if (act.DownloadDocuments)
+                            {
+                                <a asp-action="Document" asp-route-id="@id" asp-route-documentId="@document.Id.Value">@document.FileName</a>
+                            }
+                            else
+                            {
+                                @document.FileName
+                            }
+                        </td>
+                        <td class="muted small">@document.UploadedBy · @DisplayFormat.DateTime(document.UploadedAt)</td>
+                        @if (act.ChangeDocuments)
+                        {
+                            <td class="actions">
+                                <form method="post" asp-action="RemoveDocument" asp-route-id="@id">
+                                    <partial name="_StepField" />
+                                    <input type="hidden" name="documentId" value="@document.Id.Value" />
+                                    <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (a.Documents.Count == 0)
+        {
+            <div class="empty">@T["Applications.NoDocuments"]</div>
+        }
+    </div>
+    @if (act.ChangeDocuments)
+    {
+        <form method="post" asp-action="Upload" asp-route-id="@id" enctype="multipart/form-data" class="card-body form row wrap">
+            <partial name="_StepField" />
+            <select name="type" class="select" aria-label="@T["Applications.DocumentType"]">
+                @foreach (var type in Enum.GetValues<DocumentType>())
+                {
+                    <option value="@type" selected="@(a.MissingDocuments.FirstOrDefault() == type)">@T.EnumText(type)</option>
+                }
+            </select>
+            <input name="file" type="file" accept="application/pdf,image/png,image/jpeg" aria-label="@T["Applications.File"]" />
+            <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Applications.Upload"]</button>
+            <span class="hint">@T["Applications.UploadHint"]</span>
+        </form>
+    }
+</section>

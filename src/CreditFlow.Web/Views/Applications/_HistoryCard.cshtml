@@ -1,0 +1,27 @@
+@model ApplicationPageViewModel
+<section class="card" aria-labelledby="history-title" data-section="history">
+    <div class="card-head"><h2 class="card-title" id="history-title">@T["Applications.History"]</h2></div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Applications.When"]</th>
+                    <th scope="col">@T["Field.Status"]</th>
+                    <th scope="col">@T["Applications.Who"]</th>
+                    <th scope="col">@T["Applications.Reason"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.Application.History)
+                {
+                    <tr data-history="@entry.To">
+                        <td class="muted tnum nowrap">@DisplayFormat.DateTime(entry.At)</td>
+                        <td>@(entry.From is { } from ? T.EnumText(from) + " → " : null)@T.EnumText(entry.To)</td>
+                        <td>@entry.By</td>
+                        <td class="small">@entry.Reason</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

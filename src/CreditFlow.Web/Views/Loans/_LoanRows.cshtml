@@ -1,0 +1,49 @@
+@model LoanIndexViewModel
+@using CreditFlow.Domain.Loans
+@using CreditFlow.Web.Controllers
+@{
+    var page = Model.Loans;
+    var pager = new PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => Url.Action("Index", LoansController.RouteValues(Model.Search, n))!,
+        n => Url.Action("Rows", LoansController.RouteValues(Model.Search, n))!,
+        "#loan-rows");
+}
+<div class="table-wrap">
+    <table class="tbl">
+        <caption class="sr-only">@T["Nav.Loans"]</caption>
+        <thead>
+            <tr>
+                <th scope="col">@T["Applications.ContractNumber"]</th>
+                <th scope="col">@T["Applications.Borrower"]</th>
+                <th scope="col">@T["Field.Product"]</th>
+                <th scope="col" class="num">@T["Loans.Principal"]</th>
+                <th scope="col" class="num">@T["Loans.Outstanding"]</th>
+                <th scope="col">@T["Loans.NextDue"]</th>
+                <th scope="col">@T["Field.Status"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in page.Items)
+            {
+                <tr data-loan="@loan.Id.Value">
+                    <td><a class="row-link mono" asp-action="Details" asp-route-id="@loan.Id.Value">@loan.ContractNumber</a></td>
+                    <td>
+                        <div class="person-name">@loan.BorrowerName</div>
+                        <div class="person-sub mono">@loan.BorrowerPersonalNumber</div>
+                    </td>
+                    <td>@loan.ProductName</td>
+                    <td class="num tnum">@DisplayFormat.Money(loan.Principal)</td>
+                    <td class="num tnum">@DisplayFormat.Money(loan.OutstandingPrincipal)</td>
+                    <td class="tnum">@DisplayFormat.Date(loan.NextDueDate)</td>
+                    <td><span class="pill @(loan.Status == LoanStatus.Active ? "success" : "neutral")"><span class="dot"></span>@T.EnumText(loan.Status)</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (page.TotalCount == 0)
+    {
+        <div class="empty">@T["Loans.None"]</div>
+    }
+</div>
+<partial name="_Pager" model="pager" />

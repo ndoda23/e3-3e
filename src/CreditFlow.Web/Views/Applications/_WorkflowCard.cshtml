@@ -1,0 +1,58 @@
+@model ApplicationPageViewModel
+@{
+    var a = Model.Application;
+    var act = Model.Actions;
+    var id = a.Summary.Id.Value;
+}
+@if (act.EditDraft || act.Submit || act.SendToScoring || act.RecordClientResponse || act.Cancel)
+{
+    <section class="card mb" aria-labelledby="workflow-title" data-section="workflow">
+        <div class="card-head"><h2 class="card-title" id="workflow-title">@T["Applications.NextSteps"]</h2></div>
+        <div class="card-body stack">
+            <div class="row wrap">
+                @if (act.EditDraft)
+                {
+                    <a class="btn" asp-action="Wizard" asp-route-id="@id" asp-route-step="1" data-wizard-link><icon name="edit" size="15" />@T["Wizard.Continue"]</a>
+                }
+                @if (act.Submit)
+                {
+                    <form method="post" asp-action="Submit" asp-route-id="@id">
+                        <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Applications.Submit"]</button>
+                    </form>
+                }
+                @if (act.SendToScoring)
+                {
+                    <form method="post" asp-action="SendToScoring" asp-route-id="@id">
+                        <button type="submit" class="btn primary" disabled="@(a.MissingDocuments.Count > 0)"><icon name="sparkles" size="15" />@T["Applications.SendToScoring"]</button>
+                    </form>
+                }
+                @if (act.RecordClientResponse)
+                {
+                    <form method="post" asp-action="ClientResponse" asp-route-id="@id">
+                        <input type="hidden" name="accepted" value="true" />
+                        <button type="submit" class="btn primary">@T["Applications.ClientAccepts"]</button>
+                    </form>
+                }
+            </div>
+            @if (act.SendToScoring && a.MissingDocuments.Count > 0)
+            {
+                <p class="small muted">@T["Applications.UploadBeforeScoring"]</p>
+            }
+            @if (act.RecordClientResponse)
+            {
+                <form method="post" asp-action="ClientResponse" asp-route-id="@id" class="row wrap">
+                    <input type="hidden" name="accepted" value="false" />
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn">@T["Applications.ClientDeclines"]</button>
+                </form>
+            }
+            @if (act.Cancel)
+            {
+                <form method="post" asp-action="Cancel" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn danger">@T["Applications.Cancel"]</button>
+                </form>
+            }
+        </div>
+    </section>
+}

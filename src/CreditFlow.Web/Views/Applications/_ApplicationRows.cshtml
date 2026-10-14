@@ -1,0 +1,10 @@
+@model ApplicationIndexViewModel
+@{
+    var q = Model.Query;
+    var page = Model.Applications;
+    var pager = new PagerModel(
+        page.Page, page.TotalPages, page.TotalCount, page.PageSize,
+        n => Url.Action("Index", q.RouteValues(n))!, n => Url.Action("Rows", q.RouteValues(n))!, "#application-rows");
+}
+<partial name="_ApplicationTable" model="page.Items" />
+<partial name="_Pager" model="pager" />

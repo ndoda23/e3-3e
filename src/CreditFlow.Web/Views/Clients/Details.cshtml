@@ -1,0 +1,159 @@
+@model ClientPageViewModel
+@using CreditFlow.Domain.Clients
+@using CreditFlow.Domain.Common
+@{
+    var c = Model.Client;
+    var id = c.Id.Value;
+    ViewData["Title"] = $"{c.Details.FirstName} {c.Details.LastName}";
+    ViewData["Section"] = T["Nav.Clients"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc"><span class="mono" data-personal-number>@c.PersonalNumber</span> · @T["Clients.Kyc"]: @T.EnumText(c.Kyc) · @T["Clients.Screening"]: @T.EnumText(c.Screening)</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Nav.Clients"]</a>
+        @if (Model.CanManage)
+        {
+            <a class="btn" asp-action="Edit" asp-route-id="@id"><icon name="edit" size="15" />@T["Clients.Edit"]</a>
+        }
+        <a asp-permission="@Permissions.Applications.Create" class="btn primary" href="@Url.Action("New", "Applications", new { personalNumber = c.PersonalNumber })">
+            <icon name="plus" size="15" />@T["Topbar.CreateApplication"]
+        </a>
+    </div>
+</div>
+<partial name="_Notices" />
+<div class="grid-2 mb">
+    <section class="card" aria-labelledby="personal-title">
+        <div class="card-head"><h2 class="card-title" id="personal-title">@T["Clients.Personal"]</h2></div>
+        <dl class="dl card-body">
+            <dt>@T["Field.BirthDate"]</dt><dd>@DisplayFormat.Date(c.Details.BirthDate)</dd>
+            <dt>@T["Field.Phone"]</dt><dd>@c.Details.Phone</dd>
+            <dt>@T["Field.Email"]</dt><dd>@(c.Details.Email ?? DisplayFormat.Empty)</dd>
+            <dt>@T["Field.Address"]</dt><dd>@c.Details.Address</dd>
+            <dt>@T["Clients.CheckedAt"]</dt><dd>@DisplayFormat.DateTime(c.CheckedAt)</dd>
+        </dl>
+    </section>
+    <section class="card" aria-labelledby="document-title">
+        <div class="card-head"><h2 class="card-title" id="document-title">@T["Clients.IdentityDocument"]</h2></div>
+        <dl class="dl card-body">
+            <dt>@T["Field.DocumentType"]</dt><dd>@T.EnumText(c.Document.Type)</dd>
+            <dt>@T["Field.DocumentNumber"]</dt><dd class="mono">@c.Document.Number</dd>
+            <dt>@T["Field.DocumentIssuedOn"]</dt><dd>@DisplayFormat.Date(c.Document.IssuedOn)</dd>
+            <dt>@T["Field.DocumentExpiresOn"]</dt><dd>@DisplayFormat.Date(c.Document.ExpiresOn)</dd>
+        </dl>
+        @if (Model.CanManage)
+        {
+            <form method="post" asp-action="ReplaceDocument" asp-route-id="@id" class="card-body form">
+                <div class="row wrap">
+                    <select name="Type" class="select" aria-label="@T["Field.DocumentType"]">
+                        @foreach (var type in Enum.GetValues<IdentityDocumentType>())
+                        {
+                            <option value="@type">@T.EnumText(type)</option>
+                        }
+                    </select>
+                    <input name="Number" class="inp mono" placeholder="@T["Field.DocumentNumber"]" aria-label="@T["Field.DocumentNumber"]" autocomplete="off" />
+                    <input name="IssuedOn" type="date" class="inp" aria-label="@T["Field.DocumentIssuedOn"]" title="@T["Field.DocumentIssuedOn"]" />
+                    <input name="ExpiresOn" type="date" class="inp" aria-label="@T["Field.DocumentExpiresOn"]" title="@T["Field.DocumentExpiresOn"]" />
+                    <button type="submit" class="btn sm">@T["Clients.ReplaceDocument"]</button>
+                </div>
+            </form>
+        }
+    </section>
+</div>
+<section class="card mb" aria-labelledby="client-applications-title" data-section="client-applications">
+    <div class="card-head"><h2 class="card-title" id="client-applications-title">@T["Clients.Applications"]</h2></div>
+    <partial name="_ApplicationTable" model="Model.Applications" />
+</section>
+<div class="grid-2">
+    <section class="card" aria-labelledby="incomes-title">
+        <div class="card-head"><h2 class="card-title" id="incomes-title">@T["Clients.Incomes"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var income in c.Incomes)
+                    {
+                        <tr data-income>
+                            <td>@T.EnumText(income.Type)</td>
+                            <td>@income.Source</td>
+                            <td class="num tnum">@DisplayFormat.Money(income.MonthlyAmount)</td>
+                            @if (Model.CanManage)
+                            {
+                                <td class="actions">
+                                    <form method="post" asp-action="RemoveIncome" asp-route-id="@id">
+                                        <input type="hidden" name="incomeId" value="@income.Id.Value" />
+                                        <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (c.Incomes.Count == 0)
+            {
+                <div class="empty">@T["Clients.NoIncomes"]</div>
+            }
+        </div>
+        @if (Model.CanManage)
+        {
+            <form method="post" asp-action="AddIncome" asp-route-id="@id" class="card-body form">
+                <div class="row wrap">
+                    <select name="Type" class="select" aria-label="@T["Clients.IncomeType"]">
+                        @foreach (var type in Enum.GetValues<IncomeType>())
+                        {
+                            <option value="@type">@T.EnumText(type)</option>
+                        }
+                    </select>
+                    <input name="Source" class="inp" placeholder="@T["Clients.IncomeSource"]" aria-label="@T["Clients.IncomeSource"]" autocomplete="off" />
+                    <input name="MonthlyAmount" type="number" step="0.01" min="0" class="inp" placeholder="@T["Clients.MonthlyAmount"]" aria-label="@T["Clients.MonthlyAmount"]" />
+                    <partial name="_CurrencySelect" model="@("Currency")" />
+                    <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+                </div>
+            </form>
+        }
+    </section>
+    <section class="card" aria-labelledby="obligations-title">
+        <div class="card-head"><h2 class="card-title" id="obligations-title">@T["Clients.Obligations"]</h2></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <tbody>
+                    @foreach (var obligation in c.Obligations)
+                    {
+                        <tr data-obligation>
+                            <td>@obligation.Lender</td>
+                            <td class="num tnum">@DisplayFormat.Money(obligation.MonthlyPayment)</td>
+                            <td class="num tnum muted">@DisplayFormat.Money(obligation.OutstandingAmount)</td>
+                            @if (Model.CanManage)
+                            {
+                                <td class="actions">
+                                    <form method="post" asp-action="RemoveObligation" asp-route-id="@id">
+                                        <input type="hidden" name="obligationId" value="@obligation.Id.Value" />
+                                        <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (c.Obligations.Count == 0)
+            {
+                <div class="empty">@T["Clients.NoObligations"]</div>
+            }
+        </div>
+        @if (Model.CanManage)
+        {
+            <form method="post" asp-action="AddObligation" asp-route-id="@id" class="card-body form">
+                <div class="row wrap">
+                    <input name="Lender" class="inp" placeholder="@T["Clients.Lender"]" aria-label="@T["Clients.Lender"]" autocomplete="off" />
+                    <input name="MonthlyPayment" type="number" step="0.01" min="0" class="inp" placeholder="@T["Clients.MonthlyPayment"]" aria-label="@T["Clients.MonthlyPayment"]" />
+                    <input name="Outstanding" type="number" step="0.01" min="0" class="inp" placeholder="@T["Clients.Outstanding"]" aria-label="@T["Clients.Outstanding"]" />
+                    <partial name="_CurrencySelect" model="@("Currency")" />
+                    <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+                </div>
+            </form>
+        }
+    </section>
+</div>

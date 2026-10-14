@@ -1,0 +1,35 @@
+@model CreditFlow.Domain.Approval.ApprovalThresholds
+@{
+    ViewData["Title"] = T["Nav.ApprovalThresholds"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    string Value(decimal value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Thresholds.Description"]</p>
+    </div>
+</div>
+<partial name="_Notices" />
+<section class="card form-card" data-section="thresholds">
+    <form method="post" asp-action="Index" class="card-body form" novalidate>
+        <div class="form-grid">
+            <div class="field">
+                <label for="underwriterMaxGel" class="required">@T["Thresholds.UnderwriterMax"]</label>
+                <input id="underwriterMaxGel" name="underwriterMaxGel" type="number" step="0.01" min="0" class="inp" value="@Value(Model.UnderwriterMaxGel)" />
+            </div>
+            <div class="field">
+                <label for="seniorUnderwriterMaxGel" class="required">@T["Thresholds.SeniorMax"]</label>
+                <input id="seniorUnderwriterMaxGel" name="seniorUnderwriterMaxGel" type="number" step="0.01" min="0" class="inp" value="@Value(Model.SeniorUnderwriterMaxGel)" />
+            </div>
+            <div class="field">
+                <label for="requiredVotes" class="required">@T["Thresholds.RequiredVotes"]</label>
+                <input id="requiredVotes" name="requiredVotes" type="number" min="1" class="inp" value="@Model.RequiredVotes" />
+            </div>
+        </div>
+        <p class="hint">@T["Thresholds.Hint"]</p>
+        <div class="form-actions">
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Common.Save"]</button>
+        </div>
+    </form>
+</section>

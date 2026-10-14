@@ -1,0 +1,43 @@
+@model ApplicationPageViewModel
+@{
+    var a = Model.Application;
+    var s = a.Summary;
+    ViewData["Title"] = T["Applications.Title", s.Reference].Value;
+    ViewData["Section"] = T["Nav.Applications"].Value;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <partial name="_StatusPill" model="s.Status" />
+            @if (s.EscalatedAt is not null)
+            {
+                <span class="pill warning" title="@DisplayFormat.DateTime(s.EscalatedAt)">@T["Applications.Escalated"]</span>
+            }
+        </div>
+        <p class="page-desc">@s.ProductName · @s.BranchName · @T["Applications.CreatedBy", a.CreatedByName, DisplayFormat.DateTime(s.CreatedAt)]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Nav.Applications"]</a>
+    </div>
+</div>
+<partial name="_Notices" />
+
+@* The steps the viewer can take now come first; the record of the application follows. *@
+<partial name="_WorkflowCard" model="Model" />
+<partial name="_DecideCard" model="Model" />
+<partial name="_ContractCard" model="Model" />
+
+<div class="grid-2 mb">
+    <partial name="_TermsCard" model="Model" />
+    <partial name="_PartiesCard" model="Model" />
+</div>
+<div class="grid-2 mb">
+    <partial name="_CollateralCard" model="Model" />
+    <partial name="_DocumentsCard" model="Model" />
+</div>
+<partial name="_ScoringCard" model="Model" />
+<div class="grid-2">
+    <partial name="_HistoryCard" model="Model" />
+    <partial name="_DecisionsCard" model="Model" />
+</div>

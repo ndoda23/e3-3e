@@ -1,0 +1,75 @@
+@model ApplicationPageViewModel
+@using CreditFlow.Domain.Products
+@{
+    var a = Model.Application;
+    var act = Model.Actions;
+    var id = a.Summary.Id.Value;
+}
+@if (act.AnyDecision)
+{
+    <section class="card mb" aria-labelledby="decide-title" data-section="decide">
+        <div class="card-head">
+            <div>
+                <h2 class="card-title" id="decide-title">@T["Applications.Decision"]</h2>
+                @if (act.Decide && a.RequiredTier is { } tier)
+                {
+                    <p class="card-sub">@T["Applications.DecisionTier", T.EnumText(tier)]</p>
+                }
+            </div>
+        </div>
+        <div class="card-body stack">
+            @if (act.ReviewCompliance)
+            {
+                <form method="post" asp-action="Compliance" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" name="clear" value="true" class="btn primary">@T["Applications.ComplianceClear"]</button>
+                    <button type="submit" name="clear" value="false" class="btn danger">@T["Applications.ComplianceReject"]</button>
+                </form>
+            }
+            @if (act.Decide)
+            {
+                <form method="post" asp-action="Approve" asp-route-id="@id" class="row wrap">
+                    <select name="ConditionType" class="select" aria-label="@T["Applications.Condition"]">
+                        <option value="">@T["Applications.NoCondition"]</option>
+                        @foreach (var type in Enum.GetValues<ConditionType>())
+                        {
+                            <option value="@type">@T.EnumText(type)</option>
+                        }
+                    </select>
+                    <input name="ConditionDescription" class="inp grow" placeholder="@T["Applications.ConditionDescription"]" aria-label="@T["Applications.ConditionDescription"]" />
+                    @if (act.NeedsOverride && Model.CanOverride)
+                    {
+                        <input name="OverrideReason" class="inp grow" placeholder="@T["Applications.OverrideReason"]" aria-label="@T["Applications.OverrideReason"]" />
+                    }
+                    <button type="submit" class="btn primary" disabled="@(act.NeedsOverride && !Model.CanOverride)">@T["Applications.Approve"]</button>
+                </form>
+                @if (act.NeedsOverride && !Model.CanOverride)
+                {
+                    <p class="small muted">@T["Applications.OverrideNeeded"]</p>
+                }
+                <form method="post" asp-action="Reject" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn danger">@T["Applications.Reject"]</button>
+                </form>
+            }
+            @if (act.CounterOffer)
+            {
+                <form method="post" asp-action="CounterOffer" asp-route-id="@id" class="row wrap">
+                    <input name="Amount" type="number" step="0.01" min="0" class="inp" value="@a.Terms.Amount.Amount" aria-label="@T["Field.Amount"]" title="@T["Field.Amount"]" />
+                    <input name="TermMonths" type="number" min="1" class="inp" value="@a.Terms.TermMonths" aria-label="@T["Field.TermMonths"]" title="@T["Field.TermMonths"]" />
+                    <input name="AnnualRate" type="number" step="0.01" min="0" class="inp" value="@a.Terms.AnnualRate" aria-label="@T["Field.AnnualRate"]" title="@T["Field.AnnualRate"]" />
+                    <input name="Reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" class="btn">@T["Applications.CounterOffer"]</button>
+                </form>
+            }
+            @if (act.Vote)
+            {
+                <form method="post" asp-action="Vote" asp-route-id="@id" class="row wrap">
+                    <input name="reason" class="inp grow" placeholder="@T["Applications.Reason"]" aria-label="@T["Applications.Reason"]" />
+                    <button type="submit" name="approve" value="true" class="btn primary">@T["Applications.VoteApprove"]</button>
+                    <button type="submit" name="approve" value="false" class="btn danger">@T["Applications.VoteReject"]</button>
+                </form>
+            }
+        </div>
+    </section>
+}

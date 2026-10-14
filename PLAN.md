@@ -34,9 +34,11 @@ Sign-in works since Step 6 (accounts: see README in Step 8; for now the seeded `
 | 7c — Admin › Authority limits | done | `2c98a18` |
 | 7d — Admin › Branches | done | `68148fc` |
 | 7e — Admin › Audit log | done | `319312b` |
-| 8 — Integration tests and docs (light) | done | (this commit) |
+| 8 — Integration tests and docs (light) | done | `67435b9` |
 
 Test status after Step 8: build with 0 warnings; 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135 — Testcontainers SQL Server).
+
+The Phase 1 commits above are on branch `old-main-with-docs`; the Phase 2 branch `phase2-creditflow` starts from the squashed commit `b77ef6a` ("Phase1") of the same code.
 
 ### Seed versioning (SeedHistory, seed units)
 **Fully implemented and tested.** `SeedHistory` table (migration `AddSeedHistory`); units `0001_initial_roles_permissions`, `0002_initial_branches`, `0003_initial_authority_limits` run once each, in their own transaction; fixed role definitions re-applied on every start; `SeedOperations` helpers (`GrantAsync` enforces known permissions and segregation of duties); README documents adding a role / a grant.
@@ -435,7 +437,7 @@ Each step ends with a green build and tests, a summary and a suggested commit me
 - TOTP MFA: QR via QRCoder as SVG, a 2FA login step, recovery codes. Enrolment is enforced when the role or the user requires MFA.
 - The "My account" pages.
 - Every security event is audited, and LastLoginAt is set.
-- Post-login redirect by DashboardKind; SYSADMIN goes to Admin › Users. Access denied page.
+- Post-login landing by DashboardKind (since the UI polish SYSADMIN lands on the administration dashboard, not Admin › Users). Access denied page.
 
 **Implementation notes (as built)**
 - `AccountService` (Infrastructure/Identity) holds sign-in, 2FA, logout, password change and MFA management, with an audit record per security event (`LoginSucceeded`, `LoginFailed` with reason `UnknownUser`/`InvalidPassword`/`NotAllowed`/`InvalidAuthenticatorCode`/`InvalidRecoveryCode`, `LockedOut`, `LoginFailed:TemporaryPasswordExpired`, `Logout`, `PasswordChanged`, `MfaEnabled`, `MfaDisabled`, `MfaReset`, `RecoveryCodesGenerated`). Controllers stay thin.
@@ -443,9 +445,9 @@ Each step ends with a green build and tests, a summary and a suggested commit me
 - `ForcedAccountSetupFilter` (global): temporary password → `/Account/ChangePassword`; MFA required by role **or** account and not enrolled → `/Account/EnableAuthenticator`. Exempt endpoints carry `[AllowDuringAccountSetup]`. The state (`AccountSecurityState`) comes from the cached access profile: the user cache entry now also holds MustChangePassword, TwoFactorEnabled and the account's RequireMfa (loaded from `vw_UserDirectory` in one query); the role entry holds the role's RequireMfa. Admin password reset / MFA requirement and self-service password or MFA changes invalidate the user entry after commit.
 - QR code: inline SVG built from the QRCoder module matrix (no style attributes, CSP-safe).
 - Sign-in rate limit: fixed window per client IP, `Security:SignInAttemptsPerMinute` (default 10) on the password, 2FA and recovery-code posts; rejected requests get the 429 page.
-- Administrators land on `/Admin` (Users is the area's default controller).
+- Administrators land on their dashboard (locked users, users without MFA, role/permission changes); Admin › Users is one click away.
 - View inventory deviation: no separate `SessionEnded` page; an expired or ended session simply returns to the sign-in page (with the return URL). The Lockout, AccessDenied, ChangePassword (forced), EnableAuthenticator and ShowRecoveryCodes pages exist; "My account" has Index, ChangePassword, TwoFactor and ResetAuthenticator.
-- Tests (17 web + 1 unit): sign-in by user name and email, success audit and LastLoginAt, generic failure message for wrong password and unknown user (audited with reasons), inactive user, lockout after 5 failures (lockout page also with the correct password), forced password change for the seeded SYSADMIN and landing on Admin › Users, reuse and wrong-current-password errors, expired temporary password and re-issue, local vs external return URLs, logout (405 for GET, 400 without token, cookie cleared, audited), cookie flags, UW denied the admin area with no admin menu / Create button, role-required MFA end to end with real TOTP codes, MFA cannot be turned off when required, My account page, rate limit (429).
+- Tests (17 web + 1 unit): sign-in by user name and email, success audit and LastLoginAt, generic failure message for wrong password and unknown user (audited with reasons), inactive user, lockout after 5 failures (lockout page also with the correct password), forced password change for the seeded SYSADMIN and landing on the administration dashboard, reuse and wrong-current-password errors, expired temporary password and re-issue, local vs external return URLs, logout (405 for GET, 400 without token, cookie cleared, audited), cookie flags, UW denied the admin area with no admin menu / Create button, role-required MFA end to end with real TOTP codes, MFA cannot be turned off when required, My account page, rate limit (429).
 
 ### Step 7 — [x] Admin area
 Done in five sub-steps, each with a green build and tests, its own commit and a PLAN.md update:
@@ -537,7 +539,7 @@ The list below is the original plan; the inventory after it records what exists.
   (forced change) and after 72 h + 1 min (expiry message, audit, works again after an admin reset); branch change
   rotates the security stamp (`UserAdministrationTests`); profile cache invalidation (`AuditAndSecurityPersistenceTests`).
 - *Added in Step 8:* `DefinitionOfDoneTests` — entirely through the UI: seeded `sysadmin` signs in, changes the
-  password, lands on `/Admin`, creates "Tamta Tatishvili" as Senior UW in Vake; she signs in with the one-time
+  password, lands on the administration dashboard, creates "Tamta Tatishvili" as Senior UW in Vake; she signs in with the one-time
   password, is forced to change it, sees exactly Dashboard / Applications / Packages / Reports, no Create Application,
   the "Sr UW" chip, ₾50,000 and "Senior Underwriter"; `/Admin/Users` → Access denied, and an htmx admin request as
   UW → 403 with `HX-Redirect: /Account/AccessDenied` (the htmx-403 case was not covered before).
@@ -629,8 +631,623 @@ Integration tests use Testcontainers, WebApplicationFactory and FakeTimeProvider
   1. Run `docker compose up -d`.
   2. Set user-secrets: connection string, SYSADMIN credentials, dev password.
   3. Run `dotnet run --project src/Lams.Web`.
-  4. Log in as SYSADMIN, change the password, and land on Admin › Users.
+  4. Log in as SYSADMIN, change the password, and land on the administration dashboard (locked users, users without MFA, role/permission changes); open Admin › Users from the sidebar.
   5. Create a Senior UW in Vake.
   6. Log in as that user in another browser and change the password. The sidebar shows Dashboard, Applications, Packages and Reports only. `/Admin/Users` shows Access denied.
   7. As admin, remove `reports.view` from UW. Within one minute, with no logout, Reports disappears for that user.
 - `/health` returns Healthy.
+
+---
+
+# Phase 2 — CreditFlow
+
+**Status: plan approved (2026-10-12). Implementation follows the steps in §P.7.**
+
+Sources, in order of authority: `docs/CreditFlow-task.md` (the bank's task; every bullet is a requirement) →
+`docs/` (FRD, UI reference: look and feel only) → Phase 1 code, this file and README. Time box: **2 days**.
+
+**Approval decisions (2026-10-12):**
+1. The stray working-tree edits were the user's own notes → reverted in P0; the `.editorconfig` naming rules stay.
+2. Full rename `Lams` → `CreditFlow` (P1), before any new code.
+3. Every number and decision in §P.4 is approved as written.
+4. Time box is 2 days, not 3. The UI is not left for the end: P10 and P11 include the minimal pages, so the end-to-end
+   flow (application → PreCheck → scoring → decision → contract → disbursement) works in the browser as early as
+   possible. P13 then polishes those pages. If time runs short, follow the cut list.
+5. Seeded staff, enough for four-eyes: at least 2 Underwriters, 2 Senior Underwriters, 3 Credit Committee members,
+   1 Compliance officer, 1 Auditor, and Operators in 2 branches.
+Deviation agreed with the bank in writing: **EF Core instead of Dapper** (recorded first in README "Decisions").
+
+Working tree found at the start (not committed, not by me): `.editorconfig` gained PascalCase rules for
+`private const` / `private static readonly` (this is the "known small issue" fix — kept), and six stray edits:
+a `/// in the future.` line inside a method body in `SessionLifetimePolicy` (CS1587 → the build fails under
+`TreatWarningsAsErrors`), `/// matrix` above `RoleAdministrationService`, a `// not loged in/out !` comment on
+`StaffAccess`, the summary removed from `IdGenerator`, a comment removed from `Permissions`, and the CreditPolicy menu
+item removed from `Menu.cs`. Step P0 reverts the stray edits (the menu item and `Permissions` lines disappear anyway in
+P2). Confirmed by the user: these were notes, reverted.
+
+## P.1 Gap analysis (task bullet → exists / change / new)
+
+| Task bullet | State | What happens |
+|---|---|---|
+| .NET 8+, C#, nullable | exists | stay on .NET 9 |
+| MS SQL, ORM Dapper | change | EF Core (agreed with the bank); README decision #1 |
+| Consistent git history | exists | one focused commit per step below |
+| Ambiguities in README | new | §P.4 → README "Ambiguities and decisions" |
+| Mocks behind interfaces, configurable scenarios | new | §P.6; scenarios by config + seeded personal numbers |
+| Sanctions/PEP list in DB or file | new | `SanctionsListEntries` table (seeded) |
+| Credit bureau mock incl. unavailable + timeout | new | scenario per personal number; retry in background |
+| KYC / ID verification mock; operator enters ID data | new | `IIdentityVerificationService` |
+| Collateral valuation/registration/insurance entered manually | new | collateral fields + conditions on the application |
+| FX rates table, admin edit or file import | new | `FxRates` + admin screen + CSV import |
+| Core banking mock with tx id, error, timeout | new | idempotent by key (the mock stores processed keys) |
+| Email/SMS written to DB or log | new | `Notifications` table + log line |
+| Contract signing = operator marks signed | new | `MarkContractSigned` |
+| 8-step process, all statuses | new | `LoanApplication` state machine (§P.3.2) |
+| Cancel any time before disbursement; no other transitions; history who/when/why | new | inside the aggregate |
+| Personal number 11 digits, unique; age ≥18 / ≤75 at last installment | new | `PersonalNumber` value object, unique index, scoring rules + submit validation |
+| ID document valid on disbursement day | new | checked in `Disburse` |
+| PEP/sanctions match blocks until compliance decision | new | `ComplianceReview` |
+| One open application per client per product | new | domain check + filtered unique index |
+| Co-borrower and guarantor: same KYC and scoring | new | parties on the application (§P.4 #4) |
+| Products consumer/mortgage/auto, min/max amount, term, rate range, admin edits | new | `LoanProduct` with versions |
+| Product snapshot at submission | new | owned snapshot on the application |
+| GEL/USD/EUR; FX loan below threshold only with same-currency income | exists (enum) / new | `Currency` moves to Domain/Common; scoring rule |
+| Collateral: mortgage mandatory LTV ≤80%, auto ≤70%, valuation ≤6 months | new | product collateral rules + scoring rules |
+| Document checklist by product and amount; no scoring without it | new | product version checklist; guard in `StartScoring` |
+| PTI with income-dependent threshold, +20% FX stress | new | scoring rule `PTI` with bands |
+| Bureau 30+ DPD in 12 months → auto reject; retry when unavailable | new | rule `BUREAU_DPD30`; outbox retry with backoff |
+| Scoring rules in DB, versioned; per-rule result and reason stored | new | `ScoringRuleSet` versions; `ScoringRuns`/`ScoringRuleResults` |
+| Total exposure incl. guarantees ≤ limit | new | rule `EXPOSURE` + locked re-check at disbursement |
+| Authority ≤20k UW, ≤100k Senior UW, >100k committee (2 of 3), configurable | change | replaces the Phase 1 authority-limit matrix with `ApprovalThresholds` |
+| Four-eyes; one decision per person per application | new | domain rule + unique index (ApplicationId, DecidedBy) |
+| Counter-offer (amount/term/rate), client consent, re-scoring | new | `CounterOffered` → `Scoring` |
+| Reason mandatory on rejection and override | new | domain validation |
+| Escalation after 2 working days in Underwriting | new | `WorkingDayCalendar` + `Holidays` + job |
+| Disbursement only after signed contract + all conditions | new | state machine |
+| Annuity / differentiated schedule, EIR incl. fees, rounding to last installment | new | `ScheduleCalculator`, `Money` |
+| Idempotent disbursement | new | §P.3.5 |
+| Early repayment partial/full, recalculation, product penalty | new | `Loan.Repay*` |
+| Layered or modular monolith, justified | change | README: layered Clean Architecture with feature folders (§P.2.7) |
+| Domain ← Application ← Infrastructure ← Web | exists | kept |
+| Repository per aggregate root, interface in Domain | change | §P.2.2 |
+| Unit of Work, one transaction | exists | `IUnitOfWork.ExecuteInTransactionAsync`; audit + outbox in the same transaction |
+| Rich domain; scoring and schedule in separate testable services | new | pure domain services |
+| Thin controllers, validation, Result | exists | kept |
+| Side effects through transactional outbox with retry | new | `OutboxMessages` + dispatcher |
+| Architecture tests | exists / change | add: repository interfaces in Domain, EF only in Infrastructure (also Web) |
+| Clients: registration, KYC, incomes, obligations | new | Clients screens |
+| Products with versions | new | Admin › Products |
+| Multi-step form, upload, status history | new | Applications screens |
+| Rule engine, mock bureau, explanation | new | scoring tab on the application |
+| Inbox per role, counter-offer, committee voting | new | Underwriting / Committee / Compliance inboxes |
+| Contract + schedule PDF, gapless unique numbers `LN-2026-000123` | new | `ContractNumbers` row lock; PDFsharp-MigraDoc |
+| Notifications: status change, escalation, offer expiry | new | outbox handlers → `Notifications` |
+| Reports: portfolio by product, approval rate, avg time per stage, rejection reasons; Excel/CSV | new | Reports + ClosedXML + CSV writer |
+| Auth method justified; secure passwords; failed-login limit | exists | Identity cookies, PBKDF2 hashes, lockout + rate limit (README section) |
+| Roles: Operator, Underwriter, Senior Underwriter, Credit Committee, Compliance, Admin, Auditor | change | §P.2.1 |
+| Branch scope, underwriter never sees own application for approval, Auditor read-only | change | §P.2.4 |
+| Permissions in DB, runtime-editable | exists | kept unchanged |
+| Lists hide inaccessible records; no IDOR | change | SQL-side filters + by-id re-check (§P.2.4) |
+| Logs in MS SQL with time, level, message, exception, user, request path | change | Serilog MSSqlServer sink (§P.2.5) |
+| Audit table: status, scoring, approve/reject, overrides, disbursement, role changes | change | extend existing audit (role changes exist) |
+| Mask personal number, passwords, sensitive data in logs | new | masking sink + audit redaction |
+| Parameterised, no N+1, server-side paging/sort/filter | exists (admin) / new | same pattern for all new lists |
+| decimal, one rounding rule | new | `Money` (§P.4 #14) |
+| rowversion: concurrent votes not lost, two UWs cannot both approve | new | §P.3.5 |
+| Exposure limit without race | new | `sp_getapplock` per party inside the disbursement transaction |
+| Transactions via UoW; indexes for queues and reports | new | §P.3.3 |
+| Seed: products, users of all roles, applications in various statuses | change | new seed unit + dev data seeder |
+| Idempotent background jobs (escalation, offer expiry, outbox) | new | `BackgroundService`s, `UPDLOCK, READPAST` claiming |
+| Unit tests: transitions, scoring, schedule (edge cases) | new | §P.5 |
+| Integration on real SQL: repositories, authorization, double disbursement, limit race | change / new | Testcontainers, existing harness |
+
+## P.2 Changes to the Phase 1 code
+
+### P.2.1 Roles and permission catalog
+Mechanism unchanged: permissions in `RolePermissions`, editable in Admin › Roles at runtime, `[HasPermission]`,
+cached `UserAccessProfile` with explicit invalidation, `asp-permission`, permission-filtered menu, fail closed,
+admin continuity guard, no role-name checks.
+
+**Removed (LAMS-only, no dead code left):** `Segment` + `DataScope.Segment`, `DataScope.Own` / `Assigned` (no
+CreditFlow role uses them), `AuthorityLevel` (user attribute, rules, UI, claims-free cache entry), `AuthorityLimit`
+aggregate, `LimitType`, `CreditDecisionAuthority`, `PricingExceptionAuthority`, `IAuthorityLimitEvaluator`,
+`IPricedResource`, `ICreditDecisionResource`, Admin › Authority limits, placeholders CreditPolicy / Pricing /
+Packages, the old permission codes and `DashboardKind` values. `AttributeRule` stays for the branch rule only (Operator:
+Required; others: NotAllowed). Columns dropped by a migration (`StaffMembers.Segment`, `.AuthorityLevel`,
+`AspNetRoles.SegmentRule`, `.AuthorityLevelRule`, table `AuthorityLimits`).
+
+**New role class** (data on the role, replaces the bool `IsAdministrative`): `RoleKind` = `Business` |
+`ReadOnly` | `Administrative`. `PermissionSet` enforces it like the existing SoD rule: Administrative → only `admin.*`;
+Business → no `admin.*`; ReadOnly → only permissions the catalog marks `IsReadOnly` (so the Auditor cannot be given a
+write permission even by an administrator — fail closed). Each permission in `PermissionCatalog` gets `IsReadOnly`.
+
+**Permission catalog** (R = read-only):
+
+| Module | Code | Meaning |
+|---|---|---|
+| Clients | `clients.view` (R) | view clients |
+| | `clients.manage` | register/edit client, ID document, incomes, obligations |
+| Applications | `applications.view` (R) | view applications (within data scope) |
+| | `applications.create` | create/edit drafts, parties, collateral, submit |
+| | `applications.cancel` | cancel before disbursement (reason) |
+| | `applications.record-client-response` | client accepts/declines a counter-offer |
+| Documents | `documents.view` (R) / `documents.upload` | view/download; upload, remove before scoring |
+| Compliance | `compliance.review` | clear / reject in ComplianceReview |
+| Underwriting | `underwriting.decide` | decide up to the Underwriter threshold |
+| | `underwriting.decide-senior` | decide up to the Senior Underwriter threshold (incl. escalated files) |
+| | `underwriting.counter-offer` | propose new amount/term/rate |
+| | `scoring.override` | approve despite an overridable failed rule (reason) |
+| Committee | `committee.vote` | vote on files above the Senior threshold |
+| Contracts | `contracts.manage` | mark contract signed, mark conditions met, print contract/schedule |
+| | `loans.disburse` | request disbursement |
+| Loans | `loans.view` (R) / `loans.record-repayment` | view loans; record regular/early repayments |
+| Reports | `reports.view` (R) / `reports.export` (R) | reports; Excel/CSV |
+| Audit | `audit.view` (R) | audit log (business read-only access for the Auditor) |
+| Admin | `admin.users.view`, `admin.users.manage`, `admin.roles.manage`, `admin.branches.manage`, `admin.audit.view`, `admin.products.manage`, `admin.scoring-rules.manage`, `admin.approval-thresholds.manage`, `admin.fx-rates.manage`, `admin.holidays.manage` | |
+
+**Role matrix** (seed; editable afterwards):
+
+| Role (code) | Kind | Data scope | Dashboard | Permissions |
+|---|---|---|---|---|
+| Operator (`OP`), branch required | Business | Branch | Operator | clients.*, applications.view/create/cancel/record-client-response, documents.*, contracts.manage, loans.disburse, loans.view, loans.record-repayment, reports.view |
+| Underwriter (`UW`) | Business | Organization | Underwriting | clients.view, applications.view, documents.view, underwriting.decide, underwriting.counter-offer, loans.view, reports.view |
+| Senior Underwriter (`SUW`) | Business | Organization | Underwriting | UW + underwriting.decide-senior, scoring.override, reports.export |
+| Credit Committee (`CC`) | Business | Organization | Committee | clients.view, applications.view, documents.view, committee.vote, loans.view, reports.view |
+| Compliance (`COMP`) | Business | Organization | Compliance | clients.view, applications.view, documents.view, compliance.review |
+| Auditor (`AUD`) | ReadOnly | Organization | Audit | every (R) permission: clients.view, applications.view, documents.view, loans.view, reports.view, reports.export, audit.view |
+| Admin (`SYSADMIN`, shown as "Admin") | Administrative | None | Administration | all admin.* |
+
+`DashboardKind` = Operator, Underwriting, Committee, Compliance, Audit, Administration. The Admin role keeps its code
+`SYSADMIN` (role codes are immutable and the seeded account and continuity guard reference it); its display name
+becomes "Admin".
+
+**Seeding:** unit `0004_creditflow_roles` (new): redefines the kept records (`UW`, `SYSADMIN`), creates
+OP/SUW/CC/COMP/AUD with the matrix, moves users of `LO` to `OP`, deactivates users of the other LAMS roles and moves
+them to `AUD` (fail closed), deletes the LAMS roles. Units `0001`/`0003` reference types that no longer exist, so they
+become **retired** units (id kept in `SeedUnits.All`, `ApplyAsync` does nothing, a comment points to `0004`): on an
+existing database they already ran; on a fresh one `0004` produces the same end state. README's seeding rules gain one
+line: "a unit may be retired only when a later unit replaces everything it created". `RoleSeedCatalog` describes only
+the 7 CreditFlow roles.
+
+### P.2.2 Repository interfaces → Domain (CQRS-lite)
+- **Write side (Domain):** one interface per aggregate root next to the aggregate, returning aggregates only:
+  `IStaffRepository` (Users), `IRoleRepository` (Roles: profile + `PermissionSet`), `IBranchRepository`,
+  `IClientRepository`, `ILoanProductRepository`, `ILoanApplicationRepository`, `IDisbursementRepository`,
+  `ILoanRepository`, `IScoringRuleSetRepository`, `IApprovalThresholdsRepository`, `IFxRateRepository`,
+  `IHolidayRepository`. Implementations in `Infrastructure/Persistence/Repositories` with EF Core.
+- **Read side (Application):** query services returning read models (`IUserDirectory` exists; `RoleDetails` /
+  `BranchSummary` move out of the repositories into `IRoleQueries` / `IBranchQueries`; new `IApplicationQueries`,
+  `IInboxQueries`, `IClientQueries`, `ILoanQueries`, `IReportQueries`, `IAuditLogQueries` exists). Implemented in
+  Infrastructure with `AsNoTracking` projections.
+- **Ports that are not repositories** stay in Application: `IUnitOfWork`, `IOutbox`, `IContractNumberGenerator`,
+  `IExposureLock`, the external-service interfaces, `IDocumentStore`.
+- New architecture tests: every `I*Repository` type lives in `Lams.Domain` and its implementation in Infrastructure;
+  no `I*Repository` in Application; EF Core is referenced by no type outside Infrastructure (Domain, Application **and**
+  Web); controllers do not touch `DbContext` (exists).
+
+### P.2.3 Small known issues
+`RoleId.New()` used by the seed instead of `Guid.CreateVersion7()` (same for `AccountSeeder` via `UserId.New()`); the
+unused `Branch.Create(BranchId, …)` overload removed; `.editorconfig` naming rules for private constants/static
+readonly (already in the working tree).
+
+**Known gap — antiforgery crawl coverage.** `AntiforgeryFormTests` browses the demo data as every role and checks
+each rendered POST form for its token, but the demo data has no record in the state that renders these forms, so
+they are allow-listed rather than crawled: MFA management (Disable / RecoveryCodes / Reset — needs a user with MFA
+on), Activate for an inactive branch, product or user, Unlock for a locked user, RemoveCollateral / RemoveParty
+(needs a draft with collateral or a co-borrower/guarantor), RemoveObligation (needs a client with an obligation),
+RepayEarly (rendered only after an early-repayment quote, a GET form the crawl does not submit). Closing it means
+creating those states before the crawl.
+
+### P.2.4 Resource-based rules and SQL-side filtering
+- `ApplicationAccessPolicy` (Application, pure) turns a `UserAccessProfile` into an `ApplicationAccessFilter`
+  (scope: none / branch X / all; `ExcludeCreatedBy`). Infrastructure translates it into a `Where` on the
+  `IQueryable` (`WhereVisibleTo(filter)`) used by **every** list, inbox, report and export query — the database
+  returns only visible rows; paging counts are correct.
+- Inboxes add their own SQL predicates: Underwriting = status Underwriting, `CreatedBy <> me`, not already decided by
+  me, tier ≤ my authority; Committee = status CreditCommittee, not created/voted by me; Compliance = ComplianceReview.
+- **By id:** every read/write endpoint loads through the same filter (`GetVisibleAsync(id, filter)`); not visible →
+  **404** (does not reveal that the id exists). Decisions re-check in the domain (creator / already decided / tier).
+- `DataScopeEvaluator` (in-memory) stays for single loaded objects (documents, loans), with the same rules.
+- Auditor: read-only by RoleKind (above) **and** an integration test that sends a POST to every non-anonymous POST
+  action (found by reflection) as the Auditor and expects 403/404, never a change.
+
+### P.2.5 Logging and masking
+- `Serilog.Sinks.MSSqlServer` (Apache-2.0) → table `Logs` created by the EF migration (not by the sink):
+  `TimeStamp`, `Level`, `Message`, `Exception`, `UserName`, `RequestPath`, `CorrelationId`, `Properties`.
+  User and path come from an enricher (`LogContext` in a middleware after authentication). Console sink stays.
+- Masking: `SensitiveDataMaskingSink` decorator (wraps every sink) rewrites each `LogEvent` before it is written:
+  properties named like `PersonalNumber`, `Password`, `Token`, `DocumentNumber`, … are masked, and any 11-digit run in
+  string values, the rendered message and the exception text becomes `*******1234`. One `SensitiveDataMasker` is
+  shared with the audit writer.
+- Audit JSON: the existing redaction (password hash, stamps, TOTP) is extended with the masker for client data.
+- Audit coverage: application status transitions (one record per history entry), scoring run (per-rule results),
+  decisions/votes/overrides, counter-offers, compliance decisions, contract signed, disbursement (requested, succeeded,
+  failed), repayments, product/rule-set/threshold/FX/holiday changes, roles/permissions (exists). Written in the same
+  transaction as the change.
+- Integration test: a log call with a personal number and a password lands in `Logs` masked; an audit record of a
+  client change is masked.
+
+### P.2.6 Product name — recommendation
+**Recommended: full mechanical rename** `Lams.*` → `CreditFlow.*` (projects, namespaces, solution, cookie/DB names,
+UI title) in **one commit before any new code**, so everything new is written once under the final name. It is a
+`git mv` + search-and-replace, verified by build and the full test suite; migrations keep their ids. Alternative
+(cheaper, less coherent): only the UI title and README. Your choice; default = full rename.
+
+### P.2.7 Architecture choice (README)
+Layered Clean Architecture with feature folders, not a modular monolith: one bounded context (loan origination) where
+client, application, disbursement and loan share transactions; one developer and 2–3 days; module contracts would add
+ceremony without isolation benefits. Layer rules are enforced by NetArchTest.
+
+### P.2.8 How existing tests are kept
+- Ported: user administration, account/MFA/session, roles editor, branches, audit log, menu, seeding, web shell — with
+  the new roles and personas (expected matrices rewritten for 7 roles from an independent table, as in Phase 1).
+- Removed **with the removed feature only**: pricing-exception, authority-limit (domain, evaluator, admin screen),
+  segment / authority-level rule tests. Their replacements: approval-thresholds domain/admin tests.
+- Every step ends with the full suite green; the count is recorded in the progress table.
+
+## P.3 Domain design
+
+### P.3.1 Aggregates and boundaries
+| Aggregate | Contents | Why separate |
+|---|---|---|
+| `Client` | `PersonalNumber` (11 digits, unique), names, birth date, contact, `IdentityDocument` (type, number, issued, expires), incomes (amount, currency, source), declared obligations, KYC/screening status (last sanctions/PEP/KYC result + date) | lives across many applications and loans |
+| `LoanProduct` | type (Consumer/Mortgage/Auto), versions: min/max amount, term, rate range, upfront fee %, monthly fee, early-repayment penalty %, collateral required + max LTV, document checklist rules (doc type, min amount), schedule types allowed, currencies; one active version | versioned reference data edited by Admin |
+| `LoanApplication` | parties (borrower + co-borrowers + guarantors, `ClientId` each), requested terms, **product snapshot** (owned), FX rate used, collateral items, document metadata, status + `StatusHistory`, scoring runs + rule results, decisions (incl. votes, overrides), counter-offers, conditions, offer expiry, escalation, contract number/signing, branch, created by, `RowVersion` | the consistency boundary of the whole process: every transition and invariant in one place, protected by one rowversion |
+| `Disbursement` | `ApplicationId` (unique), `IdempotencyKey` (unique), status Pending/Succeeded/Failed, core banking tx id, attempts | must be committed **before** the external call, independently of the application |
+| `Loan` | contract number, principal, rate, schedule type, installments, repayments, outstanding principal, Active/Closed, `RowVersion` | after disbursement; repayments do not lock the application |
+| `ScoringRuleSet` | versions; each version: rules (code, parameters JSON, overridable, order); one active version | versioned rules; applications reference the version used |
+| `ApprovalThresholds` | UW max, Senior UW max (in GEL), committee votes required (2), committee size (3) | configurable by Admin, audited |
+| `FxRate`, `Holiday` | (currency, date, rate to GEL); (date, name) | reference data |
+
+Pure domain services (unit-tested, no I/O): `ScoringEngine` + one `IScoringRule` per rule code, `ApprovalAuthority`,
+`ScheduleCalculator` (annuity, differentiated, EIR), `EarlyRepaymentCalculator`, `WorkingDayCalendar`,
+`ExposureCalculator`, `Money` (rounding), `PersonalNumber`, `AgeRules`.
+
+### P.3.2 Status transitions (everything else is impossible)
+| From | To | Trigger (who) | Guards |
+|---|---|---|---|
+| Draft | Submitted | submit (Operator) | parties valid, borrower ≥18, amount/term/rate within active product version, collateral present if required, ID document valid, no other open application of the borrower for the product; product snapshot + FX rate stored |
+| Submitted | PreCheck | system (outbox) | — |
+| PreCheck | ComplianceReview | system | sanctions or PEP match on any party |
+| PreCheck | Rejected | system | KYC / ID verification failed for any party |
+| PreCheck | DocumentsPending | system | all parties clear, bureau reports received (unavailable → stays in PreCheck, retried) |
+| ComplianceReview | DocumentsPending / Rejected | compliance (reason) | decider ≠ creator, one decision per person |
+| DocumentsPending | Scoring | Operator "send to scoring" | checklist for product + amount complete |
+| Scoring | Rejected | system | a non-overridable rule failed |
+| Scoring | Underwriting | system | GEL amount ≤ Senior UW threshold; tier stored (UW / Senior) |
+| Scoring | CreditCommittee | system | GEL amount > Senior UW threshold |
+| Underwriting | Approved / ConditionallyApproved | decide (UW/Senior) | authority tier, not creator, not decided before, overridable failures need `scoring.override` + reason |
+| Underwriting | Rejected | decide (reason) | same |
+| Underwriting | CounterOffered | counter-offer | new terms within the snapshot ranges |
+| CreditCommittee | Approved / ConditionallyApproved / Rejected | 2nd matching vote | member ≠ creator, one vote per member |
+| CounterOffered | Scoring | client accepts (Operator) | terms replaced, scoring rerun |
+| CounterOffered | Cancelled | client declines (Operator, reason) | — |
+| CounterOffered, Approved, ConditionallyApproved | Expired | job | 30 days passed |
+| Approved, ConditionallyApproved | ContractSigned | Operator | offer valid; contract number assigned |
+| ContractSigned | ConditionsMet | Operator marks last condition met (or automatically when there are none) | all conditions met |
+| ConditionsMet | Disbursed | disbursement succeeded | ID documents valid today, exposure re-checked under lock |
+| Disbursed | Active | system (outbox: book loan + schedule) | — |
+| Active | Closed | repayment brings outstanding to 0 | — |
+| any of Draft … ConditionsMet | Cancelled | Operator (reason) | no disbursement requested |
+
+Every transition appends `StatusHistory(from, to, at, by, reason)` and raises a domain event (audit + outbox
+notification). Escalation is a flag on the application (`EscalatedAt`), not a status: after it the file needs
+`underwriting.decide-senior`.
+
+### P.3.3 Database outline (new tables; ids are GUID v7 unless noted)
+- `Clients` (PersonalNumber unique, …, RowVersion), `ClientIncomes`, `ClientObligations`
+- `LoanProducts`, `LoanProductVersions` (ProductId, VersionNo unique, IsActive, terms, `ChecklistJson`)
+- `LoanApplications` (Status, BranchId, CreatedBy, BorrowerClientId, ProductId, `IsOpen` bit, Amount, Currency,
+  AmountGel, ApprovalTier, StatusChangedAt, OfferExpiresAt, EscalatedAt, ContractNumber unique-filtered,
+  snapshot columns (owned), RowVersion);
+  `ApplicationParties`, `ApplicationCollaterals`, `ApplicationConditions`, `ApplicationStatusHistory`,
+  `ApplicationDecisions` (Kind, DecidedBy, Reason; **unique (ApplicationId, DecidedBy)**), `CounterOffers`,
+  `ScoringRuns`, `ScoringRuleResults`, `ApplicationDocuments` (metadata) + `DocumentContents` (varbinary, separate
+  so lists never load blobs)
+- `Disbursements` (ApplicationId unique, IdempotencyKey unique, Status, CoreBankingTransactionId)
+- `Loans`, `LoanInstallments`, `LoanRepayments`
+- `ScoringRuleSets`, `ScoringRuleSetVersions`, `ScoringRules`; `ApprovalThresholds`; `FxRates` (Currency, Date) PK;
+  `Holidays` (Date PK)
+- `ContractNumberSequences` (Year PK, LastNumber) — locked row, not a SEQUENCE
+- `OutboxMessages` (Type, Payload, OccurredAt, AvailableAt, Attempts, ProcessedAt, LastError),
+  `ProcessedMessages` (MessageId, Handler) PK — handler idempotency
+- `Notifications`; `Logs`; mock tables `SanctionsListEntries`, `MockCoreBankingTransactions`
+- Indexes: one open application `UX (BorrowerClientId, ProductId) WHERE IsOpen = 1`; operator list
+  `(BranchId, Status, StatusChangedAt)`; inboxes `(Status, ApprovalTier, StatusChangedAt) INCLUDE (CreatedBy, AmountGel)`;
+  jobs `(Status, OfferExpiresAt)`, `(Status, EscalatedAt, StatusChangedAt)`; outbox `(ProcessedAt, AvailableAt)`
+  filtered on unprocessed; reports `ApplicationStatusHistory (ToStatus, ChangedAt)`, `Loans (ProductId, Status)`.
+
+### P.3.4 Scoring rules (version 1, seeded; parameters editable as a new version)
+`BUREAU_DPD30_12M`
+(hard), `PTI` (bands, FX stress, **overridable**), `LTV` (per product type, hard), `VALUATION_AGE` (≤6 months, hard),
+`FX_INCOME_CURRENCY` (below threshold, hard), `EXPOSURE_LIMIT` (hard), `PRODUCT_LIMITS` (hard). The DB stores which
+rules are active, their parameters, severity and version; the logic of each rule code is code (`IScoringRule`), so a
+rule set version is fully reproducible. Each run stores rule set version, every rule's pass/fail, measured value,
+threshold and a human reason ("PTI 52.3% > 45% for income 1,000–3,000 GEL").
+
+### P.3.5 Concurrency and idempotency
+- **rowversion** on every aggregate root; `DbUpdateConcurrencyException` → `Result` error `Concurrency.Conflict`.
+- **Two underwriters approve at once:** both load version V; the second save fails on rowversion → reloaded, the
+  status is no longer Underwriting → "already decided". Proven by an integration test with two scopes.
+- **Concurrent committee votes:** votes are commutative, so the vote command retries **once** on a rowversion
+  conflict after reloading; both votes survive, and the second matching vote decides. Unique (ApplicationId,
+  DecidedBy) stops double votes even under retries. Test: two/three parallel votes.
+- **Gapless contract numbers:** inside the signing transaction `UPDATE ContractNumberSequences WITH (UPDLOCK,
+  HOLDLOCK) SET LastNumber = LastNumber + 1 OUTPUT inserted.LastNumber WHERE Year = @year` (row inserted if missing),
+  so a rollback returns the number; unique index on `ContractNumber`. Year = Tbilisi local year.
+- **Idempotent disbursement:** idempotency key = deterministic per application (`disb:{applicationId}`), so a double
+  click, a retry or a second browser cannot create two payments. Step 1 (transaction): guards, `sp_getapplock`
+  per party (`exposure:{clientId}`, sorted to avoid deadlocks), exposure re-check, insert `Disbursement(Pending)`
+  (unique index → the second request finds the existing row and returns it). Step 2: call core banking with the key
+  (the mock stores keys, so a retried key returns the same tx id). Step 3: success → `Disbursed` + outbox "book
+  loan"; error → `Failed`, retry allowed with the same key; timeout → stays Pending, retried by the outbox with the
+  same key. Pending exposure counts in the exposure total, so two parallel disbursements that together exceed the
+  limit cannot both pass. Tests: double request, parallel requests, timeout + retry, two clients' loans in parallel
+  over a shared guarantor.
+
+## P.4 Ambiguities and decisions
+1. **ConditionallyApproved vs Approved** — the decider may attach conditions (e.g. insurance, extra document);
+   with any → ConditionallyApproved, none → Approved. Product-standard conditions (mortgage/auto: collateral
+   registration + insurance) are added to every approval of that product. Both go through ContractSigned →
+   ConditionsMet; with no conditions ConditionsMet follows signing automatically (both recorded).
+2. **Disbursed vs Active** — Disbursed = core banking confirmed the transfer (persisted immediately); Active = loan
+   and schedule booked by the outbox handler (retryable, idempotent). Closed = outstanding principal 0.
+3. **Client consent / offer validity** — the offer is accepted by signing the contract within 30 calendar days of the
+   decision; a counter-offer must be accepted within 30 days too, else Expired. Declined counter-offer → Cancelled.
+4. **Co-borrowers and guarantors** — every party: KYC, sanctions/PEP, bureau, age rules, DPD rule. PTI = household:
+   borrower + co-borrowers' incomes vs their obligations + new installment. Guarantor: own PTI including the full new
+   installment must pass. Exposure: borrower and co-borrowers count the full amount, guarantors the guaranteed amount.
+5. **PTI thresholds** (net monthly income in GEL equivalent): < 1,000 → 35%; 1,000–3,000 → 45%; ≥ 3,000 → 55%.
+   Obligations = bureau (other banks) + our active loans + operator-declared. Configurable in the rule set.
+6. **FX stress** — for USD/EUR loans the new installment (converted to GEL) is multiplied by 1.20 in PTI,
+   regardless of income currency (task wording).
+7. **FX threshold** — a USD/EUR loan whose GEL equivalent is below 200,000 GEL requires income in the loan currency
+   (in line with NBG practice); configurable.
+8. **Exposure limit** — 300,000 GEL equivalent per client (outstanding principal of our active loans as borrower or
+   co-borrower + guarantees + approved/pending disbursements + the new loan); configurable.
+9. **Thresholds currency** — approval thresholds and limits are in GEL; foreign amounts converted at the latest
+   `FxRates` rate on or before the scoring date, stored on the scoring run (routing does not drift with later rates).
+10. **Rule failure vs override** — non-overridable failure → automatic Rejected; overridable (PTI only, seeded) → the
+    file continues to review flagged, and approval needs `scoring.override` + a reason (audited).
+11. **Four-eyes scope** — "one decision per person per application" over the whole life of the application
+    (compliance decision, underwriting decision, counter-offer, vote). After a counter-offer, a different underwriter
+    decides. The creator never decides. DB-enforced by the unique index.
+12. **Committee** — members = active users with `committee.vote` (3 seeded). Votes Approve (optionally with conditions)
+    or Reject (reason). 2 matching votes decide; conditions = union of approving votes. No counter-offer by the
+    committee (only by underwriters), documented.
+13. **Escalation** — deadline = entry into Underwriting + 2 working days (Asia/Tbilisi, weekends and `Holidays`
+    excluded); after it the job sets `EscalatedAt`, notifies, and only `underwriting.decide-senior` can decide.
+    Senior UW can always decide UW-tier files too.
+14. **Rounding** — `decimal` only; one helper `Money.Round` = 2 decimals, `MidpointRounding.AwayFromZero`; interest
+    per period computed exactly and rounded once per installment; the last installment absorbs the difference so the
+    principal sum equals the amount exactly. Rates as `decimal` percentages.
+15. **Schedule conventions** — monthly installments, first due one month after disbursement, interest = annual rate/12
+    per period. EIR = monthly IRR (decimal Newton/bisection on integer periods) of the cash flows (amount − upfront fee,
+    installments + monthly fees), annualised `(1+r)^12 − 1`.
+16. **Early repayment** — partial: keeps the remaining term and lowers the installment (annuity recalculated /
+    differentiated principal re-spread); full: outstanding principal + interest accrued since the last due date
+    (actual/365) → Closed. Penalty = product % of the prepaid principal (seed: consumer 2%, auto 1%, mortgage 1%).
+17. **Repayments** — there is no core banking for collections: an Operator records repayments manually
+    (`loans.record-repayment`), applied to the oldest unpaid installment; seed data includes paid installments.
+18. **Document storage** — DB (`DocumentContents`, varbinary), so it is in the same transaction and backup; PDF, JPEG,
+    PNG only, checked by magic bytes, ≤ 10 MB, SHA-256 stored, served with `Content-Disposition: attachment`.
+19. **Bureau unavailable** — the PreCheck outbox message is retried with exponential backoff (1, 2, 4 … min, cap 1 h);
+    the application stays in PreCheck, never lost; after 10 attempts it is flagged for the operator (still retried).
+    "Bureau retry job" = the outbox dispatcher with this backoff policy (no separate job).
+20. **Open application** — open = Draft … ConditionsMet. Disbursed/Active are loans, not open applications.
+21. **Age at last installment** — at submission, maturity = submission date + term; re-checked with the real schedule
+    at disbursement.
+22. **Cancel** — allowed Draft … ConditionsMet with a reason, but not once a disbursement is Pending (money may be in
+    flight).
+23. **Operator scope** — Operators see all applications of their branch (not only their own); the branch is fixed at
+    creation from the creator's branch.
+24. **Out-of-scope by id** → 404, not 403 (no existence leak).
+25. **Who disburses** — the Operator requests it; the system executes it (mock core banking).
+26. **Notification recipients** — status changes → the creating operator and the client (SMS/email rows);
+    escalation → active Senior Underwriters; offer expiry → operator + client.
+
+Decisions taken during implementation:
+
+27. **Product amount limits are in GEL** — a USD/EUR loan is checked by its GEL equivalent at the submission-date
+    rate (same convention as the approval thresholds).
+28. **Fees** — upfront fee as % of the principal (deducted at disbursement, counts in the EIR); monthly service fee as %
+    of the original principal per month (currency-neutral, so one product version serves GEL, USD and EUR).
+29. **Regulatory LTV ceilings are code** (mortgage 80 %, auto 70 %); a product version may be stricter, never looser.
+30. **Optimistic concurrency** — `rowversion` is an EF Core shadow property on each aggregate root (mapped in P8), so
+    the domain model stays free of persistence details.
+31. **Bank time** — business dates (age, document validity, holidays, working days, contract year) are dates in
+    Asia/Tbilisi (UTC+4); instants are stored in UTC.
+32. **Age rules are fixed policy, not scoring parameters** — at least 18 at application and at most 75 at the last
+    installment are checked for every party at submission (all errors at once) and again at disbursement; they are not
+    in the scoring rule set (`AGE_MIN` / `AGE_MAX_AT_MATURITY` dropped from §P.3.4).
+33. **Committee approvals** carry the product's standard conditions only; a committee vote is Approve or Reject
+    (reason required), refining #12.
+34. **Counter-offer** keeps currency and schedule type; amount, term and rate must fit the snapshot. Accepting it needs
+    the checklist for the new amount (documents may be added while the offer is pending).
+35. **Scoring rules: data vs. code** — the DB holds which rules a version uses, their parameters (JSON) and whether a
+    failure is overridable; the logic of each rule code is code (`IScoringRule`). Comparisons use exact values; measured
+    values are only rounded for display (a found bug: rounding first let 45.004 % pass a 45 % PTI limit).
+36. **EIR** — monthly IRR of the client's cash flows (principal − upfront fee received; installments + monthly fees
+    paid), annualised (1 + i)^12 − 1, solved by bisection in `decimal`.
+37. **Aggregate-wide concurrency** — besides the `rowversion`, every root has a `Revision` counter that the consistency
+    interceptor increments whenever a cascade-owned part changes, so a change that only adds child rows (a committee vote,
+    a document) still updates and checks the root: two concurrent changes to one aggregate cannot both succeed.
+38. **Persistence of value objects** — required value objects with plain columns are EF complex types (identity
+    document, loan terms, money); optional or list-shaped ones are JSON columns (product terms, snapshot, exchange rate,
+    counter-offered terms, scoring runs, rule definitions), read and written as a whole and never queried in SQL.
+39. **Outbox** — events become `OutboxMessages` in the same SaveChanges (interceptor). The dispatcher claims due
+    messages in a short transaction (`UPDLOCK, READPAST`, claim expiry 5 min) and runs every handler in its own
+    transaction that also inserts `ProcessedMessages (MessageId, Handler)`, so retries never repeat a handler. Failures
+    retry with backoff 1, 2, 4 … minutes (max 1 h); the bureau retry of decision #19 is this backoff.
+40. **Mocks** — scenarios by personal number (seeded catalog, overridable in `Mocks:Scenarios`); timeouts are real
+    (a hanging call cancelled after `Mocks:BureauTimeout`). Notifications are rows in `Notifications` plus a log line.
+41. **Exposure at disbursement counts committed money only** — the re-check under the per-party `sp_getapplock` adds
+    payouts that are Pending or done and the outstanding principal of active loans (in GEL at each application's
+    scoring rate) to the new loan; approvals that were never paid out do not block a payout (scoring still counts them,
+    conservatively). The limit is the `EXPOSURE_LIMIT` of the rule-set version the application was scored with.
+42. **Payout amount** — the principal less the upfront fee; the schedule runs on the full principal from the
+    disbursement day.
+43. **Core banking mock** — its ledger (`MockCoreBankingTransactions`, key = idempotency key) is written in its own
+    scope, like a separate system: 01001011009 rejects the first request of a key; 01001011010 executes the first
+    request but answers after `Mocks:CoreBankingTimeout`, so the retry with the same key returns the same transaction.
+44. **Repayments** — "next installment paid" records the oldest unpaid installment in full; an early repayment is
+    refused while an installment is overdue (record it first).
+45. **Jobs** — escalation and offer expiry run every `Jobs:Interval` (1 min) in one `BackgroundService`; each batch
+    claims candidates with `UPDLOCK, READPAST, ROWLOCK` in its transaction (keyset by id, so candidates that are not
+    due yet are not revisited in the same run) and commits the domain change with them. Running twice or in parallel
+    gives one effect. Escalation notifies the active users holding `underwriting.decide-senior`; expiry notifies through
+    the status-change notifications (operator and client).
+46. **PDFs** — PDFsharp-MigraDoc 6.2.4 (MIT) with DejaVu Sans embedded in the Infrastructure assembly (Bitstream Vera
+    licence; Latin and Georgian glyphs; the same output on every OS, no system fonts). The contract can be printed from
+    the approval on (the number reads "assigned at signing" until then); the schedule is projected from today before
+    disbursement and is the loan's current schedule afterwards. Printing needs `contracts.manage` or `loans.view`.
+47. **Wizard** — step 1 (borrower, product, terms) creates the draft; steps 2–4 (parties and collateral, documents,
+    review and submit) edit that draft through the normal actions, so the wizard adds no second write path. A draft's
+    document checklist comes from the product's current version; from submission on, the snapshot rules.
+48. **Payout on the page** — Pending shows "check again" and Failed shows "retry"; both post the same Disburse action,
+    which reuses the payout and its idempotency key.
+49. **Reference-data admin** — product terms and scoring rule sets are append-only versions (the newest is in force,
+    nothing is edited in place, an unchanged form publishes nothing); approval thresholds, FX rates and holidays are
+    edited in place with before/after in the data audit. An FX CSV import is all or nothing and names every wrong line.
+    The admin services re-check their `admin.*` permission behind the controller attribute.
+50. **Reports** — eight reports (applications by status, approval / rejection rate, average time per stage, rejection
+    reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations) for a
+    period (default the last 90 days, at most 3 years) and optionally a product, always within the viewer's data scope
+    in SQL. Period semantics: applications created, decisions taken, stages left, loans disbursed, escalations in the
+    period; the portfolio and overdue installments are as of today. Amounts are GEL at each application's scoring rate.
+    A scoring rejection counts once per failed hard rule. One `ReportTable` feeds the page, the CSV (one report, UTF-8
+    with BOM, formula injection neutralised) and the Excel workbook (ClosedXML 0.105, MIT; its dependencies are MIT /
+    Apache-2.0, SixLabors.Fonts 1.0 is pre-split-licence). Export needs `reports.export` (not held by Operators).
+51. **Demo data** — Development only, behind `Seed:DemoData:Enabled` (on in `appsettings.Development.json`, off in the
+    tests that do not test it), once per database (`SeedHistory`), in one transaction, after the demo users. 24
+    applications built through the domain with backdated times; five are submitted and left to the live pre-check.
+    Submitted, Scoring and Disbursed are passing states (seconds) and are only seen in histories. A mock-scenario
+    client that already has an open application (a scenario tried by hand earlier) is skipped, not duplicated.
+Decisions taken after Phase 2 (fixes from the first run of the demo data):
+
+52. **Application reference** — `APP-000123` from a database sequence (`ApplicationNumbers`), assigned on the first
+    save, unique, searchable. The former reference (the first 8 hex digits of the time-ordered id) was the timestamp
+    and repeated for applications created within about a minute. Existing applications are numbered in creation order
+    by the migration. The audit log abbreviates ids by their random end.
+53. **Contact data in logs and audit** — email addresses keep the first character and the domain; phone numbers keep
+    their last two digits; phone, email and recipient fields are always masked.
+54. **Query warnings** — `Database:ThrowOnQueryWarnings` (Development and tests) turns EF Core's
+    multiple-collection-include warning into an exception, so such a query cannot reach production unnoticed.
+
+## P.5 Tests (added on top of the ported suite)
+- **Unit (Domain):** every allowed transition and every forbidden pair (table-driven over all 19×19), history entries,
+  cancel rules, four-eyes; each scoring rule at its boundaries (17y364d / 18, 75 at maturity, PTI band edges and FX
+  stress, LTV 80/80.01, valuation 6 months ±1 day, DPD 29/30, exposure = limit / +0.01, FX threshold); approval tier
+  boundaries (20,000 / 20,000.01, 100,000 / 100,000.01); schedule (annuity / differentiated, 1-month term, 0% rate,
+  rounding to the last installment, principal sum = amount, EIR known values), early repayment (partial, full,
+  penalty); working-day calendar (weekends, holidays, Friday → Tuesday); `Money`, `PersonalNumber`.
+- **Integration (Testcontainers SQL Server):** every repository round-trip incl. rowversion conflict; SQL-side list
+  filtering per role and IDOR by id (operator of another branch, underwriter on own application, auditor POSTs);
+  double disbursement (same request twice, parallel); exposure race (two parallel disbursements exceeding the limit
+  together → exactly one succeeds); concurrent committee votes (no lost vote) and concurrent approvals (one wins);
+  gapless contract numbers under parallel signing and after a rollback; outbox claiming by two dispatchers
+  (each message once) and handler idempotency; escalation / expiry jobs run twice → one effect; log and audit masking.
+- **Architecture:** layers, repository interfaces in Domain, EF only in Infrastructure, controllers without DbContext.
+
+## P.6 Mocks and scenarios
+Interfaces in Application (`ISanctionsScreeningService`, `ICreditBureauClient`, `IIdentityVerificationService`,
+`ICoreBankingClient`, `INotificationSender`), mocks in `Infrastructure/ExternalServices`, scenarios in configuration
+(`Mocks:Scenarios:{personalNumber}`) plus the DB sanctions list; timeouts are real `CancellationToken` timeouts.
+Seeded test personal numbers (also in README):
+
+| Personal number | Scenario |
+|---|---|
+| 01001011001 | clean: every check passes |
+| 01001011002 | sanctions match → ComplianceReview |
+| 01001011003 | PEP match → ComplianceReview |
+| 01001011004 | KYC: document not verified → Rejected |
+| 01001011005 | bureau: 30+ DPD in last 12 months → Rejected at scoring |
+| 01001011006 | bureau always unavailable → stays in PreCheck, retried |
+| 01001011007 | bureau times out twice, then answers → retry succeeds |
+| 01001011008 | bureau: large obligations → PTI fails (overridable) |
+| 01001011009 | core banking error → Failed, retry with the same key |
+| 01001011010 | core banking timeout (payment done, answer late) → retry returns the same tx id |
+| 01001011011 | existing exposure near the limit → exposure scenarios |
+| 01001011012 | USD loan with GEL income below the FX threshold → rejected |
+
+## P.7 Steps (each: build 0 warnings, tests green, PLAN progress, one commit, short summary)
+
+Two days: Day 1 = P0–P9, Day 2 = P10–P17. The browser flow works end to end after P11.
+
+**Day 1 — foundation, domain, persistence**
+- [x] **P0** Housekeeping: revert stray edits, `.editorconfig` naming rules, `RoleId.New()`/`UserId.New()` in seeding,
+  remove unused `Branch.Create` overload; README: decision "EF Core instead of Dapper (agreed with the bank)".
+- [x] **P1** Rename `Lams` → `CreditFlow` (mechanical, one commit). Projects, folders, namespaces, solution, `Lams*`
+  types, cookies (`__Host-CreditFlow.Auth` / `.Af`), claim / session keys (`creditflow:role_id`, `creditflow.issued`),
+  Data Protection application name and TOTP issuer, connection string name `ConnectionStrings:CreditFlow`, design-time
+  variable `CREDITFLOW_DESIGN_CONNECTION`, docker container / volume `creditflow-sqlserver` / `creditflow-sqldata`.
+  Kept: `UserSecretsId` (local secrets survive), migration ids, `docs/`, and the Phase 1 sections of this file
+  (history, old names on purpose).
+- [x] **P2** Roles & permissions: remove LAMS-only concepts, `RoleKind`, new catalog/matrix/dashboards, seed unit
+  `0004`, migration, dev personas for 7 roles (≥2 UW, ≥2 Senior UW, 3 committee, 1 Compliance, 1 Auditor,
+  Operators in 2 branches); ported tests.
+- [x] **P3** Repository interfaces to Domain, query interfaces in Application, architecture tests.
+- [x] **P4** Logging to SQL + masking (logs and audit) + tests.
+- [x] **P5** Domain primitives: `Money`, `Currency`, `PersonalNumber`, FX conversion, `WorkingDayCalendar`; `Client`,
+  `LoanProduct` (versions) + unit tests.
+- [x] **P6** `LoanApplication` aggregate and state machine + transition tests.
+- [x] **P7** Scoring engine + rules, approval authority, schedule/EIR/early-repayment calculators + unit tests.
+
+- [x] **P8** EF mappings, migration, repositories (rowversion), reference seed (products v1/v2, rule set, thresholds,
+  FX, holidays, sanctions list) + repository integration tests.
+- [x] **P9** Outbox + dispatcher + mocks + PreCheck (bureau retry) + notifications + tests.
+
+**Day 2 — flow in the browser, concurrency, breadth**
+- [x] **P10** Application services for intake → scoring → underwriting/committee/compliance/counter-offer, access
+  filter + SQL-side lists + by-id checks; integration tests (scope, four-eyes, IDOR, concurrent approve/vote).
+  **Minimal pages:** clients (register + KYC data, incomes, obligations), application create/submit + document
+  upload, application list and page (status history, scoring result), Underwriting / Committee / Compliance inboxes
+  with decide / counter-offer / vote / clear-reject actions.
+- [x] **P11** Contract (gapless numbers), disbursement (idempotent, exposure lock), loan booking, repayments; tests
+  (double disbursement, exposure race, numbering). **Minimal pages:** client response to a counter-offer, mark
+  contract signed, mark conditions met, disburse, loan page with schedule, record repayment. **End-to-end flow works
+  in the browser here.**
+- [x] **P12** Jobs: escalation, offer expiry (+ idempotency tests).
+- [x] **P13** Web polish of the P10/P11 pages: multi-step application wizard, scoring explanation, decisions panel,
+  contract + schedule PDF, loans list.
+- [x] **P14** Admin: products with versions, scoring rule-set versions, approval thresholds, FX rates (+ CSV import),
+  holidays.
+- [x] **P15** Reports + Excel/CSV export.
+- [x] **P16** Dev data: applications in every status (created through the domain, not raw inserts).
+- [x] **P17** README complete (run, architecture, auth, EF Core decision, UoW/outbox/jobs, concurrency, rounding,
+  mocks, accounts, ambiguities, licences); final verification.
+  Also replace the "(this commit)" placeholders in the Phase 1 history table (§0 Progress) with the real commit hashes.
+
+**Cut first if time runs short** (in this order): FX CSV import (manual edit stays) → scoring-rule-set editing UI
+(versions seeded + read-only view) → holiday admin UI (seeded only) → Excel export (CSV stays) → the rename (UI title
+only) → differentiated early-repayment re-spread (annuity kept). Never cut: state machine, scoring, four-eyes,
+idempotent disbursement, exposure race, rowversion, SQL-side filtering, masking, tests for those.
+
+**Libraries** (licences allow commercial use): PDFsharp-MigraDoc (MIT) for PDFs, ClosedXML (MIT) for Excel,
+Serilog.Sinks.MSSqlServer (Apache-2.0); CSV by a small RFC 4180 writer with formula-injection protection. Not
+QuestPDF (Community licence excludes companies above $1M revenue) and not EPPlus (commercial).
+
+## P.8 Progress
+| Step | Status | Commit |
+|---|---|---|
+| A — Plan | approved 2026-10-12 | `395c343` |
+| P0 — Housekeeping | done; build 0 warnings, 798 tests green (Domain 135, Application 519, Architecture 9, Integration 135) | `5c99de0` |
+| P1 — Rename to CreditFlow | done; build 0 warnings, 798 tests green, no pending EF model changes | `efa0d9f` |
+| P2 — CreditFlow roles and permissions | done; build 0 warnings, 531 tests green (Domain 95, Application 300, Architecture 9, Integration 127). The drop from 798 is the removed features: authority-limit and pricing-exception tests (domain, evaluator, admin screen) and the smaller permission matrix (31 permissions × 7 roles instead of 39 × 10). New: read-only role kind, LAMS → CreditFlow conversion of an existing database, Auditor audit-log access, dashboards per role. | `9f2042a` |
+| P3 — Repositories in Domain, query services in Application | done; build 0 warnings, 535 tests green (Architecture 13: repository interfaces only in Domain and implemented in Infrastructure, query services in Application, EF Core only in Infrastructure) | `beb50a6` |
+| P4 — Logs in MS SQL, masking in logs and audit | done; build 0 warnings, 557 tests green (Domain 95, Application 318, Architecture 13, Integration 131; integration run 3.7 min, slowest test 4 s). Found and fixed on the way: request logs went to the static Serilog logger (never written), and SqlClient 6.1 (pulled by the sink) retried the not-yet-created test database for 10 s per test. | `3e4dc87` |
+| P5 — Domain primitives, Client, LoanProduct | done; build 0 warnings, 614 tests green (Domain 152, Application 318, Architecture 13, Integration 131) | `a7d9b79` |
+| P6 — LoanApplication aggregate and state machine | done; build 0 warnings, 1,036 tests green (Domain 574 incl. all 361 status pairs, Application 318, Architecture 13, Integration 131) | `d35133f` |
+| P7 — Scoring, approval thresholds, schedule, EIR, early repayment | done; build 0 warnings, 1,102 tests green (Domain 630, Application 328, Architecture 13, Integration 131) | `621054e` |
+| P8 — Persistence of the lending model | done; build 0 warnings, 1,112 tests green (Domain 630, Application 328, Architecture 13, Integration 141), no pending EF model changes | `ba77864` |
+| P9 — Outbox, dispatcher, mocks, pre-check, notifications | done; build 0 warnings, 1,122 tests green (Domain 630, Application 328, Architecture 13, Integration 151) | `be84877` |
+| P10a — Application services, access filter, decisions | done; build 0 warnings, 1,157 tests green (Domain 630, Application 353, Architecture 13, Integration 161), no pending EF model changes. New: full flow through the services (registration → pre-check → scoring → approval, audited), compliance clearing, counter-offer with a second underwriter, branch scope and IDOR by id, the creator never deciding, tiered inboxes, concurrent approvals and committee votes, Auditor read-only, upload rules. | `24ae829` |
+| P10b — Client, application and inbox pages | done; build 0 warnings, 1,163 tests green (Domain 630, Application 353, Architecture 13, Integration 167). Pages: clients (list, register, edit, KYC document, incomes, obligations), applications (list with SQL-side filters / sort / paging, new, application page with parties, collateral, documents, scoring explanation, history, decisions and every action the viewer may take), decision inboxes. Web tests: operator flow through the pages, upload by content, IDOR by id (404), the Auditor's POST to every permission-protected action refused with nothing changed, unprotected POSTs only account self-service. Fixed on the way: decisions with the same timestamp were listed in an undefined order. | `c842907` |
+| P11 — Contract, disbursement, loans, repayments | done; build 0 warnings, 1,190 tests green (Domain 646, Application 353, Architecture 13, Integration 178), no pending EF model changes. Gapless contract numbers from a locked counter row in the signing transaction; idempotent payout (deterministic key, Pending row committed before core banking, rejection → retry with the same key, timeout → background retry returns the same transaction); exposure re-check under per-party `sp_getapplock` in id order; loan booking via the outbox; installments and early repayment (partial recalculation, full closes loan and application). Tests: parallel signing + rollback, double payout sequential and parallel, error and timeout, exposure race over a shared guarantor, repayments, loan IDOR, pages. Decisions #41–#44. | `8633e23` |
+| P12 — Escalation and offer-expiry jobs | done; build 0 warnings, 1,197 tests green (Domain 646, Application 353, Architecture 13, Integration 185), no pending EF model changes. One `BackgroundService` (`Jobs:Enabled`, `Jobs:Interval`) runs both jobs; candidates claimed with `UPDLOCK, READPAST, ROWLOCK` per batch (keyset by id); escalation after 2 working days (weekends and holidays skipped) notifies the Senior Underwriters; expiry after 30 days notifies operator and client. Tests: deadline across a weekend and a holiday, run twice and two parallel runners → one effect each, inbox and authority after escalation, notifications. Index for the escalation claim added. Seen once: `LoggingTests.A_log_event_reaches_the_database…` timed out (15 s poll for the batched SQL sink) during a full run under load; it passed alone and in the next full run. | `0aa641f` |
+| P13 — Pages: wizard, application page, contract and payout, loans, PDFs | done; build 0 warnings, 1,206 tests green (Domain 646, Application 353, Architecture 13, Integration 194), no pending EF model changes. Application wizard (borrower and terms → parties and collateral → documents → review and submit) on the normal actions; application page split into cards (scoring verdict and per-rule explanation, history, decisions with committee tally, conditions, counter-offer, contract and payout with Pending / Failed states and check-again / retry); loans list (SQL-side filter and paging, scope); client page lists the client's applications; contract and schedule PDFs (PDFsharp-MigraDoc 6.2.4, embedded DejaVu Sans). Web tests walk the whole process role by role (operator, underwriter, compliance, two committee members, auditor), payout rejection and timeout, PDF permissions and IDOR. `LoggingTests` now polls the batched SQL sink against a 60 s deadline (assertions unchanged). Decisions #46–#48. | `fe583a9` |
+| P14 — Admin: products, scoring rules, thresholds, FX rates, holidays | done; build 0 warnings, 1,233 tests green (Domain 646, Application 364, Architecture 13, Integration 210), no pending EF model changes. Admin › Products (create with v1, publish the next version, rename, (de)activate), Scoring rules (versions, publish the next version with edited parameters / overridable flags, validated by the engine), Approval thresholds, FX rates (set, delete, CSV import all or nothing), Holidays (add, rename, remove). Services re-check `admin.*`; every change is in the data audit. Tests: per area incl. snapshot unaffected by a new product version, invalid input changes nothing, business roles get AccessDenied; pages render, forms and CSV upload round-trip; the Auditor POST sweep covers the new actions. Decision #49. | `4156d51` |
+| P15 — Reports and Excel / CSV export | done; build 0 warnings, 1,239 tests green (Domain 646, Application 364, Architecture 13, Integration 216), no pending EF model changes. Eight reports (applications by status, approval / rejection rate, average time per stage with `LEAD` in parameterised SQL, rejection reasons, portfolio by product, disbursed volume by product and branch, overdue installments, escalations), period and product filters, the viewer's data scope in SQL; Excel (ClosedXML, every report a sheet) and CSV (one report, injection-safe). The placeholder "coming soon" page is gone. Tests: figures on a two-branch data set, operator = branch / auditor = bank on the page model and in both exports, CSV escaping, permissions, page and downloads over HTTP. Decision #50. | `d7b84d7` |
+| P16 — Development demo data | done; build 0 warnings, 1,243 tests green (Domain 646, Application 364, Architecture 13, Integration 220), no pending EF model changes. 24 demo applications in both branches through the domain (scoring engine, contract numbers, payouts, loans), backdated; five left to the live pre-check with the mock personal numbers. Every lasting status incl. escalated, committee with one vote, Pending and Failed payouts, an active loan paid on time, one with overdue installments, one closed early. Once per database, Development only (`Seed:DemoData:Enabled`). Tests: every status after the pre-check, consistent with the jobs (nothing to escalate or expire), seeded once, nothing outside Development. Decision #51. | `b9609fd` |
+| P17 — README complete, final verification | done; README covers running (Docker, `.env`, user secrets, restore, migrations), the architecture choice, authentication, EF Core instead of Dapper, UoW / outbox / jobs, concurrency and idempotency, rounding, every mock with its personal numbers, accounts, demo data, the manual test script, every ambiguity and decision (#1–#51), libraries and licences, known limitations. Phase 1 table fixed (Step 8 is `67435b9`; a wrong hash had been filled in) and every placeholder replaced. Verified on a clean clone: build 0 warnings, 1,243 tests green (Domain 646, Application 364, Architecture 13, Integration 220), no pending EF model changes. | the commit "docs: complete the README and record the final verification" (it cannot name its own hash) |
+| Fixes after the first demo run | done; build 0 warnings, 1,277 tests green (Domain 658, Application 382, Architecture 13, Integration 224), no pending EF model changes. Application reference `APP-000123` from a database sequence (the old one was the timestamp prefix of the id and repeated); phone numbers and email addresses masked in logs, audit and notification bodies; no multiple-collection query without split (Development and tests now throw on it). Decisions #52–#54. | the commit "fix: unique application references, masked contact data, split queries" |

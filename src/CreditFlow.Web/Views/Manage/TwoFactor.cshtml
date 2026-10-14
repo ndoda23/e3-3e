@@ -1,0 +1,55 @@
+@model CreditFlow.Infrastructure.Identity.TwoFactorStatus
+@{
+    ViewData["Title"] = T["Manage.TwoFactor"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Manage.TwoFactorHint"]</p>
+    </div>
+</div>
+@if (TempData["Notice"] is string notice)
+{
+    <div class="alert info mb" role="status"><icon name="shield-check" size="18" /><span>@notice</span></div>
+}
+<section class="card narrow">
+    <div class="card-body stack">
+        <div class="row">
+            @if (Model.Enabled)
+            {
+                <span class="pill success"><span class="dot"></span>@T["Manage.TwoFactorOn"]</span>
+            }
+            else
+            {
+                <span class="pill neutral"><span class="dot"></span>@T["Manage.TwoFactorOff"]</span>
+            }
+            @if (Model.Required)
+            {
+                <span class="pill info"><span class="dot"></span>@T["Manage.TwoFactorRequired"]</span>
+            }
+        </div>
+
+        @if (Model.Enabled)
+        {
+            <p class="small">@T["Manage.RecoveryCodesLeft", Model.RecoveryCodesLeft]</p>
+            <div class="row">
+                <form method="post" asp-action="GenerateRecoveryCodes">
+                    <button type="submit" class="btn"><icon name="refresh" size="15" />@T["Manage.NewRecoveryCodes"]</button>
+                </form>
+                <a class="btn" asp-action="ResetAuthenticator"><icon name="smartphone" size="15" />@T["Manage.ResetAuthenticator"]</a>
+                @if (!Model.Required)
+                {
+                    <form method="post" asp-action="DisableTwoFactor">
+                        <button type="submit" class="btn danger"><icon name="x" size="15" />@T["Manage.DisableTwoFactor"]</button>
+                    </form>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <a class="btn primary" href="/Account/EnableAuthenticator"><icon name="smartphone" size="15" />@T["Manage.EnableTwoFactor"]</a>
+            </div>
+        }
+    </div>
+</section>

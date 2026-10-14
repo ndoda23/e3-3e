@@ -1,0 +1,113 @@
+@model ProductTermsForm
+@using CreditFlow.Domain.Common
+@using CreditFlow.Domain.Products
+@{
+    // Field names are prefixed when the terms are nested in another form (e.g. "Terms." on the create form).
+    var prefix = ViewData["Prefix"] as string ?? string.Empty;
+    string Name(string field) => prefix + field;
+    string Value(decimal? value) => value?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+}
+<div class="form-grid" data-terms-fields>
+    <div class="field">
+        <label for="@Name("MinAmountGel")" class="required">@T["Products.MinAmountGel"]</label>
+        <input id="@Name("MinAmountGel")" name="@Name("MinAmountGel")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MinAmountGel)" />
+        @Html.ValidationMessage(Name("MinAmountGel"))
+    </div>
+    <div class="field">
+        <label for="@Name("MaxAmountGel")" class="required">@T["Products.MaxAmountGel"]</label>
+        <input id="@Name("MaxAmountGel")" name="@Name("MaxAmountGel")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MaxAmountGel)" />
+        @Html.ValidationMessage(Name("MaxAmountGel"))
+    </div>
+    <div class="field">
+        <label for="@Name("MinTermMonths")" class="required">@T["Products.MinTermMonths"]</label>
+        <input id="@Name("MinTermMonths")" name="@Name("MinTermMonths")" type="number" min="1" class="inp" value="@Model.MinTermMonths" />
+        @Html.ValidationMessage(Name("MinTermMonths"))
+    </div>
+    <div class="field">
+        <label for="@Name("MaxTermMonths")" class="required">@T["Products.MaxTermMonths"]</label>
+        <input id="@Name("MaxTermMonths")" name="@Name("MaxTermMonths")" type="number" min="1" class="inp" value="@Model.MaxTermMonths" />
+        @Html.ValidationMessage(Name("MaxTermMonths"))
+    </div>
+    <div class="field">
+        <label for="@Name("MinRate")" class="required">@T["Products.MinRate"]</label>
+        <input id="@Name("MinRate")" name="@Name("MinRate")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MinRate)" />
+        @Html.ValidationMessage(Name("MinRate"))
+    </div>
+    <div class="field">
+        <label for="@Name("MaxRate")" class="required">@T["Products.MaxRate"]</label>
+        <input id="@Name("MaxRate")" name="@Name("MaxRate")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MaxRate)" />
+        @Html.ValidationMessage(Name("MaxRate"))
+    </div>
+    <div class="field">
+        <label for="@Name("UpfrontFeePercent")">@T["Products.UpfrontFeePercent"]</label>
+        <input id="@Name("UpfrontFeePercent")" name="@Name("UpfrontFeePercent")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.UpfrontFeePercent)" />
+        @Html.ValidationMessage(Name("UpfrontFeePercent"))
+    </div>
+    <div class="field">
+        <label for="@Name("MonthlyFeePercent")">@T["Products.MonthlyFeePercent"]</label>
+        <input id="@Name("MonthlyFeePercent")" name="@Name("MonthlyFeePercent")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MonthlyFeePercent)" />
+        @Html.ValidationMessage(Name("MonthlyFeePercent"))
+    </div>
+    <div class="field">
+        <label for="@Name("EarlyRepaymentPenaltyPercent")">@T["Products.EarlyRepaymentPenaltyPercent"]</label>
+        <input id="@Name("EarlyRepaymentPenaltyPercent")" name="@Name("EarlyRepaymentPenaltyPercent")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.EarlyRepaymentPenaltyPercent)" />
+        @Html.ValidationMessage(Name("EarlyRepaymentPenaltyPercent"))
+    </div>
+    <div class="field">
+        <label for="@Name("MaxLtvPercent")">@T["Products.MaxLtvPercent"]</label>
+        <input id="@Name("MaxLtvPercent")" name="@Name("MaxLtvPercent")" type="number" step="0.01" min="0" class="inp" value="@Value(Model.MaxLtvPercent)" />
+        <label class="check small"><input type="checkbox" name="@Name("CollateralRequired")" value="true" class="cb" checked="@Model.CollateralRequired" />@T["Products.CollateralRequired"]</label>
+        @Html.ValidationMessage(Name("MaxLtvPercent"))
+    </div>
+    <fieldset class="field">
+        <legend class="field-label">@T["Products.Currencies"]</legend>
+        <div class="row wrap">
+            @foreach (var currency in Enum.GetValues<Currency>())
+            {
+                <label class="check"><input type="checkbox" name="@Name("Currencies")" value="@currency" class="cb" checked="@Model.Currencies.Contains(currency)" />@currency</label>
+            }
+        </div>
+        @Html.ValidationMessage(Name("Currencies"))
+    </fieldset>
+    <fieldset class="field">
+        <legend class="field-label">@T["Products.ScheduleTypes"]</legend>
+        <div class="row wrap">
+            @foreach (var type in Enum.GetValues<ScheduleType>())
+            {
+                <label class="check"><input type="checkbox" name="@Name("ScheduleTypes")" value="@type" class="cb" checked="@Model.ScheduleTypes.Contains(type)" />@T.EnumText(type)</label>
+            }
+        </div>
+        @Html.ValidationMessage(Name("ScheduleTypes"))
+    </fieldset>
+    <fieldset class="field full">
+        <legend class="field-label">@T["Products.StandardConditions"]</legend>
+        <div class="row wrap">
+            @foreach (var condition in Enum.GetValues<ConditionType>())
+            {
+                <label class="check"><input type="checkbox" name="@Name("StandardConditions")" value="@condition" class="cb" checked="@Model.StandardConditions.Contains(condition)" />@T.EnumText(condition)</label>
+            }
+        </div>
+    </fieldset>
+    <fieldset class="field full" data-checklist>
+        <legend class="field-label">@T["Products.Checklist"]</legend>
+        <table class="tbl">
+            <tbody>
+                @for (var i = 0; i < Model.Documents.Count; i++)
+                {
+                    var row = Model.Documents[i];
+                    <tr>
+                        <td>
+                            <input type="hidden" name="@Name($"Documents[{i}].Type")" value="@row.Type" />
+                            <label class="check"><input type="checkbox" name="@Name($"Documents[{i}].Required")" value="true" class="cb" checked="@row.Required" />@T.EnumText(row.Type)</label>
+                        </td>
+                        <td>
+                            <input name="@Name($"Documents[{i}].MinAmountGel")" type="number" step="0.01" min="0" class="inp" value="@Value(row.MinAmountGel)"
+                                   placeholder="@T["Products.FromAmount"]" aria-label="@T["Products.FromAmount"]" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @Html.ValidationMessage(Name("RequiredDocuments"))
+    </fieldset>
+</div>

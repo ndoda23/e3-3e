@@ -1,0 +1,788 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- UI texts, English (neutral culture). Keys are grouped by prefix. Georgian goes in SharedResource.ka.resx. -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Application / layout -->
+  <data name="App.Name" xml:space="preserve"><value>CreditFlow</value></data>
+  <data name="App.Tagline" xml:space="preserve"><value>Loan origination</value></data>
+  <data name="Layout.SkipToContent" xml:space="preserve"><value>Skip to content</value></data>
+  <data name="Layout.Breadcrumbs" xml:space="preserve"><value>Breadcrumbs</value></data>
+  <data name="Layout.MainNavigation" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Layout.SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="Topbar.CreateApplication" xml:space="preserve"><value>Create Application</value></data>
+
+  <!-- Navigation -->
+  <data name="Nav.Section.Workspace" xml:space="preserve"><value>Workspace</value></data>
+  <data name="Nav.Section.Administration" xml:space="preserve"><value>Administration</value></data>
+  <data name="Nav.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Nav.Applications" xml:space="preserve"><value>Applications</value></data>
+  <data name="Nav.Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="Nav.NewApplication" xml:space="preserve"><value>Create Application</value></data>
+  <data name="Nav.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Nav.Roles" xml:space="preserve"><value>Roles &amp; permissions</value></data>
+  <data name="Nav.Branches" xml:space="preserve"><value>Branches</value></data>
+  <data name="Nav.AuditLog" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Nav.Audit" xml:space="preserve"><value>Audit log</value></data>
+
+  <!-- Dashboards (one per role kind of work) -->
+  <data name="Dashboard.Operator" xml:space="preserve"><value>Branch workspace</value></data>
+  <data name="Dashboard.Operator.Description" xml:space="preserve"><value>Clients, applications, contracts and disbursements of your branch.</value></data>
+  <data name="Dashboard.Underwriting" xml:space="preserve"><value>Underwriting</value></data>
+  <data name="Dashboard.Underwriting.Description" xml:space="preserve"><value>Applications waiting for your credit decision.</value></data>
+  <data name="Dashboard.Committee" xml:space="preserve"><value>Credit committee</value></data>
+  <data name="Dashboard.Committee.Description" xml:space="preserve"><value>Applications above the Senior Underwriter threshold waiting for your vote.</value></data>
+  <data name="Dashboard.Compliance" xml:space="preserve"><value>Compliance review</value></data>
+  <data name="Dashboard.Compliance.Description" xml:space="preserve"><value>Applications held for a sanctions or PEP match.</value></data>
+  <data name="Dashboard.Audit" xml:space="preserve"><value>Audit</value></data>
+  <data name="Dashboard.Audit.Description" xml:space="preserve"><value>Read-only access to applications, loans, reports and the audit log.</value></data>
+  <data name="Dashboard.Administration" xml:space="preserve"><value>Administration</value></data>
+  <data name="Dashboard.Administration.Description" xml:space="preserve"><value>Users, roles, branches and reference data.</value></data>
+  <data name="Dashboard.Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Dashboard.Attention" xml:space="preserve"><value>Needs your attention</value></data>
+  <data name="Dashboard.Feed" xml:space="preserve"><value>Recent exceptions (newest first)</value></data>
+  <data name="Dashboard.System" xml:space="preserve"><value>System</value></data>
+  <data name="Audit.Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Audit.AllCategories" xml:space="preserve"><value>Any category</value></data>
+  <data name="Enum.AuditCategory.AccessChanges" xml:space="preserve"><value>Access changes</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentComplianceClearances" xml:space="preserve"><value>Compliance cleared (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.LargeDisbursements" xml:space="preserve"><value>Large payouts (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutIncidents" xml:space="preserve"><value>Payout incidents (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyEscalated" xml:space="preserve"><value>Escalated (last 30 days)</value></data>
+  <data name="Dashboard.NothingWaiting" xml:space="preserve"><value>Nothing is waiting for you.</value></data>
+  <data name="Dashboard.OldestWaiting" xml:space="preserve"><value>Oldest waiting {0}</value></data>
+  <data name="Dashboard.Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="Applications.Queue" xml:space="preserve"><value>Queue</value></data>
+  <data name="Inbox.Filter" xml:space="preserve"><value>Show</value></data>
+  <data name="Inbox.Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="Inbox.Filter.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Inbox.Filter.NeedsOverride" xml:space="preserve"><value>Needs an override</value></data>
+  <data name="Applications.AllQueues" xml:space="preserve"><value>Any queue</value></data>
+  <data name="Enum.ApplicationQueueKind.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutPending" xml:space="preserve"><value>Payout pending</value></data>
+  <data name="Enum.ApplicationQueueKind.PayoutFailed" xml:space="preserve"><value>Payout failed</value></data>
+  <data name="Enum.ApplicationQueueKind.StuckInPreCheck" xml:space="preserve"><value>Stuck in pre-check</value></data>
+  <data name="Enum.ApplicationQueueKind.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Enum.ApplicationQueueKind.NeedsOverride" xml:space="preserve"><value>Needs an override</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyRejected" xml:space="preserve"><value>Rejected (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentOverrides" xml:space="preserve"><value>Overrides (last 30 days)</value></data>
+  <data name="Enum.ApplicationQueueKind.RecentlyDisbursed" xml:space="preserve"><value>Paid out (last 30 days)</value></data>
+  <data name="Dashboard.Metric.Drafts" xml:space="preserve"><value>Drafts</value></data>
+  <data name="Dashboard.Metric.DocumentsPending" xml:space="preserve"><value>Documents pending</value></data>
+  <data name="Dashboard.Metric.AwaitingSignature" xml:space="preserve"><value>Approved, awaiting signature</value></data>
+  <data name="Dashboard.Metric.AwaitingDisbursement" xml:space="preserve"><value>Conditions met, awaiting payout</value></data>
+  <data name="Dashboard.Metric.PayoutsPending" xml:space="preserve"><value>Payouts pending</value></data>
+  <data name="Dashboard.Metric.PayoutsFailed" xml:space="preserve"><value>Payouts failed</value></data>
+  <data name="Dashboard.Metric.StuckInPreCheck" xml:space="preserve"><value>Stuck in pre-check</value></data>
+  <data name="Dashboard.Metric.Inbox" xml:space="preserve"><value>My inbox</value></data>
+  <data name="Dashboard.Metric.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Dashboard.Metric.Overridable" xml:space="preserve"><value>Need an override</value></data>
+  <data name="Dashboard.Metric.AwaitingVote" xml:space="preserve"><value>Awaiting my vote</value></data>
+  <data name="Dashboard.Metric.ComplianceReviews" xml:space="preserve"><value>Reviews waiting</value></data>
+  <data name="Dashboard.Metric.RecentOverrides" xml:space="preserve"><value>Overrides</value></data>
+  <data name="Dashboard.Metric.RecentRejections" xml:space="preserve"><value>Rejections</value></data>
+  <data name="Dashboard.Metric.ComplianceClearances" xml:space="preserve"><value>Compliance clearances</value></data>
+  <data name="Dashboard.Metric.LargeDisbursements" xml:space="preserve"><value>Large disbursements</value></data>
+  <data name="Dashboard.Metric.PayoutIncidents" xml:space="preserve"><value>Payout incidents</value></data>
+  <data name="Dashboard.Metric.RecentEscalations" xml:space="preserve"><value>Escalations</value></data>
+  <data name="Dashboard.Metric.LockedUsers" xml:space="preserve"><value>Locked users</value></data>
+  <data name="Dashboard.Metric.UsersWithoutMfa" xml:space="preserve"><value>Users without MFA</value></data>
+  <data name="Dashboard.Metric.RecentAccessChanges" xml:space="preserve"><value>Access changes</value></data>
+
+  <!-- Placeholders -->
+
+  <!-- User attributes -->
+
+  <!-- Error pages -->
+  <data name="Error.NotFound.Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="Error.NotFound.Description" xml:space="preserve"><value>The page you are looking for does not exist or has moved.</value></data>
+  <data name="Error.ServerError.Title" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Error.ServerError.Description" xml:space="preserve"><value>An unexpected error occurred and has been logged. Please try again. If it keeps happening, contact support and quote the reference below.</value></data>
+  <data name="Error.Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Error.TooManyRequests.Title" xml:space="preserve"><value>Too many attempts</value></data>
+  <data name="Error.TooManyRequests.Description" xml:space="preserve"><value>You have made too many requests in a short time. Please wait a minute and try again.</value></data>
+  <data name="Error.StatusCode.Title" xml:space="preserve"><value>The request could not be completed</value></data>
+  <data name="Error.StatusCode.Description" xml:space="preserve"><value>Please go back and try again.</value></data>
+  <data name="Error.BackHome" xml:space="preserve"><value>Back to the start page</value></data>
+
+  <!-- Account, My account, fields, validation (Step 6) -->
+  <data name="Layout.MyAccount" xml:space="preserve"><value>My account</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Login.Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login.Description" xml:space="preserve"><value>Use your CreditFlow user name or email address.</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login.Footer" xml:space="preserve"><value>Accounts are created by your administrator. There is no self-registration.</value></data>
+  <data name="Login.InvalidCredentials" xml:space="preserve"><value>Invalid user name or password.</value></data>
+  <data name="Login.TemporaryPasswordExpired" xml:space="preserve"><value>Your temporary password has expired. Contact your administrator.</value></data>
+  <data name="Login.InvalidCode" xml:space="preserve"><value>The code is not valid. Please try again.</value></data>
+  <data name="TwoFactor.Title" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="TwoFactor.Description" xml:space="preserve"><value>Enter the 6-digit code from your authenticator app.</value></data>
+  <data name="TwoFactor.Submit" xml:space="preserve"><value>Verify</value></data>
+  <data name="TwoFactor.NoDevice" xml:space="preserve"><value>No access to your app?</value></data>
+  <data name="TwoFactor.UseRecoveryCode" xml:space="preserve"><value>Use a recovery code</value></data>
+  <data name="RecoveryCode.Title" xml:space="preserve"><value>Sign in with a recovery code</value></data>
+  <data name="RecoveryCode.Description" xml:space="preserve"><value>Each recovery code can be used once.</value></data>
+  <data name="RecoveryCode.Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="RecoveryCode.Back" xml:space="preserve"><value>Use the authenticator app instead</value></data>
+  <data name="Lockout.Title" xml:space="preserve"><value>Account locked</value></data>
+  <data name="Lockout.Description" xml:space="preserve"><value>Too many unsuccessful sign-in attempts.</value></data>
+  <data name="Lockout.Detail" xml:space="preserve"><value>For your security the account is locked for 15 minutes. Try again later or contact your administrator.</value></data>
+  <data name="Lockout.BackToLogin" xml:space="preserve"><value>Back to sign in</value></data>
+  <data name="AccessDenied.Title" xml:space="preserve"><value>Access denied</value></data>
+  <data name="AccessDenied.Description" xml:space="preserve"><value>You do not have permission to open this page.</value></data>
+  <data name="ForcedChangePassword.Title" xml:space="preserve"><value>Choose a new password</value></data>
+  <data name="ForcedChangePassword.Description" xml:space="preserve"><value>You signed in with a temporary password. Choose your own password to continue.</value></data>
+  <data name="ForcedChangePassword.Footer" xml:space="preserve"><value>You must change your password before continuing.</value></data>
+  <data name="ChangePassword.Submit" xml:space="preserve"><value>Change password</value></data>
+  <data name="ChangePassword.Rules" xml:space="preserve"><value>At least 12 characters, with upper- and lower-case letters, a digit and a symbol. You cannot reuse any of your last 5 passwords.</value></data>
+  <data name="EnableAuthenticator.Title" xml:space="preserve"><value>Set up two-factor authentication</value></data>
+  <data name="EnableAuthenticator.Description" xml:space="preserve"><value>Protect your account with an authenticator app.</value></data>
+  <data name="EnableAuthenticator.Required" xml:space="preserve"><value>Two-factor authentication is required for your account. Set it up to continue.</value></data>
+  <data name="EnableAuthenticator.Step1" xml:space="preserve"><value>Install an authenticator app on your phone (for example Microsoft Authenticator or Google Authenticator).</value></data>
+  <data name="EnableAuthenticator.Step2" xml:space="preserve"><value>Scan this QR code with the app.</value></data>
+  <data name="EnableAuthenticator.Step3" xml:space="preserve"><value>Enter the 6-digit code shown in the app.</value></data>
+  <data name="EnableAuthenticator.QrLabel" xml:space="preserve"><value>QR code for setting up the authenticator app</value></data>
+  <data name="EnableAuthenticator.ManualKey" xml:space="preserve"><value>Cannot scan? Enter this key manually:</value></data>
+  <data name="EnableAuthenticator.Submit" xml:space="preserve"><value>Verify and turn on</value></data>
+  <data name="EnableAuthenticator.Footer" xml:space="preserve"><value>Set up two-factor authentication to continue.</value></data>
+  <data name="RecoveryCodes.Title" xml:space="preserve"><value>Your recovery codes</value></data>
+  <data name="RecoveryCodes.Description" xml:space="preserve"><value>Use one of these codes to sign in if you lose access to your authenticator app.</value></data>
+  <data name="RecoveryCodes.Warning" xml:space="preserve"><value>Store these codes in a safe place now. They are shown only once and each code works only once.</value></data>
+  <data name="RecoveryCodes.Continue" xml:space="preserve"><value>I have saved my codes</value></data>
+  <data name="Manage.Section" xml:space="preserve"><value>My account</value></data>
+  <data name="Manage.Title" xml:space="preserve"><value>My account</value></data>
+  <data name="Manage.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Manage.ProfileHint" xml:space="preserve"><value>Your role, branch and contact details are managed by your administrator.</value></data>
+  <data name="Manage.ChangePassword" xml:space="preserve"><value>Change password</value></data>
+  <data name="Manage.ChangePasswordHint" xml:space="preserve"><value>Enter your current password and choose a new one.</value></data>
+  <data name="Manage.PasswordChanged" xml:space="preserve"><value>Your password has been changed.</value></data>
+  <data name="Manage.TwoFactor" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Manage.TwoFactorHint" xml:space="preserve"><value>An authenticator app adds a second step when you sign in.</value></data>
+  <data name="Manage.TwoFactorOn" xml:space="preserve"><value>On</value></data>
+  <data name="Manage.TwoFactorOff" xml:space="preserve"><value>Off</value></data>
+  <data name="Manage.TwoFactorRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="Manage.RecoveryCodesLeft" xml:space="preserve"><value>Recovery codes left: {0}</value></data>
+  <data name="Manage.NewRecoveryCodes" xml:space="preserve"><value>Generate new recovery codes</value></data>
+  <data name="Manage.ResetAuthenticator" xml:space="preserve"><value>Reset authenticator app</value></data>
+  <data name="Manage.ResetAuthenticatorWarning" xml:space="preserve"><value>Resetting creates a new key: your current app stops working and you must set it up again before continuing.</value></data>
+  <data name="Manage.DisableTwoFactor" xml:space="preserve"><value>Turn off</value></data>
+  <data name="Manage.EnableTwoFactor" xml:space="preserve"><value>Set up authenticator app</value></data>
+  <data name="Manage.TwoFactorDisabled" xml:space="preserve"><value>Two-factor authentication has been turned off.</value></data>
+  <data name="Field.Login" xml:space="preserve"><value>User name or email</value></data>
+  <data name="Field.Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Field.AuthenticatorCode" xml:space="preserve"><value>Verification code</value></data>
+  <data name="Field.RecoveryCode" xml:space="preserve"><value>Recovery code</value></data>
+  <data name="Field.CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="Field.NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="Field.ConfirmPassword" xml:space="preserve"><value>Confirm new password</value></data>
+  <data name="Field.UserName" xml:space="preserve"><value>User name</value></data>
+  <data name="Field.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Field.Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Field.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Field.TwoFactor" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Field.LastLogin" xml:space="preserve"><value>Last sign-in</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>{0} is required.</value></data>
+  <data name="Validation.AuthenticatorCode" xml:space="preserve"><value>Enter the 6-digit code.</value></data>
+  <data name="Validation.PasswordsDoNotMatch" xml:space="preserve"><value>The passwords do not match.</value></data>
+  <data name="Error.Identity.PasswordMismatch" xml:space="preserve"><value>The current password is not correct.</value></data>
+  <data name="Error.Identity.PasswordReused" xml:space="preserve"><value>You cannot reuse any of your last 5 passwords.</value></data>
+  <data name="Error.Identity.PasswordTooShort" xml:space="preserve"><value>The password must be at least 12 characters long.</value></data>
+  <data name="Error.Identity.PasswordRequiresDigit" xml:space="preserve"><value>The password must contain a digit.</value></data>
+  <data name="Error.Identity.PasswordRequiresLower" xml:space="preserve"><value>The password must contain a lower-case letter.</value></data>
+  <data name="Error.Identity.PasswordRequiresUpper" xml:space="preserve"><value>The password must contain an upper-case letter.</value></data>
+  <data name="Error.Identity.PasswordRequiresNonAlphanumeric" xml:space="preserve"><value>The password must contain a symbol.</value></data>
+  <data name="Error.Identity.PasswordRequiresUniqueChars" xml:space="preserve"><value>The password must use at least 4 different characters.</value></data>
+  <data name="Error.Account.InvalidAuthenticatorCode" xml:space="preserve"><value>The verification code is not valid. Check the code in your app and try again.</value></data>
+  <data name="Error.Account.MfaRequired" xml:space="preserve"><value>Two-factor authentication is required for your account and cannot be turned off.</value></data>
+  <data name="Error.Account.MfaNotEnabled" xml:space="preserve"><value>Two-factor authentication is not enabled for your account.</value></data>
+  <data name="Common.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Common.Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>Save changes</value></data>
+  <data name="Pager.Label" xml:space="preserve"><value>Pages</value></data>
+  <data name="Pager.Next" xml:space="preserve"><value>Next page</value></data>
+  <data name="Pager.Previous" xml:space="preserve"><value>Previous page</value></data>
+  <data name="Pager.Showing" xml:space="preserve"><value>{0}–{1} of {2}</value></data>
+  <data name="Field.Capacity" xml:space="preserve"><value>Capacity</value></data>
+  <data name="Field.RequireMfa" xml:space="preserve"><value>Require two-factor authentication</value></data>
+  <data name="Field.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Field.FullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="Audit.When" xml:space="preserve"><value>When</value></data>
+  <data name="Audit.Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Audit.By" xml:space="preserve"><value>By</value></data>
+  <data name="Audit.IpAddress" xml:space="preserve"><value>IP address</value></data>
+  <data name="Users.Description" xml:space="preserve"><value>Staff accounts, their single role and the attributes the role requires.</value></data>
+  <data name="Users.Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Users.StaffHint" xml:space="preserve"><value>Search, filter and sort; toggle who is working today.</value></data>
+  <data name="Users.Search" xml:space="preserve"><value>Search users</value></data>
+  <data name="Users.SearchPlaceholder" xml:space="preserve"><value>Search name, user name or email…</value></data>
+  <data name="Users.AllRoles" xml:space="preserve"><value>All roles</value></data>
+  <data name="Users.AllBranches" xml:space="preserve"><value>All branches</value></data>
+  <data name="Users.Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Users.Status.All" xml:space="preserve"><value>Any status</value></data>
+  <data name="Users.Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Users.Status.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Users.Status.LockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="Users.Status.WithoutMfa" xml:space="preserve"><value>Without MFA</value></data>
+  <data name="Users.Column.User" xml:space="preserve"><value>User</value></data>
+  <data name="Users.Column.Working" xml:space="preserve"><value>Working today</value></data>
+  <data name="Users.State.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Users.State.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Users.State.Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Users.You" xml:space="preserve"><value>You</value></data>
+  <data name="Users.In" xml:space="preserve"><value>In</value></data>
+  <data name="Users.Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Users.WorkingToday" xml:space="preserve"><value>Working today: {0}</value></data>
+  <data name="Users.NeverSignedIn" xml:space="preserve"><value>Never</value></data>
+  <data name="Users.NoResults" xml:space="preserve"><value>No users match these filters.</value></data>
+  <data name="Users.View" xml:space="preserve"><value>View user</value></data>
+  <data name="Users.Create" xml:space="preserve"><value>New user</value></data>
+  <data name="Users.CreateHint" xml:space="preserve"><value>The user receives a temporary password and must change it at first sign-in.</value></data>
+  <data name="Users.CreateSubmit" xml:space="preserve"><value>Create user</value></data>
+  <data name="Users.CreateAnother" xml:space="preserve"><value>Create another user</value></data>
+  <data name="Users.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Users.EditTitle" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="Users.EditHint" xml:space="preserve"><value>Account details, role and the attributes the role requires.</value></data>
+  <data name="Users.AccessChangeWarning" xml:space="preserve"><value>Changing the role or the branch signs the user out of their open sessions within a minute.</value></data>
+  <data name="Users.UserNameHint" xml:space="preserve"><value>3–64 letters, digits, dots, hyphens or underscores, e.g. tamta.tatishvili.</value></data>
+  <data name="Users.CapacityHint" xml:space="preserve"><value>Maximum number of open files at once (0–100).</value></data>
+  <data name="Users.ChooseRole" xml:space="preserve"><value>Choose a role</value></data>
+  <data name="Users.ChooseRoleFirst" xml:space="preserve"><value>Choose a role to see whether it requires a branch.</value></data>
+  <data name="Users.RoleHasNoAttributes" xml:space="preserve"><value>This role is not tied to a branch.</value></data>
+  <data name="Users.ChooseBranch" xml:space="preserve"><value>Choose a branch</value></data>
+  <data name="Users.NoBranch" xml:space="preserve"><value>No branch</value></data>
+  <data name="Users.InactiveBranch" xml:space="preserve"><value>{0} (inactive)</value></data>
+  <data name="Users.RequireMfaHint" xml:space="preserve"><value>The user must set up an authenticator app at first sign-in, even if the role does not require it.</value></data>
+  <data name="Users.Saved" xml:space="preserve"><value>The user has been saved.</value></data>
+  <data name="Users.BackToList" xml:space="preserve"><value>All users</value></data>
+  <data name="Users.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Users.Security" xml:space="preserve"><value>Sign-in and security</value></data>
+  <data name="Users.CreatedAt" xml:space="preserve"><value>Created</value></data>
+  <data name="Users.UpdatedAt" xml:space="preserve"><value>Last changed</value></data>
+  <data name="Users.TemporaryPassword" xml:space="preserve"><value>Temporary</value></data>
+  <data name="Users.TemporaryPasswordExpires" xml:space="preserve"><value>Expires {0}</value></data>
+  <data name="Users.PasswordSet" xml:space="preserve"><value>Set by the user</value></data>
+  <data name="Users.MfaEnrolled" xml:space="preserve"><value>Set up</value></data>
+  <data name="Users.MfaNotEnrolled" xml:space="preserve"><value>Not set up</value></data>
+  <data name="Users.MfaRequiredByRole" xml:space="preserve"><value>Required by role</value></data>
+  <data name="Users.MfaRequiredForUser" xml:space="preserve"><value>Required for this user</value></data>
+  <data name="Users.LockedUntil" xml:space="preserve"><value>Locked until</value></data>
+  <data name="Users.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Users.ResetPassword" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Users.ForceSignOut" xml:space="preserve"><value>Force sign-out</value></data>
+  <data name="Users.Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Users.RequireMfa" xml:space="preserve"><value>Require two-factor</value></data>
+  <data name="Users.StopRequiringMfa" xml:space="preserve"><value>Stop requiring two-factor</value></data>
+  <data name="Users.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Users.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Users.Deactivated" xml:space="preserve"><value>The user has been deactivated and signed out.</value></data>
+  <data name="Users.Activated" xml:space="preserve"><value>The user has been activated.</value></data>
+  <data name="Users.Unlocked" xml:space="preserve"><value>The account has been unlocked.</value></data>
+  <data name="Users.SignedOut" xml:space="preserve"><value>The user's sessions end within a minute.</value></data>
+  <data name="Users.MfaRequired" xml:space="preserve"><value>Two-factor authentication is now required for this user.</value></data>
+  <data name="Users.MfaNotRequired" xml:space="preserve"><value>Two-factor authentication is no longer required for this user (unless the role requires it).</value></data>
+  <data name="Users.AvailabilitySaved" xml:space="preserve"><value>Availability has been updated.</value></data>
+  <data name="Users.MarkedWorking" xml:space="preserve"><value>{0} is marked as working today.</value></data>
+  <data name="Users.MarkedUnavailable" xml:space="preserve"><value>{0} is marked as unavailable.</value></data>
+  <data name="Users.RecentActivity" xml:space="preserve"><value>Recent activity</value></data>
+  <data name="Users.RecentActivityHint" xml:space="preserve"><value>The last 10 audit records where this user acted or was changed.</value></data>
+  <data name="Users.NoActivity" xml:space="preserve"><value>No activity recorded yet.</value></data>
+  <data name="Users.Confirm.Deactivate.Title" xml:space="preserve"><value>Deactivate this user?</value></data>
+  <data name="Users.Confirm.Deactivate.Description" xml:space="preserve"><value>The user can no longer sign in, open sessions end within a minute and they are marked unavailable. The account is kept and can be activated again.</value></data>
+  <data name="Users.Confirm.Deactivate.Button" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Users.Confirm.ForceSignOut.Title" xml:space="preserve"><value>Sign this user out everywhere?</value></data>
+  <data name="Users.Confirm.ForceSignOut.Description" xml:space="preserve"><value>All open sessions end within a minute. The user can sign in again.</value></data>
+  <data name="Users.Confirm.ForceSignOut.Button" xml:space="preserve"><value>Force sign-out</value></data>
+  <data name="Users.Confirm.ResetPassword.Title" xml:space="preserve"><value>Reset the password?</value></data>
+  <data name="Users.Confirm.ResetPassword.Description" xml:space="preserve"><value>A new temporary password replaces the current one and open sessions end. The new password is shown once; give it to the user securely.</value></data>
+  <data name="Users.Confirm.ResetPassword.Button" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Users.Created.Title" xml:space="preserve"><value>User created</value></data>
+  <data name="Users.PasswordReset.Title" xml:space="preserve"><value>Password reset</value></data>
+  <data name="Users.TempPassword.ShownOnce" xml:space="preserve"><value>This temporary password is shown only once. Give it to the user securely; they must change it at first sign-in.</value></data>
+  <data name="Users.TempPassword.Label" xml:space="preserve"><value>Temporary password</value></data>
+  <data name="Users.TempPassword.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Users.TempPassword.Copied" xml:space="preserve"><value>Password copied to the clipboard.</value></data>
+  <data name="Users.TempPassword.Expires" xml:space="preserve"><value>Valid until {0}.</value></data>
+  <data name="Users.Done" xml:space="preserve"><value>Done</value></data>
+  <data name="AuditAction.Created" xml:space="preserve"><value>Created</value></data>
+  <data name="AuditAction.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="AuditAction.Deleted" xml:space="preserve"><value>Deleted</value></data>
+  <data name="AuditAction.User.Created" xml:space="preserve"><value>User created</value></data>
+  <data name="AuditAction.User.Updated" xml:space="preserve"><value>User changed</value></data>
+  <data name="AuditAction.Role.Updated" xml:space="preserve"><value>Role changed</value></data>
+  <data name="AuditAction.Branch.Created" xml:space="preserve"><value>Branch created</value></data>
+  <data name="AuditAction.Branch.Updated" xml:space="preserve"><value>Branch changed</value></data>
+  <data name="AuditAction.Branch.Deleted" xml:space="preserve"><value>Branch deleted</value></data>
+  <data name="AuditAction.LoginSucceeded" xml:space="preserve"><value>Signed in</value></data>
+  <data name="AuditAction.LoginFailed" xml:space="preserve"><value>Sign-in failed</value></data>
+  <data name="AuditAction.LoginFailed:TemporaryPasswordExpired" xml:space="preserve"><value>Sign-in failed: temporary password expired</value></data>
+  <data name="AuditAction.LockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="AuditAction.Logout" xml:space="preserve"><value>Signed out</value></data>
+  <data name="AuditAction.SessionExpired" xml:space="preserve"><value>Session expired</value></data>
+  <data name="AuditAction.PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
+  <data name="AuditAction.PasswordReset" xml:space="preserve"><value>Password reset by administrator</value></data>
+  <data name="AuditAction.MfaEnabled" xml:space="preserve"><value>Two-factor turned on</value></data>
+  <data name="AuditAction.MfaDisabled" xml:space="preserve"><value>Two-factor turned off</value></data>
+  <data name="AuditAction.MfaReset" xml:space="preserve"><value>Authenticator reset</value></data>
+  <data name="AuditAction.MfaRequirementChanged" xml:space="preserve"><value>Two-factor requirement changed</value></data>
+  <data name="AuditAction.RecoveryCodesGenerated" xml:space="preserve"><value>Recovery codes generated</value></data>
+  <data name="AuditAction.UserUnlocked" xml:space="preserve"><value>Account unlocked</value></data>
+  <data name="AuditAction.UserActivated" xml:space="preserve"><value>User activated</value></data>
+  <data name="AuditAction.UserDeactivated" xml:space="preserve"><value>User deactivated</value></data>
+  <data name="AuditAction.ForcedSignOut" xml:space="preserve"><value>Signed out by administrator</value></data>
+  <data name="AuditAction.RolePermissionsChanged" xml:space="preserve"><value>Role permissions changed</value></data>
+  <data name="AuditAction.Application.StatusChanged" xml:space="preserve"><value>Application status changed</value></data>
+  <data name="AuditAction.Application.Scored" xml:space="preserve"><value>Application scored</value></data>
+  <data name="AuditAction.Application.Decision" xml:space="preserve"><value>Decision on application</value></data>
+  <data name="AuditAction.Application.Override" xml:space="preserve"><value>Scoring rule overridden</value></data>
+  <data name="AuditAction.Application.Escalated" xml:space="preserve"><value>Application escalated</value></data>
+  <data name="AuditEntity.Application" xml:space="preserve"><value>Application</value></data>
+  <data name="AuditEntity.Client" xml:space="preserve"><value>Client</value></data>
+  <data name="AuditEntity.LoanProduct" xml:space="preserve"><value>Loan product</value></data>
+  <data name="Roles.Description" xml:space="preserve"><value>Each user has exactly one role. A role's permissions decide what its users can see and do.</value></data>
+  <data name="Roles.Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Roles.RolesHint" xml:space="preserve"><value>Data scope, dashboard and field rules are fixed per role; permissions and the two-factor requirement are editable.</value></data>
+  <data name="Roles.DataScope" xml:space="preserve"><value>Data scope</value></data>
+  <data name="Roles.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Roles.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Roles.PermissionCount" xml:space="preserve"><value>Permissions</value></data>
+  <data name="Roles.MfaOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Roles.EditPermissions" xml:space="preserve"><value>Edit permissions</value></data>
+  <data name="Roles.Matrix" xml:space="preserve"><value>Permission matrix</value></data>
+  <data name="Roles.MatrixHint" xml:space="preserve"><value>Who holds which permission. Open a role to change its permissions.</value></data>
+  <data name="Roles.Permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="Roles.GrantedTo" xml:space="preserve"><value>{0}: granted to {1}</value></data>
+  <data name="Roles.NotGrantedTo" xml:space="preserve"><value>{0}: not granted to {1}</value></data>
+  <data name="Roles.BackToList" xml:space="preserve"><value>All roles</value></data>
+  <data name="Roles.Profile" xml:space="preserve"><value>Role profile</value></data>
+  <data name="Roles.ProfileHint" xml:space="preserve"><value>Fixed by the system (read-only).</value></data>
+  <data name="Roles.MfaHint" xml:space="preserve"><value>When required, every user of this role must set up an authenticator app at their next sign-in.</value></data>
+  <data name="Roles.MfaRequiredForRole" xml:space="preserve"><value>Required for this role</value></data>
+  <data name="Roles.RequireMfa" xml:space="preserve"><value>Require for this role</value></data>
+  <data name="Roles.StopRequiringMfa" xml:space="preserve"><value>Stop requiring for this role</value></data>
+  <data name="Roles.MfaRequired" xml:space="preserve"><value>Two-factor authentication is now required for this role.</value></data>
+  <data name="Roles.MfaNotRequired" xml:space="preserve"><value>Two-factor authentication is no longer required for this role.</value></data>
+  <data name="Roles.Kind" xml:space="preserve"><value>Kind</value></data>
+  <data name="Roles.SodReadOnly" xml:space="preserve"><value>Segregation of duties: a read-only role can hold only read permissions, never one that changes data.</value></data>
+  <data name="Roles.SodBusiness" xml:space="preserve"><value>Segregation of duties: a business role cannot hold administration permissions.</value></data>
+  <data name="Roles.SodAdministrative" xml:space="preserve"><value>Segregation of duties: the administrator role holds only administration permissions and must keep "Manage users" and "Manage roles".</value></data>
+  <data name="Roles.ModuleCount" xml:space="preserve"><value>{0} of {1} granted</value></data>
+  <data name="Roles.Locked" xml:space="preserve"><value>Required</value></data>
+  <data name="Roles.NotAssignable" xml:space="preserve"><value>Not for this role</value></data>
+  <data name="Roles.SaveHint" xml:space="preserve"><value>Changes apply to every user of this role on their next page load, without signing out.</value></data>
+  <data name="Roles.Discard" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Roles.SavePermissions" xml:space="preserve"><value>Save permissions</value></data>
+  <data name="Roles.Saved" xml:space="preserve"><value>The role's permissions have been saved.</value></data>
+  <data name="RoleKind.Business" xml:space="preserve"><value>Business</value></data>
+  <data name="RoleKind.Business.Description" xml:space="preserve"><value>Works with loan data; cannot hold administration permissions.</value></data>
+  <data name="RoleKind.ReadOnly" xml:space="preserve"><value>Read-only</value></data>
+  <data name="RoleKind.ReadOnly.Description" xml:space="preserve"><value>Reads loan data and the audit log; cannot hold any permission that changes data.</value></data>
+  <data name="RoleKind.Administrative" xml:space="preserve"><value>Administrative</value></data>
+  <data name="RoleKind.Administrative.Description" xml:space="preserve"><value>Administers the system; holds only administration permissions and sees no loan data.</value></data>
+  <data name="DataScope.None" xml:space="preserve"><value>None</value></data>
+  <data name="DataScope.None.Description" xml:space="preserve"><value>Sees no business records (administration only).</value></data>
+  <data name="DataScope.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="DataScope.Branch.Description" xml:space="preserve"><value>All records of the user's branch.</value></data>
+  <data name="DataScope.Organization" xml:space="preserve"><value>Organization</value></data>
+  <data name="DataScope.Organization.Description" xml:space="preserve"><value>All records in the bank.</value></data>
+  <data name="AttributeRule.NotAllowed" xml:space="preserve"><value>Not used</value></data>
+  <data name="AttributeRule.Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="AttributeRule.Required" xml:space="preserve"><value>Required</value></data>
+  <data name="Common.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Field.Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="Field.MaxAmount" xml:space="preserve"><value>Maximum amount</value></data>
+  <data name="Field.MaxRateGapPp" xml:space="preserve"><value>Maximum rate gap (pp)</value></data>
+  <data name="Field.MinCustomerRoaePct" xml:space="preserve"><value>Minimum customer ROAE (%)</value></data>
+  <data name="Field.BranchCode" xml:space="preserve"><value>Code</value></data>
+  <data name="Field.BranchName" xml:space="preserve"><value>Name</value></data>
+  <data name="Field.City" xml:space="preserve"><value>City</value></data>
+  <data name="Branches.Description" xml:space="preserve"><value>Branches staff can be assigned to. A branch in use is deactivated, never deleted.</value></data>
+  <data name="Branches.Create" xml:space="preserve"><value>New branch</value></data>
+  <data name="Branches.CreateHint" xml:space="preserve"><value>The code cannot be changed later.</value></data>
+  <data name="Branches.EditTitle" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="Branches.EditHint" xml:space="preserve"><value>Name and city can be changed; the code is permanent.</value></data>
+  <data name="Branches.CodeHint" xml:space="preserve"><value>2–10 letters, digits or hyphens, e.g. VAK. Stored in upper case and never changed.</value></data>
+  <data name="Branches.CodeImmutable" xml:space="preserve"><value>The code is permanent.</value></data>
+  <data name="Branches.Count" xml:space="preserve"><value>{0} active · {1} inactive</value></data>
+  <data name="Branches.Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Branches.None" xml:space="preserve"><value>No branches yet.</value></data>
+  <data name="Branches.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Branches.Created" xml:space="preserve"><value>The branch has been added.</value></data>
+  <data name="Branches.Saved" xml:space="preserve"><value>The branch has been saved.</value></data>
+  <data name="Branches.Activated" xml:space="preserve"><value>The branch has been activated.</value></data>
+  <data name="Branches.Deactivated" xml:space="preserve"><value>The branch has been deactivated.</value></data>
+  <data name="Branches.Deleted" xml:space="preserve"><value>The branch has been deleted.</value></data>
+  <data name="Branches.Deactivate.Title" xml:space="preserve"><value>Deactivate this branch?</value></data>
+  <data name="Branches.Deactivate.Description" xml:space="preserve"><value>It can no longer be chosen for users. The {0} user(s) assigned to it keep it until you change them. You can activate it again at any time.</value></data>
+  <data name="Branches.Deactivate.Button" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Branches.Delete.Title" xml:space="preserve"><value>Delete this branch?</value></data>
+  <data name="Branches.Delete.Description" xml:space="preserve"><value>No user is assigned to it, so it can be deleted. The deletion is audited and cannot be undone.</value></data>
+  <data name="Branches.Delete.Button" xml:space="preserve"><value>Delete branch</value></data>
+  <data name="Users.AllActionsByUser" xml:space="preserve"><value>All actions by this user</value></data>
+  <data name="Audit.Description" xml:space="preserve"><value>Every sign-in, security event and administrative change. Records cannot be changed or deleted.</value></data>
+  <data name="Audit.Records" xml:space="preserve"><value>Records</value></data>
+  <data name="Audit.RecordsHint" xml:space="preserve"><value>Newest first. Open a record to see what changed.</value></data>
+  <data name="Audit.Search" xml:space="preserve"><value>Search the audit log</value></data>
+  <data name="Audit.SearchPlaceholder" xml:space="preserve"><value>User name or record id…</value></data>
+  <data name="Audit.AllActions" xml:space="preserve"><value>All actions</value></data>
+  <data name="Audit.AllSubjects" xml:space="preserve"><value>All subjects</value></data>
+  <data name="Audit.Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Audit.SubjectId" xml:space="preserve"><value>Subject id</value></data>
+  <data name="Audit.From" xml:space="preserve"><value>From (date)</value></data>
+  <data name="Audit.To" xml:space="preserve"><value>To (date)</value></data>
+  <data name="Audit.ActorFilter" xml:space="preserve"><value>Only records where this user acted</value></data>
+  <data name="Audit.ClearActor" xml:space="preserve"><value>Show everyone</value></data>
+  <data name="Audit.System" xml:space="preserve"><value>System</value></data>
+  <data name="Audit.ViewDetails" xml:space="preserve"><value>View record</value></data>
+  <data name="Audit.NoResults" xml:space="preserve"><value>No records match these filters.</value></data>
+  <data name="Audit.BackToList" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit.Record" xml:space="preserve"><value>Record</value></data>
+  <data name="Audit.AllByUser" xml:space="preserve"><value>All actions by this user</value></data>
+  <data name="Audit.UserAgent" xml:space="preserve"><value>Browser</value></data>
+  <data name="Audit.CorrelationId" xml:space="preserve"><value>Request id</value></data>
+  <data name="Audit.Changes" xml:space="preserve"><value>What changed</value></data>
+  <data name="Audit.ChangesHint" xml:space="preserve"><value>Before and after, as stored. Passwords, security stamps and authenticator keys are never recorded.</value></data>
+  <data name="Audit.NoChanges" xml:space="preserve"><value>This event records no data change.</value></data>
+  <data name="Audit.Property" xml:space="preserve"><value>Field</value></data>
+  <data name="Audit.Before" xml:space="preserve"><value>Before</value></data>
+  <data name="Audit.After" xml:space="preserve"><value>After</value></data>
+  <data name="Audit.Removed" xml:space="preserve"><value>Removed</value></data>
+  <data name="Audit.Added" xml:space="preserve"><value>Added</value></data>
+  <data name="AuditEntity.User" xml:space="preserve"><value>User</value></data>
+  <data name="AuditEntity.Role" xml:space="preserve"><value>Role</value></data>
+  <data name="AuditEntity.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Nav.Clients" xml:space="preserve"><value>Clients</value></data>
+  <data name="Nav.Inbox" xml:space="preserve"><value>Inbox</value></data>
+  <data name="Inbox.Underwriting" xml:space="preserve"><value>Underwriting</value></data>
+  <data name="Inbox.Underwriting.Description" xml:space="preserve"><value>Applications waiting for an underwriting decision within your authority. Your own applications and applications you already decided are never listed.</value></data>
+  <data name="Inbox.Committee" xml:space="preserve"><value>Credit committee</value></data>
+  <data name="Inbox.Committee.Description" xml:space="preserve"><value>Applications above the Senior Underwriter threshold waiting for your vote. Two matching votes decide.</value></data>
+  <data name="Inbox.Compliance" xml:space="preserve"><value>Compliance</value></data>
+  <data name="Inbox.Compliance.Description" xml:space="preserve"><value>Applications held for a sanctions or PEP match. Clear them to continue or reject them with a reason.</value></data>
+  <data name="Common.Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Common.Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Field.PersonalNumber" xml:space="preserve"><value>Personal number</value></data>
+  <data name="Field.FirstName" xml:space="preserve"><value>First name</value></data>
+  <data name="Field.LastName" xml:space="preserve"><value>Last name</value></data>
+  <data name="Field.BirthDate" xml:space="preserve"><value>Date of birth</value></data>
+  <data name="Field.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Field.Address" xml:space="preserve"><value>Address</value></data>
+  <data name="Field.DocumentType" xml:space="preserve"><value>Identity document</value></data>
+  <data name="Field.DocumentNumber" xml:space="preserve"><value>Document number</value></data>
+  <data name="Field.DocumentIssuedOn" xml:space="preserve"><value>Issued on</value></data>
+  <data name="Field.DocumentExpiresOn" xml:space="preserve"><value>Valid until</value></data>
+  <data name="Field.BorrowerPersonalNumber" xml:space="preserve"><value>Borrower's personal number</value></data>
+  <data name="Field.Product" xml:space="preserve"><value>Product</value></data>
+  <data name="Field.Amount" xml:space="preserve"><value>Amount</value></data>
+  <data name="Field.TermMonths" xml:space="preserve"><value>Term (months)</value></data>
+  <data name="Field.AnnualRate" xml:space="preserve"><value>Annual rate (%)</value></data>
+  <data name="Field.ScheduleType" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Clients.Description" xml:space="preserve"><value>Registered clients with their identity documents, incomes and obligations.</value></data>
+  <data name="Clients.Register" xml:space="preserve"><value>Register client</value></data>
+  <data name="Clients.RegisterHint" xml:space="preserve"><value>Enter the client's data from the identity document. The personal number has 11 digits and is unique.</value></data>
+  <data name="Clients.Registered" xml:space="preserve"><value>The client was registered.</value></data>
+  <data name="Clients.Saved" xml:space="preserve"><value>The client was saved.</value></data>
+  <data name="Clients.Edit" xml:space="preserve"><value>Edit client</value></data>
+  <data name="Clients.Search" xml:space="preserve"><value>Search clients</value></data>
+  <data name="Clients.SearchPlaceholder" xml:space="preserve"><value>Name or personal number</value></data>
+  <data name="Clients.None" xml:space="preserve"><value>No clients found.</value></data>
+  <data name="Clients.Kyc" xml:space="preserve"><value>KYC</value></data>
+  <data name="Clients.Screening" xml:space="preserve"><value>Screening</value></data>
+  <data name="Clients.Personal" xml:space="preserve"><value>Personal data</value></data>
+  <data name="Clients.CheckedAt" xml:space="preserve"><value>Last checked</value></data>
+  <data name="Clients.IdentityDocument" xml:space="preserve"><value>Identity document</value></data>
+  <data name="Clients.ReplaceDocument" xml:space="preserve"><value>Replace document</value></data>
+  <data name="Clients.Incomes" xml:space="preserve"><value>Monthly incomes</value></data>
+  <data name="Clients.NoIncomes" xml:space="preserve"><value>No incomes recorded.</value></data>
+  <data name="Clients.IncomeType" xml:space="preserve"><value>Income type</value></data>
+  <data name="Clients.IncomeSource" xml:space="preserve"><value>Source (employer)</value></data>
+  <data name="Clients.MonthlyAmount" xml:space="preserve"><value>Monthly amount</value></data>
+  <data name="Clients.Obligations" xml:space="preserve"><value>Declared obligations</value></data>
+  <data name="Clients.NoObligations" xml:space="preserve"><value>No obligations declared.</value></data>
+  <data name="Clients.Lender" xml:space="preserve"><value>Lender</value></data>
+  <data name="Clients.MonthlyPayment" xml:space="preserve"><value>Monthly payment</value></data>
+  <data name="Clients.Outstanding" xml:space="preserve"><value>Outstanding</value></data>
+  <data name="Applications.Description" xml:space="preserve"><value>Applications you may see, newest first. Filters, sorting and paging run on the server.</value></data>
+  <data name="Applications.Search" xml:space="preserve"><value>Search applications</value></data>
+  <data name="Applications.SearchPlaceholder" xml:space="preserve"><value>Borrower, personal number, APP- number or contract number</value></data>
+  <data name="Applications.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Applications.AllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="Applications.Sort" xml:space="preserve"><value>Sort by</value></data>
+  <data name="Applications.Ascending" xml:space="preserve"><value>Ascending</value></data>
+  <data name="Applications.None" xml:space="preserve"><value>No applications.</value></data>
+  <data name="Applications.Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Applications.Borrower" xml:space="preserve"><value>Borrower</value></data>
+  <data name="Applications.Branch" xml:space="preserve"><value>Branch</value></data>
+  <data name="Applications.StatusChanged" xml:space="preserve"><value>Status changed</value></data>
+  <data name="Applications.Months" xml:space="preserve"><value>months</value></data>
+  <data name="Applications.Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Applications.NewHint" xml:space="preserve"><value>The borrower must be registered as a client first. Amount, term and rate must fit the product.</value></data>
+  <data name="Applications.BorrowerHint" xml:space="preserve"><value>11 digits; the client is found by personal number.</value></data>
+  <data name="Applications.BorrowerNotFound" xml:space="preserve"><value>No client with this personal number. Register the client first.</value></data>
+  <data name="Applications.ChooseProduct" xml:space="preserve"><value>Choose a product</value></data>
+  <data name="Applications.CreateDraft" xml:space="preserve"><value>Create draft</value></data>
+  <data name="Applications.Created" xml:space="preserve"><value>The draft was created. Add the documents and submit it.</value></data>
+  <data name="Applications.Saved" xml:space="preserve"><value>Saved.</value></data>
+  <data name="Applications.Submitted" xml:space="preserve"><value>The application was submitted. The pre-check runs in the background.</value></data>
+  <data name="Applications.SentToScoring" xml:space="preserve"><value>The application was sent to scoring.</value></data>
+  <data name="Applications.Cancelled" xml:space="preserve"><value>The application was cancelled.</value></data>
+  <data name="Applications.Decided" xml:space="preserve"><value>Your decision was recorded.</value></data>
+  <data name="Applications.Voted" xml:space="preserve"><value>Your vote was recorded.</value></data>
+  <data name="Applications.Title" xml:space="preserve"><value>Application {0}</value></data>
+  <data name="Applications.CreatedBy" xml:space="preserve"><value>created by {0} on {1}</value></data>
+  <data name="Applications.NextSteps" xml:space="preserve"><value>Next steps</value></data>
+  <data name="Applications.Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="Applications.SendToScoring" xml:space="preserve"><value>Send to scoring</value></data>
+  <data name="Applications.ClientAccepts" xml:space="preserve"><value>Client accepts the counter-offer</value></data>
+  <data name="Applications.ClientDeclines" xml:space="preserve"><value>Client declines</value></data>
+  <data name="Applications.Cancel" xml:space="preserve"><value>Cancel application</value></data>
+  <data name="Applications.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Applications.Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Applications.ComplianceClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Applications.ComplianceReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Applications.Condition" xml:space="preserve"><value>Condition</value></data>
+  <data name="Applications.NoCondition" xml:space="preserve"><value>No extra condition</value></data>
+  <data name="Applications.ConditionDescription" xml:space="preserve"><value>Condition details</value></data>
+  <data name="Applications.OverrideReason" xml:space="preserve"><value>Override reason</value></data>
+  <data name="Applications.OverrideNeeded" xml:space="preserve"><value>A scoring rule failed: only a user with the override permission can approve.</value></data>
+  <data name="Applications.Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Applications.Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Applications.CounterOffer" xml:space="preserve"><value>Counter-offer</value></data>
+  <data name="Applications.VoteApprove" xml:space="preserve"><value>Vote to approve</value></data>
+  <data name="Applications.VoteReject" xml:space="preserve"><value>Vote to reject</value></data>
+  <data name="Applications.Terms" xml:space="preserve"><value>Loan terms</value></data>
+  <data name="Applications.Tier" xml:space="preserve"><value>Approval tier</value></data>
+  <data name="Applications.OfferExpires" xml:space="preserve"><value>valid until {0}</value></data>
+  <data name="Applications.Snapshot" xml:space="preserve"><value>Product (fixed at submission)</value></data>
+  <data name="Applications.ContractNumber" xml:space="preserve"><value>Contract number</value></data>
+  <data name="Applications.Parties" xml:space="preserve"><value>Parties</value></data>
+  <data name="Applications.PartyRole" xml:space="preserve"><value>Role</value></data>
+  <data name="Applications.Collateral" xml:space="preserve"><value>Collateral</value></data>
+  <data name="Applications.NoCollateral" xml:space="preserve"><value>No collateral.</value></data>
+  <data name="Applications.CollateralType" xml:space="preserve"><value>Collateral type</value></data>
+  <data name="Applications.CollateralDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="Applications.MarketValue" xml:space="preserve"><value>Market value</value></data>
+  <data name="Applications.ValuationDate" xml:space="preserve"><value>Valuation date</value></data>
+  <data name="Applications.Documents" xml:space="preserve"><value>Documents</value></data>
+  <data name="Applications.MissingDocuments" xml:space="preserve"><value>Still needed: {0}</value></data>
+  <data name="Applications.NoDocuments" xml:space="preserve"><value>No documents uploaded.</value></data>
+  <data name="Applications.DocumentType" xml:space="preserve"><value>Document type</value></data>
+  <data name="Applications.File" xml:space="preserve"><value>File</value></data>
+  <data name="Applications.Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Applications.Scoring" xml:space="preserve"><value>Scoring</value></data>
+  <data name="Applications.ScoringRun" xml:space="preserve"><value>Rule set version {0}, scored {1}</value></data>
+  <data name="Applications.Rule" xml:space="preserve"><value>Rule</value></data>
+  <data name="Applications.Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Applications.Measured" xml:space="preserve"><value>Measured</value></data>
+  <data name="Applications.Threshold" xml:space="preserve"><value>Limit</value></data>
+  <data name="Applications.Explanation" xml:space="preserve"><value>Explanation</value></data>
+  <data name="Applications.Passed" xml:space="preserve"><value>Passed</value></data>
+  <data name="Applications.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Applications.FailedOverridable" xml:space="preserve"><value>Failed (overridable)</value></data>
+  <data name="Applications.History" xml:space="preserve"><value>Status history</value></data>
+  <data name="Applications.Decisions" xml:space="preserve"><value>Decisions</value></data>
+  <data name="Applications.NoDecisions" xml:space="preserve"><value>No decisions yet.</value></data>
+  <data name="Applications.Override" xml:space="preserve"><value>override</value></data>
+  <data name="Applications.Conditions" xml:space="preserve"><value>Conditions</value></data>
+  <data name="Applications.SignContract" xml:space="preserve"><value>Mark contract signed</value></data>
+  <data name="Applications.ContractSigned" xml:space="preserve"><value>The contract was signed and numbered.</value></data>
+  <data name="Applications.MarkConditionMet" xml:space="preserve"><value>Mark met</value></data>
+  <data name="Applications.Disburse" xml:space="preserve"><value>Disburse</value></data>
+  <data name="Applications.Disbursed" xml:space="preserve"><value>The loan was disbursed. The schedule is booked in the background.</value></data>
+  <data name="Applications.DisbursementPending" xml:space="preserve"><value>Core banking has not confirmed the payout yet; it is confirmed in the background with the same request, so it is never paid twice.</value></data>
+  <data name="Applications.Loan" xml:space="preserve"><value>Loan</value></data>
+  <data name="Loans.Title" xml:space="preserve"><value>Loan {0}</value></data>
+  <data name="Loans.Principal" xml:space="preserve"><value>Principal</value></data>
+  <data name="Loans.Outstanding" xml:space="preserve"><value>Outstanding principal</value></data>
+  <data name="Loans.EffectiveRate" xml:space="preserve"><value>Effective annual rate (with fees)</value></data>
+  <data name="Loans.DisbursedOn" xml:space="preserve"><value>Disbursed on</value></data>
+  <data name="Loans.Penalty" xml:space="preserve"><value>Early repayment penalty</value></data>
+  <data name="Loans.RecordRepayment" xml:space="preserve"><value>Record a repayment</value></data>
+  <data name="Loans.PayInstallment" xml:space="preserve"><value>Next installment paid</value></data>
+  <data name="Loans.PrepaidPrincipal" xml:space="preserve"><value>Principal to repay early</value></data>
+  <data name="Loans.Quote" xml:space="preserve"><value>Quote</value></data>
+  <data name="Loans.QuoteFull" xml:space="preserve"><value>Quote full repayment</value></data>
+  <data name="Loans.AccruedInterest" xml:space="preserve"><value>Accrued interest</value></data>
+  <data name="Loans.TotalToPay" xml:space="preserve"><value>Total to pay today</value></data>
+  <data name="Loans.RepayEarly" xml:space="preserve"><value>Record early repayment</value></data>
+  <data name="Loans.RepaymentRecorded" xml:space="preserve"><value>The repayment was recorded.</value></data>
+  <data name="Loans.Schedule" xml:space="preserve"><value>Repayment schedule</value></data>
+  <data name="Loans.DueDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="Loans.Interest" xml:space="preserve"><value>Interest</value></data>
+  <data name="Loans.Fee" xml:space="preserve"><value>Fee</value></data>
+  <data name="Loans.Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Loans.PaidOn" xml:space="preserve"><value>Paid {0}</value></data>
+  <data name="Loans.Repayments" xml:space="preserve"><value>Repayments</value></data>
+  <data name="Loans.NoRepayments" xml:space="preserve"><value>No repayments yet.</value></data>
+  <data name="Loans.Split" xml:space="preserve"><value>principal {0}, interest {1}, fee {2}, penalty {3}</value></data>
+  <data name="AuditAction.Disbursement.Requested" xml:space="preserve"><value>Payout requested</value></data>
+  <data name="AuditAction.Disbursement.Succeeded" xml:space="preserve"><value>Payout confirmed by core banking</value></data>
+  <data name="AuditAction.Disbursement.Failed" xml:space="preserve"><value>Payout rejected by core banking</value></data>
+  <data name="AuditAction.Disbursement.TimedOut" xml:space="preserve"><value>Payout not confirmed in time</value></data>
+  <data name="AuditAction.Loan.Repayment" xml:space="preserve"><value>Repayment recorded</value></data>
+  <data name="AuditAction.Loan.Closed" xml:space="preserve"><value>Loan closed</value></data>
+  <data name="AuditEntity.Loan" xml:space="preserve"><value>Loan</value></data>
+  <data name="Applications.BookingLoan" xml:space="preserve"><value>The payout is confirmed; the loan and its schedule are being booked.</value></data>
+  <data name="Applications.CheckHint" xml:space="preserve"><value>Core banking has not confirmed the payout yet. Asking again uses the same request, so nothing is paid twice.</value></data>
+  <data name="Applications.CheckPayout" xml:space="preserve"><value>Check payout again</value></data>
+  <data name="Applications.ChecklistComplete" xml:space="preserve"><value>Every required document is uploaded.</value></data>
+  <data name="Applications.CollateralHint" xml:space="preserve"><value>Valuation and registration are entered by hand; the valuation may be at most 6 months old.</value></data>
+  <data name="Applications.ConditionMet" xml:space="preserve"><value>Met</value></data>
+  <data name="Applications.ConditionOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="Applications.ContractAndPayout" xml:space="preserve"><value>Contract and payout</value></data>
+  <data name="Applications.ContractPdf" xml:space="preserve"><value>Contract (PDF)</value></data>
+  <data name="Applications.DecisionTier" xml:space="preserve"><value>This file needs at least: {0}.</value></data>
+  <data name="Applications.DisburseHint" xml:space="preserve"><value>The payout goes to the borrower's account through core banking; a second click never pays twice.</value></data>
+  <data name="Applications.OfferValidUntil" xml:space="preserve"><value>Offer valid until {0}</value></data>
+  <data name="Applications.OpenLoan" xml:space="preserve"><value>Open the loan</value></data>
+  <data name="Applications.PartiesHint" xml:space="preserve"><value>Co-borrowers and guarantors go through the same KYC, screening and scoring.</value></data>
+  <data name="Applications.PayoutAmount" xml:space="preserve"><value>Payout (principal less upfront fee)</value></data>
+  <data name="Applications.PayoutAttempts" xml:space="preserve"><value>Attempts</value></data>
+  <data name="Applications.PayoutFailed" xml:space="preserve"><value>Rejected by core banking</value></data>
+  <data name="Applications.PayoutMessage" xml:space="preserve"><value>Message</value></data>
+  <data name="Applications.PayoutPending" xml:space="preserve"><value>Waiting for core banking</value></data>
+  <data name="Applications.PayoutStatus" xml:space="preserve"><value>Payout</value></data>
+  <data name="Applications.PayoutSucceeded" xml:space="preserve"><value>Paid out</value></data>
+  <data name="Applications.RetryHint" xml:space="preserve"><value>Core banking rejected the payout and no money moved. A retry uses the same request.</value></data>
+  <data name="Applications.RetryPayout" xml:space="preserve"><value>Retry payout</value></data>
+  <data name="Applications.SchedulePdf" xml:space="preserve"><value>Schedule (PDF)</value></data>
+  <data name="Applications.SignHint" xml:space="preserve"><value>The client signed the contract: the next contract number is assigned.</value></data>
+  <data name="Applications.TransactionId" xml:space="preserve"><value>Core banking transaction</value></data>
+  <data name="Applications.UploadBeforeScoring" xml:space="preserve"><value>Upload the missing documents first.</value></data>
+  <data name="Applications.UploadHint" xml:space="preserve"><value>PDF, PNG or JPEG, at most 10 MB.</value></data>
+  <data name="Applications.Verdict.Override" xml:space="preserve"><value>Approval needs an override</value></data>
+  <data name="Applications.Verdict.Passed" xml:space="preserve"><value>All rules passed</value></data>
+  <data name="Applications.Verdict.Rejected" xml:space="preserve"><value>Rejected by a rule</value></data>
+  <data name="Applications.VoteTally" xml:space="preserve"><value>Votes to approve: {0}, to reject: {1}; {2} matching votes decide.</value></data>
+  <data name="Applications.When" xml:space="preserve"><value>When</value></data>
+  <data name="Applications.Who" xml:space="preserve"><value>By</value></data>
+  <data name="Clients.Applications" xml:space="preserve"><value>Applications</value></data>
+  <data name="Loans.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Loans.Description" xml:space="preserve"><value>Disbursed loans you may see, newest first.</value></data>
+  <data name="Loans.NextDue" xml:space="preserve"><value>Next due</value></data>
+  <data name="Loans.None" xml:space="preserve"><value>No loans.</value></data>
+  <data name="Loans.Search" xml:space="preserve"><value>Search loans</value></data>
+  <data name="Loans.SearchPlaceholder" xml:space="preserve"><value>Contract number, borrower or personal number</value></data>
+  <data name="Nav.Loans" xml:space="preserve"><value>Loans</value></data>
+  <data name="Wizard.Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Wizard.Continue" xml:space="preserve"><value>Continue in the wizard</value></data>
+  <data name="Wizard.FirstStepHint" xml:space="preserve"><value>Step 1 of 5.</value></data>
+  <data name="Wizard.Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Wizard.OpenApplication" xml:space="preserve"><value>Application page</value></data>
+  <data name="Wizard.ReviewHint" xml:space="preserve"><value>Check the data below and submit. The pre-check (KYC, sanctions, credit bureau) then runs automatically.</value></data>
+  <data name="Wizard.Step.Borrower" xml:space="preserve"><value>Borrower and loan</value></data>
+  <data name="Wizard.Step.Documents" xml:space="preserve"><value>Documents</value></data>
+  <data name="Wizard.Step.Parties" xml:space="preserve"><value>Parties and collateral</value></data>
+  <data name="Wizard.Step.Review" xml:space="preserve"><value>Review and submit</value></data>
+  <data name="Wizard.Step.Terms" xml:space="preserve"><value>Terms</value></data>
+  <data name="Wizard.Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="Wizard.Title" xml:space="preserve"><value>New application {0}</value></data>
+  <data name="Rule.BUREAU_DPD30_12M" xml:space="preserve"><value>No payment 30+ days late in the last 12 months</value></data>
+  <data name="Rule.PTI" xml:space="preserve"><value>Payment-to-income within the income band's limit</value></data>
+  <data name="Rule.LTV" xml:space="preserve"><value>Loan-to-value within the product's limit</value></data>
+  <data name="Rule.VALUATION_AGE" xml:space="preserve"><value>Collateral valuation at most 6 months old</value></data>
+  <data name="Rule.FX_INCOME_CURRENCY" xml:space="preserve"><value>Foreign-currency loan needs income in that currency</value></data>
+  <data name="Rule.EXPOSURE_LIMIT" xml:space="preserve"><value>Total exposure within the limit</value></data>
+  <data name="Rule.PRODUCT_LIMITS" xml:space="preserve"><value>Amount, term and rate within the product</value></data>
+  <data name="Nav.Products" xml:space="preserve"><value>Products</value></data>
+  <data name="Nav.ScoringRules" xml:space="preserve"><value>Scoring rules</value></data>
+  <data name="Nav.ApprovalThresholds" xml:space="preserve"><value>Approval thresholds</value></data>
+  <data name="Nav.FxRates" xml:space="preserve"><value>FX rates</value></data>
+  <data name="Nav.Holidays" xml:space="preserve"><value>Holidays</value></data>
+  <data name="Products.Description" xml:space="preserve"><value>Loan products and their versioned terms. Saving terms publishes a new version; submitted applications keep the version they were submitted with.</value></data>
+  <data name="Products.Create" xml:space="preserve"><value>New product</value></data>
+  <data name="Products.CreateHint" xml:space="preserve"><value>The code cannot be changed later. The terms become version 1.</value></data>
+  <data name="Products.Created" xml:space="preserve"><value>The product was created.</value></data>
+  <data name="Products.Saved" xml:space="preserve"><value>The product was saved.</value></data>
+  <data name="Products.VersionPublished" xml:space="preserve"><value>A new version was published; it applies to applications submitted from now on.</value></data>
+  <data name="Products.Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Products.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Products.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Products.Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Products.Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Products.Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Products.Limits" xml:space="preserve"><value>Amount (GEL) · term · rate</value></data>
+  <data name="Products.Fees" xml:space="preserve"><value>Upfront / monthly fee / penalty</value></data>
+  <data name="Products.InForce" xml:space="preserve"><value>version {0} in force</value></data>
+  <data name="Products.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Products.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Products.TermsOfVersion" xml:space="preserve"><value>Terms of version {0}</value></data>
+  <data name="Products.NextVersionHint" xml:space="preserve"><value>Change the terms and publish them as the next version. Nothing is published when nothing changed.</value></data>
+  <data name="Products.Publish" xml:space="preserve"><value>Publish new version</value></data>
+  <data name="Products.MinAmountGel" xml:space="preserve"><value>Minimum amount (GEL)</value></data>
+  <data name="Products.MaxAmountGel" xml:space="preserve"><value>Maximum amount (GEL)</value></data>
+  <data name="Products.MinTermMonths" xml:space="preserve"><value>Minimum term (months)</value></data>
+  <data name="Products.MaxTermMonths" xml:space="preserve"><value>Maximum term (months)</value></data>
+  <data name="Products.MinRate" xml:space="preserve"><value>Minimum rate (%)</value></data>
+  <data name="Products.MaxRate" xml:space="preserve"><value>Maximum rate (%)</value></data>
+  <data name="Products.UpfrontFeePercent" xml:space="preserve"><value>Upfront fee (% of the amount)</value></data>
+  <data name="Products.MonthlyFeePercent" xml:space="preserve"><value>Monthly fee (% of the amount)</value></data>
+  <data name="Products.EarlyRepaymentPenaltyPercent" xml:space="preserve"><value>Early repayment penalty (%)</value></data>
+  <data name="Products.CollateralRequired" xml:space="preserve"><value>Collateral required</value></data>
+  <data name="Products.MaxLtvPercent" xml:space="preserve"><value>Maximum LTV (%)</value></data>
+  <data name="Products.Currencies" xml:space="preserve"><value>Currencies</value></data>
+  <data name="Products.ScheduleTypes" xml:space="preserve"><value>Schedule types</value></data>
+  <data name="Products.StandardConditions" xml:space="preserve"><value>Standard conditions of every approval</value></data>
+  <data name="Products.Checklist" xml:space="preserve"><value>Document checklist</value></data>
+  <data name="Products.FromAmount" xml:space="preserve"><value>from amount (GEL)</value></data>
+  <data name="ScoringRules.Description" xml:space="preserve"><value>The rules of each rule-set version, their parameters and whether a failure can be overridden. The rule logic is code; a version is immutable and every scoring run records the version it used.</value></data>
+  <data name="ScoringRules.Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="ScoringRules.RuleCount" xml:space="preserve"><value>{0} rules</value></data>
+  <data name="ScoringRules.VersionRules" xml:space="preserve"><value>Rules of version {0}</value></data>
+  <data name="ScoringRules.Overridable" xml:space="preserve"><value>Overridable</value></data>
+  <data name="ScoringRules.Hard" xml:space="preserve"><value>Hard (rejects)</value></data>
+  <data name="ScoringRules.NextVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="ScoringRules.NextVersionHint" xml:space="preserve"><value>Edit the rules and publish them as the next version; new scoring runs use it.</value></data>
+  <data name="ScoringRules.Included" xml:space="preserve"><value>Included</value></data>
+  <data name="ScoringRules.Parameters" xml:space="preserve"><value>Parameters (JSON)</value></data>
+  <data name="ScoringRules.Publish" xml:space="preserve"><value>Publish version</value></data>
+  <data name="ScoringRules.Published" xml:space="preserve"><value>Version {0} was published.</value></data>
+  <data name="Thresholds.Description" xml:space="preserve"><value>Who decides which amount (GEL): up to the first limit an Underwriter, up to the second a Senior Underwriter, above it the Credit Committee.</value></data>
+  <data name="Thresholds.UnderwriterMax" xml:space="preserve"><value>Underwriter up to (GEL)</value></data>
+  <data name="Thresholds.SeniorMax" xml:space="preserve"><value>Senior Underwriter up to (GEL)</value></data>
+  <data name="Thresholds.RequiredVotes" xml:space="preserve"><value>Matching committee votes that decide</value></data>
+  <data name="Thresholds.Hint" xml:space="preserve"><value>The tier is fixed when an application is scored; files already routed keep their tier.</value></data>
+  <data name="Thresholds.Saved" xml:space="preserve"><value>The thresholds were saved.</value></data>
+  <data name="FxRates.Description" xml:space="preserve"><value>GEL per unit of USD and EUR from an effective date. Submission and scoring use the latest rate on or before their date.</value></data>
+  <data name="FxRates.Set" xml:space="preserve"><value>Set a rate</value></data>
+  <data name="FxRates.EffectiveDate" xml:space="preserve"><value>Effective date</value></data>
+  <data name="FxRates.GelPerUnit" xml:space="preserve"><value>GEL per unit</value></data>
+  <data name="FxRates.Import" xml:space="preserve"><value>Import from CSV</value></data>
+  <data name="FxRates.ImportHint" xml:space="preserve"><value>One rate per line: Currency,EffectiveDate,GelPerUnit (e.g. USD,2026-10-13,2.7150). Any wrong line rejects the whole file.</value></data>
+  <data name="FxRates.ImportButton" xml:space="preserve"><value>Import</value></data>
+  <data name="FxRates.Imported" xml:space="preserve"><value>{0} rates were imported.</value></data>
+  <data name="FxRates.Saved" xml:space="preserve"><value>The rate was saved.</value></data>
+  <data name="FxRates.Deleted" xml:space="preserve"><value>The rate was deleted.</value></data>
+  <data name="FxRates.Rates" xml:space="preserve"><value>Rates</value></data>
+  <data name="FxRates.AllCurrencies" xml:space="preserve"><value>All currencies</value></data>
+  <data name="FxRates.None" xml:space="preserve"><value>No rates.</value></data>
+  <data name="Holidays.Title" xml:space="preserve"><value>Holidays {0}</value></data>
+  <data name="Holidays.Description" xml:space="preserve"><value>Public holidays do not count as working days (escalation after two working days in Underwriting).</value></data>
+  <data name="Holidays.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Holidays.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Holidays.Added" xml:space="preserve"><value>The holiday was added.</value></data>
+  <data name="Holidays.Saved" xml:space="preserve"><value>The holiday was saved.</value></data>
+  <data name="Holidays.Removed" xml:space="preserve"><value>The holiday was removed.</value></data>
+  <data name="Holidays.None" xml:space="preserve"><value>No holidays in this year.</value></data>
+  <data name="AuditEntity.LoanProductVersion" xml:space="preserve"><value>Product version</value></data>
+  <data name="AuditEntity.ScoringRuleSet" xml:space="preserve"><value>Scoring rule set</value></data>
+  <data name="AuditEntity.ApprovalThresholds" xml:space="preserve"><value>Approval thresholds</value></data>
+  <data name="AuditEntity.FxRate" xml:space="preserve"><value>FX rate</value></data>
+  <data name="AuditEntity.Holiday" xml:space="preserve"><value>Holiday</value></data>
+  <data name="Reports.Description" xml:space="preserve"><value>{0} – {1}, within your data scope. Amounts in GEL at the rate fixed when each application was scored.</value></data>
+  <data name="Reports.ExportExcel" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="Reports.From" xml:space="preserve"><value>From</value></data>
+  <data name="Reports.To" xml:space="preserve"><value>To</value></data>
+  <data name="Reports.Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Reports.NoData" xml:space="preserve"><value>No data for this period.</value></data>
+  <data name="Report.ApplicationsByStatus" xml:space="preserve"><value>Applications by status</value></data>
+  <data name="Report.ApprovalRate" xml:space="preserve"><value>Approval rate</value></data>
+  <data name="Report.TimePerStage" xml:space="preserve"><value>Average time per stage</value></data>
+  <data name="Report.RejectionReasons" xml:space="preserve"><value>Rejection reasons</value></data>
+  <data name="Report.Portfolio" xml:space="preserve"><value>Portfolio by product</value></data>
+  <data name="Report.DisbursedVolume" xml:space="preserve"><value>Disbursed volume</value></data>
+  <data name="Report.Overdue" xml:space="preserve"><value>Overdue installments</value></data>
+  <data name="Report.Escalations" xml:space="preserve"><value>Escalations</value></data>
+</root>

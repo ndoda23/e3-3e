@@ -1,0 +1,74 @@
+@model ProductPageViewModel
+@{
+    var p = Model.Product;
+    var id = p.Id.Value;
+    ViewData["Title"] = p.Name;
+    ViewData["Section"] = T["Nav.Products"].Value;
+}
+<div class="page-head">
+    <div>
+        <div class="row">
+            <h1 class="page-title">@p.Name</h1>
+            <span class="pill @(p.IsActive ? "success" : "neutral")" data-product-active="@(p.IsActive ? "true" : "false")"><span class="dot"></span>@(p.IsActive ? T["Users.State.Active"] : T["Users.State.Inactive"])</span>
+        </div>
+        <p class="page-desc"><span class="mono">@p.Code</span> · @T.EnumText(p.Type) · @T["Products.InForce", p.Versions[0].Number]</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn" asp-action="Index"><icon name="chevron-left" size="15" />@T["Nav.Products"]</a>
+        <form method="post" asp-action="@(p.IsActive ? "Deactivate" : "Activate")" asp-route-id="@id">
+            <button type="submit" class="btn">@(p.IsActive ? T["Products.Deactivate"] : T["Products.Activate"])</button>
+        </form>
+    </div>
+</div>
+<partial name="_Notices" />
+<section class="card mb">
+    <form method="post" asp-action="Rename" asp-route-id="@id" class="card-body form row wrap">
+        <label class="field-label" for="product-name">@T["Products.Name"]</label>
+        <input id="product-name" name="name" value="@p.Name" class="inp grow" maxlength="@CreditFlow.Domain.Products.LoanProduct.NameMaxLength" />
+        <button type="submit" class="btn sm">@T["Common.Save"]</button>
+    </form>
+</section>
+<section class="card mb" aria-labelledby="next-version-title" data-section="next-version">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="next-version-title">@T["Products.TermsOfVersion", p.Versions[0].Number + 1]</h2>
+            <p class="card-sub">@T["Products.NextVersionHint"]</p>
+        </div>
+    </div>
+    <form method="post" asp-action="PublishVersion" asp-route-id="@id" class="card-body form" novalidate>
+        <div asp-validation-summary="All" role="alert"></div>
+        <partial name="_TermsFields" model="Model.NextVersion" />
+        <div class="form-actions">
+            <button type="submit" class="btn primary"><icon name="check" size="15" />@T["Products.Publish"]</button>
+        </div>
+    </form>
+</section>
+<section class="card" aria-labelledby="versions-title" data-section="versions">
+    <div class="card-head"><h2 class="card-title" id="versions-title">@T["Products.Versions"]</h2></div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Products.Version"]</th>
+                    <th scope="col">@T["Products.Published"]</th>
+                    <th scope="col">@T["Products.Limits"]</th>
+                    <th scope="col">@T["Products.Fees"]</th>
+                    <th scope="col">@T["Products.Checklist"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in p.Versions)
+                {
+                    var t = v.Terms;
+                    <tr data-version="@v.Number">
+                        <td>v@(v.Number)@(v == p.Versions[0] ? " ✓" : null)</td>
+                        <td class="tnum">@DisplayFormat.DateTime(v.PublishedAt)</td>
+                        <td class="small">@t.MinAmountGel.ToString("#,0", System.Globalization.CultureInfo.InvariantCulture)–@t.MaxAmountGel.ToString("#,0", System.Globalization.CultureInfo.InvariantCulture) GEL · @t.MinTermMonths–@t.MaxTermMonths · @DisplayFormat.Percent(t.MinRate)–@DisplayFormat.Percent(t.MaxRate) · @string.Join("/", t.Currencies)</td>
+                        <td class="small">@DisplayFormat.Percent(t.UpfrontFeePercent) / @DisplayFormat.Percent(t.MonthlyFeePercent) / @DisplayFormat.Percent(t.EarlyRepaymentPenaltyPercent)</td>
+                        <td class="small">@string.Join(", ", t.RequiredDocuments.Select(d => T.EnumText(d.Type) + (d.MinAmountGel is { } min ? $" ≥ {min:#,0}" : string.Empty)))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

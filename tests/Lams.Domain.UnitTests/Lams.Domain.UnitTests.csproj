@@ -1,5 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Lams.Domain\Lams.Domain.csproj" />
-  </ItemGroup>
-</Project>

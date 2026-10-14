@@ -1,0 +1,18 @@
+@model CreditFlow.Web.Models.TwoFactorViewModel
+@{
+    ViewData["Title"] = T["TwoFactor.Title"].Value;
+    ViewData["Description"] = T["TwoFactor.Description"].Value;
+}
+<form method="post" asp-action="LoginWith2fa" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" role="alert"></div>
+    <div class="field">
+        <label asp-for="Code" class="required"></label>
+        <input asp-for="Code" class="inp mono" autocomplete="one-time-code" inputmode="numeric" maxlength="7" autofocus />
+        <span asp-validation-for="Code"></span>
+    </div>
+    <button type="submit" class="btn primary lg block">@T["TwoFactor.Submit"]</button>
+</form>
+@section Footer {
+    @T["TwoFactor.NoDevice"]
+    <a asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@ViewData["ReturnUrl"]">@T["TwoFactor.UseRecoveryCode"]</a>
+}

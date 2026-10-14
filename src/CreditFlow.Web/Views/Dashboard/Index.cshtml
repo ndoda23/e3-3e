@@ -1,0 +1,90 @@
+@model CreditFlow.Web.Models.DashboardViewModel
+@using CreditFlow.Application.Dashboard
+@inject TimeProvider Clock
+@{
+    var profile = Model.Profile;
+    var data = Model.Data;
+    var now = Clock.GetUtcNow();
+    ViewData["Title"] = T[$"Dashboard.{profile.Dashboard}"].Value;
+}
+<div class="page-head">
+    <div>
+        <span class="eyebrow" data-dashboard-chip>@profile.RoleCode · @profile.FullName</span>
+        <h1 class="page-title" data-dashboard="@profile.Dashboard">@ViewData["Title"]</h1>
+        <p class="page-desc">@T[$"Dashboard.{profile.Dashboard}.Description"]</p>
+    </div>
+</div>
+
+@if (data.Tiles.Count > 0)
+{
+    <div class="kpis" role="list" aria-label="@T["Dashboard.Overview"]">
+        @foreach (var tile in data.Tiles)
+        {
+            var href = DashboardViewModel.Link(Url, tile.Metric, now);
+            var alert = tile.Alert && tile.Count > 0;
+            <a class="kpi @(href is null ? "static" : "link") @(alert ? "alert" : null)" href="@href" role="listitem" data-tile="@tile.Metric" data-count="@tile.Count">
+                <div class="kpi-label">@T[$"Dashboard.Metric.{tile.Metric}"]</div>
+                <div class="kpi-val tnum">@tile.Count</div>
+                @if (tile.Metric is DashboardMetric.Inbox or DashboardMetric.AwaitingVote or DashboardMetric.ComplianceReviews && data.OldestWaitingSince is { } oldest)
+                {
+                    <div class="kpi-foot" data-oldest>@T["Dashboard.OldestWaiting", DashboardViewModel.Age(oldest, now)]</div>
+                }
+                else if (tile.Metric is DashboardMetric.RecentOverrides or DashboardMetric.RecentRejections or DashboardMetric.ComplianceClearances
+                         or DashboardMetric.LargeDisbursements or DashboardMetric.PayoutIncidents or DashboardMetric.RecentEscalations
+                         or DashboardMetric.RecentAccessChanges)
+                {
+                    <div class="kpi-foot">@T["Dashboard.Last30Days"]</div>
+                }
+            </a>
+        }
+    </div>
+}
+
+<section class="card" aria-labelledby="attention-title" data-section="attention">
+    <div class="card-head">
+        <h2 class="card-title" id="attention-title">@T[data.Kind is CreditFlow.Domain.Roles.DashboardKind.Audit or CreditFlow.Domain.Roles.DashboardKind.Administration ? "Dashboard.Feed" : "Dashboard.Attention"]</h2>
+    </div>
+    @if (data.Attention.Count == 0)
+    {
+        <div class="card-body empty" data-attention-empty>@T["Dashboard.NothingWaiting"]</div>
+    }
+    else
+    {
+        <ul class="attention">
+            @foreach (var item in data.Attention)
+            {
+                <li class="attention-row" data-attention="@item.Kind" data-reason="@item.Reason">
+                    <a class="attention-title" href="@DashboardViewModel.Link(Url, item)">@(item.Kind == AttentionKind.AuditRecord ? T.AuditAction(item.Title, null) : item.Title)</a>
+                    <span class="attention-meta">
+                        @if (item.Reason is { } reason)
+                        {
+                            <span class="chip @(reason is DashboardMetric.PayoutsFailed or DashboardMetric.StuckInPreCheck or DashboardMetric.LockedUsers ? "danger" : null)">@T[$"Dashboard.Metric.{reason}"]</span>
+                        }
+                        @if (item.Status is { } status)
+                        {
+                            <partial name="_StatusPill" model="status" />
+                        }
+                        @if (item.Note is not null)
+                        {
+                            <span class="muted" data-note>@item.Note</span>
+                        }
+                    </span>
+                    <span class="attention-side">
+                        @if (item.AmountGel is { } amount)
+                        {
+                            <span class="tnum">@DisplayFormat.Money(CreditFlow.Domain.Common.Currency.GEL, amount)</span>
+                        }
+                        @if (item.At is { } at)
+                        {
+                            <span class="small muted" title="@DisplayFormat.DateTime(at)">@DisplayFormat.DateTime(at)</span>
+                        }
+                        @if (data.Kind is CreditFlow.Domain.Roles.DashboardKind.Audit or CreditFlow.Domain.Roles.DashboardKind.Administration)
+                        {
+                            <span class="small muted" data-actor>@(item.Actor ?? T["Dashboard.System"].Value)</span>
+                        }
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+</section>

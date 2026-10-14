@@ -27,6 +27,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
+        <!-- Transitive (ASP.NET Core DataProtection): pinned to the patched release. -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.21" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
   </ItemGroup>
 
   <ItemGroup Label="Third party">
@@ -34,7 +37,13 @@
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <!-- 9.0.0, not 10.x: Serilog.AspNetCore 10 pulls Microsoft.Extensions.* 10.0 into net9.0. -->
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
+    <!-- 9.0.3, not 10.x: 10.0 needs Microsoft.Data.SqlClient 7; 9.0.3 uses Microsoft.Extensions 8 and SqlClient 6.1. Apache-2.0. -->
+    <PackageVersion Include="Serilog.Sinks.MSSqlServer" Version="9.0.3" />
     <PackageVersion Include="QRCoder" Version="1.8.0" />
+    <!-- Contract and schedule PDFs. MIT (not QuestPDF: its Community licence excludes larger companies). -->
+    <PackageVersion Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <!-- Excel export. MIT (not EPPlus: commercial licence). -->
+    <PackageVersion Include="ClosedXML" Version="0.105.0" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

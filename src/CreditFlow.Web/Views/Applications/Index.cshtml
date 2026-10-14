@@ -1,0 +1,62 @@
+@model ApplicationIndexViewModel
+@using CreditFlow.Application.Applications
+@{
+    ViewData["Title"] = T["Nav.Applications"].Value;
+    var q = Model.Query;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Applications.Description"]</p>
+    </div>
+</div>
+<section class="card" aria-labelledby="applications-title">
+    <div class="card-head">
+        <h2 class="card-title" id="applications-title">@T["Nav.Applications"]</h2>
+        @* A normal GET form; with htmx only the list is refreshed and the URL stays bookmarkable. *@
+        <form class="card-tools filters" method="get" asp-action="Index" role="search"
+              hx-get="@Url.Action("Rows")" hx-target="#application-rows" hx-trigger="input delay:400ms, change, submit">
+            <div class="search">
+                <icon name="search" size="14" />
+                <label class="sr-only" for="application-search">@T["Applications.Search"]</label>
+                <input id="application-search" type="search" name="search" value="@q.Search" placeholder="@T["Applications.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+            <label class="sr-only" for="application-status">@T["Field.Status"]</label>
+            <select id="application-status" name="status" class="select">
+                <option value="">@T["Applications.AllStatuses"]</option>
+                @foreach (var status in Enum.GetValues<ApplicationStatus>())
+                {
+                    <option value="@status" selected="@(q.Status == status)">@T.EnumText(status)</option>
+                }
+            </select>
+            <label class="sr-only" for="application-queue">@T["Applications.Queue"]</label>
+            <select id="application-queue" name="queue" class="select" data-queue-filter>
+                <option value="">@T["Applications.AllQueues"]</option>
+                @foreach (var queue in Enum.GetValues<ApplicationQueueKind>())
+                {
+                    <option value="@queue" selected="@(q.Queue == queue)">@T.EnumText(queue)</option>
+                }
+            </select>
+            <label class="sr-only" for="application-product">@T["Field.Product"]</label>
+            <select id="application-product" name="product" class="select">
+                <option value="">@T["Applications.AllProducts"]</option>
+                @foreach (var product in Model.Products)
+                {
+                    <option value="@product.Id.Value" selected="@(q.Product == product.Id.Value)">@product.Name</option>
+                }
+            </select>
+            <label class="sr-only" for="application-sort">@T["Applications.Sort"]</label>
+            <select id="application-sort" name="sort" class="select">
+                @foreach (var sort in Enum.GetValues<ApplicationSortField>())
+                {
+                    <option value="@sort" selected="@(q.Sort == sort)">@T.EnumText(sort)</option>
+                }
+            </select>
+            <label class="check small"><input type="checkbox" name="asc" value="true" class="cb" checked="@q.Asc" />@T["Applications.Ascending"]</label>
+            <noscript><button type="submit" class="btn sm">@T["Users.Filter"]</button></noscript>
+        </form>
+    </div>
+    <div id="application-rows" class="tbl-body">
+        <partial name="_ApplicationRows" model="Model" />
+    </div>
+</section>

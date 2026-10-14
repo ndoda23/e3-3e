@@ -1,0 +1,67 @@
+@model AuditIndexViewModel
+@{
+    ViewData["Title"] = T["Nav.AuditLog"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+    var q = Model.Query;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Audit.Description"]</p>
+    </div>
+</div>
+<section class="card" aria-labelledby="audit-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="audit-title">@T["Audit.Records"]</h2>
+            <p class="card-sub">@T["Audit.RecordsHint"]</p>
+        </div>
+        @* A normal GET form; with htmx only the list is refreshed and the URL stays bookmarkable. *@
+        <form class="card-tools filters" method="get" asp-action="Index" role="search"
+              hx-get="@Url.Action("Rows")" hx-target="#audit-rows" hx-trigger="input delay:400ms, submit">
+            @if (q.User is { } user)
+            {
+                <input type="hidden" name="user" value="@user" />
+                <span class="chip" title="@T["Audit.ActorFilter"]">@T["Audit.By"]: @(Model.UserFilterName ?? user.ToString())</span>
+                <a class="small" asp-action="Index">@T["Audit.ClearActor"]</a>
+            }
+            <div class="search">
+                <icon name="search" size="14" />
+                <label class="sr-only" for="audit-search">@T["Audit.Search"]</label>
+                <input id="audit-search" type="search" name="search" value="@q.Search" placeholder="@T["Audit.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+            <label class="sr-only" for="audit-action">@T["Audit.Action"]</label>
+            <select id="audit-action" name="event" class="select">
+                <option value="">@T["Audit.AllActions"]</option>
+                @foreach (var action in Model.Actions)
+                {
+                    <option value="@action" selected="@(q.Event == action)">@T.AuditAction(action, null)</option>
+                }
+            </select>
+            <label class="sr-only" for="audit-category">@T["Audit.Category"]</label>
+            <select id="audit-category" name="category" class="select" data-category-filter>
+                <option value="">@T["Audit.AllCategories"]</option>
+                @foreach (var category in Enum.GetValues<CreditFlow.Application.Auditing.AuditCategory>())
+                {
+                    <option value="@category" selected="@(q.Category == category)">@T.EnumText(category)</option>
+                }
+            </select>
+            <label class="sr-only" for="audit-entity">@T["Audit.Subject"]</label>
+            <select id="audit-entity" name="entity" class="select">
+                <option value="">@T["Audit.AllSubjects"]</option>
+                @foreach (var entity in Model.EntityTypes)
+                {
+                    <option value="@entity" selected="@(q.Entity == entity)">@T.TextOrDefault($"AuditEntity.{entity}", entity)</option>
+                }
+            </select>
+            <label class="sr-only" for="audit-from">@T["Audit.From"]</label>
+            <input id="audit-from" type="date" name="from" class="select date" value="@q.From?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" title="@T["Audit.From"]" />
+            <label class="sr-only" for="audit-to">@T["Audit.To"]</label>
+            <input id="audit-to" type="date" name="to" class="select date" value="@q.To?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" title="@T["Audit.To"]" />
+            <noscript><button type="submit" class="btn sm">@T["Users.Filter"]</button></noscript>
+        </form>
+    </div>
+    <div id="audit-rows" class="tbl-body">
+        <partial name="_AuditRows" model="Model" />
+    </div>
+</section>

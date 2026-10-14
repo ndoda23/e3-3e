@@ -1,0 +1,9 @@
+@* The notice or error left by the previous POST (post / redirect / get). *@
+@if (TempData["Notice"] is string notice)
+{
+    <div class="alert success mb" role="status" data-notice><icon name="check" size="18" /><span>@notice</span></div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert danger mb" role="alert" data-error><icon name="alert-triangle" size="18" /><span>@error</span></div>
+}

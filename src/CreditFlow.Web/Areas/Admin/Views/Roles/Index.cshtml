@@ -1,0 +1,126 @@
+@model RoleIndexViewModel
+@{
+    ViewData["Title"] = T["Nav.Roles"].Value;
+    ViewData["Section"] = T["Nav.Section.Administration"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Roles.Description"]</p>
+    </div>
+</div>
+<section class="card mb" aria-labelledby="roles-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="roles-title">@T["Roles.Roles"]</h2>
+            <p class="card-sub">@T["Roles.RolesHint"]</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Field.Role"]</th>
+                    <th scope="col">@T["Roles.DataScope"]</th>
+                    <th scope="col">@T["Roles.Dashboard"]</th>
+                    <th scope="col" class="num">@T["Roles.Users"]</th>
+                    <th scope="col" class="num">@T["Roles.PermissionCount"]</th>
+                    <th scope="col">@T["Field.TwoFactor"]</th>
+                    <th scope="col"><span class="sr-only">@T["Common.Actions"]</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var role in Model.Roles)
+                {
+                    <tr data-role="@role.Profile.Code.Value">
+                        <td>
+                            <div class="person-name">
+                                <a class="row-link" asp-action="Permissions" asp-route-id="@role.Id.Value">@role.DisplayName</a>
+                                <span class="code">@role.Profile.Code.Value</span>
+                                @if (role.Profile.Kind != RoleKind.Business)
+                                {
+                                    <span class="chip">@T[$"RoleKind.{role.Profile.Kind}"]</span>
+                                }
+                            </div>
+                            <div class="person-sub">@role.Description</div>
+                        </td>
+                        <td>@T[$"DataScope.{role.Profile.DataScope}"]</td>
+                        <td>@T[$"Dashboard.{role.Profile.Dashboard}"]</td>
+                        <td class="num">@role.UserCount</td>
+                        <td class="num">@role.Permissions.Count</td>
+                        <td>
+                            @if (role.RequireMfa)
+                            {
+                                <span class="pill info"><span class="dot"></span>@T["Manage.TwoFactorRequired"]</span>
+                            }
+                            else
+                            {
+                                <span class="muted">@T["Roles.MfaOptional"]</span>
+                            }
+                        </td>
+                        <td class="actions">
+                            <a class="btn sm" asp-action="Permissions" asp-route-id="@role.Id.Value"><icon name="edit" size="14" />@T["Roles.EditPermissions"]</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" aria-labelledby="matrix-title">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="matrix-title">@T["Roles.Matrix"]</h2>
+            <p class="card-sub">@T["Roles.MatrixHint"]</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl matrix">
+            <thead>
+                <tr>
+                    <th scope="col">@T["Roles.Permission"]</th>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <th scope="col" class="cell">
+                            <a asp-action="Permissions" asp-route-id="@role.Id.Value" title="@role.DisplayName">@role.Profile.Code.Value</a>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            @foreach (var group in Model.Matrix)
+            {
+                <tbody>
+                    <tr class="group-row">
+                        <th scope="colgroup" colspan="@(Model.Roles.Count + 1)">@T.TextOrDefault($"PermissionModule.{group.Module.Key}", group.Module.DisplayName)</th>
+                    </tr>
+                    @foreach (var row in group.Rows)
+                    {
+                        var name = T.TextOrDefault($"Permission.{row.Permission.Code}", row.Permission.DisplayName);
+                        <tr>
+                            <th scope="row" title="@T.TextOrDefault($"Permission.{row.Permission.Code}.Description", row.Permission.Description)">
+                                <div>@name</div>
+                                <div class="person-sub mono">@row.Permission.Code</div>
+                            </th>
+                            @foreach (var role in Model.Roles)
+                            {
+                                var granted = row.GrantedTo.Contains(role.Id.Value);
+                                <td class="cell @(granted ? "granted" : null)">
+                                    @if (granted)
+                                    {
+                                        <icon name="check" size="15" label="@T["Roles.GrantedTo", name, role.Profile.Code.Value]" />
+                                    }
+                                    else
+                                    {
+                                        <span class="sr-only">@T["Roles.NotGrantedTo", name, role.Profile.Code.Value]</span>
+                                        <span aria-hidden="true">·</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+</section>

@@ -1,0 +1,30 @@
+@model ClientIndexViewModel
+@{
+    ViewData["Title"] = T["Nav.Clients"].Value;
+}
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-desc">@T["Clients.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <a asp-permission="@Permissions.Clients.Manage" class="btn primary" asp-action="Register"><icon name="user-plus" size="15" />@T["Clients.Register"]</a>
+    </div>
+</div>
+<section class="card" aria-labelledby="clients-title">
+    <div class="card-head">
+        <h2 class="card-title" id="clients-title">@T["Nav.Clients"]</h2>
+        <form class="card-tools filters" method="get" asp-action="Index" role="search"
+              hx-get="@Url.Action("Rows")" hx-target="#client-rows" hx-trigger="input delay:400ms, submit">
+            <div class="search">
+                <icon name="search" size="14" />
+                <label class="sr-only" for="client-search">@T["Clients.Search"]</label>
+                <input id="client-search" type="search" name="search" value="@Model.Search" placeholder="@T["Clients.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+            <noscript><button type="submit" class="btn sm">@T["Users.Filter"]</button></noscript>
+        </form>
+    </div>
+    <div id="client-rows" class="tbl-body">
+        <partial name="_ClientRows" model="Model" />
+    </div>
+</section>

@@ -483,7 +483,7 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# ----- LAMS-specific -----
+# ----- CreditFlow-specific -----
 # Local environment / secrets (use dotnet user-secrets for app secrets)
 .env
 *.env.local

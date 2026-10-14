@@ -1,0 +1,63 @@
+@model ApplicationPageViewModel
+@{
+    var a = Model.Application;
+    var act = Model.Actions;
+    var id = a.Summary.Id.Value;
+}
+<section class="card" aria-labelledby="collateral-title" data-section="collateral">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="collateral-title">@T["Applications.Collateral"]</h2>
+            @if (a.Snapshot?.Terms.CollateralRequired == true || act.EditDraft)
+            {
+                <p class="card-sub">@T["Applications.CollateralHint"]</p>
+            }
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var item in a.Collaterals)
+                {
+                    <tr data-collateral>
+                        <td>@T.EnumText(item.Type)</td>
+                        <td>@item.Description</td>
+                        <td class="num tnum">@DisplayFormat.Money(item.MarketValue)</td>
+                        <td class="tnum">@DisplayFormat.Date(item.ValuationDate)</td>
+                        @if (act.EditDraft)
+                        {
+                            <td class="actions">
+                                <form method="post" asp-action="RemoveCollateral" asp-route-id="@id">
+                                    <partial name="_StepField" />
+                                    <input type="hidden" name="collateralId" value="@item.Id.Value" />
+                                    <button type="submit" class="icon-btn plain" title="@T["Common.Remove"]"><icon name="x" size="16" label="@T["Common.Remove"]" /></button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (a.Collaterals.Count == 0)
+        {
+            <div class="empty">@T["Applications.NoCollateral"]</div>
+        }
+    </div>
+    @if (act.EditDraft)
+    {
+        <form method="post" asp-action="AddCollateral" asp-route-id="@id" class="card-body form row wrap">
+            <partial name="_StepField" />
+            <select name="Type" class="select" aria-label="@T["Applications.CollateralType"]">
+                @foreach (var type in Enum.GetValues<CollateralType>())
+                {
+                    <option value="@type">@T.EnumText(type)</option>
+                }
+            </select>
+            <input name="Description" class="inp grow" placeholder="@T["Applications.CollateralDescription"]" aria-label="@T["Applications.CollateralDescription"]" />
+            <input name="MarketValue" type="number" step="0.01" min="0" class="inp" placeholder="@T["Applications.MarketValue"]" aria-label="@T["Applications.MarketValue"]" />
+            <partial name="_CurrencySelect" model="@("Currency")" />
+            <input name="ValuationDate" type="date" class="inp" aria-label="@T["Applications.ValuationDate"]" title="@T["Applications.ValuationDate"]" />
+            <button type="submit" class="btn sm"><icon name="plus" size="14" />@T["Common.Add"]</button>
+        </form>
+    }
+</section>

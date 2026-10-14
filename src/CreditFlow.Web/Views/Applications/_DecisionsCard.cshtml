@@ -1,0 +1,43 @@
+@model ApplicationPageViewModel
+@{
+    var a = Model.Application;
+    var approveVotes = a.Decisions.Count(d => d.Kind == DecisionKind.VoteApprove);
+    var rejectVotes = a.Decisions.Count(d => d.Kind == DecisionKind.VoteReject);
+    var committee = a.Summary.Status == ApplicationStatus.CreditCommittee || approveVotes + rejectVotes > 0;
+}
+<section class="card" aria-labelledby="decisions-title" data-section="decisions">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title" id="decisions-title">@T["Applications.Decisions"]</h2>
+            @if (committee)
+            {
+                <p class="card-sub" data-votes="@approveVotes/@rejectVotes">@T["Applications.VoteTally", approveVotes, rejectVotes, a.RequiredVotes]</p>
+            }
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <tbody>
+                @foreach (var decision in a.Decisions)
+                {
+                    <tr data-decision="@decision.Kind">
+                        <td class="muted tnum nowrap">@DisplayFormat.DateTime(decision.At)</td>
+                        <td>@T.EnumText(decision.Kind)</td>
+                        <td>@decision.DecidedBy</td>
+                        <td class="small">
+                            @decision.Reason
+                            @if (decision.OverrideReason is { } why)
+                            {
+                                <span class="pill warning" title="@why">@T["Applications.Override"]: @why</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (a.Decisions.Count == 0)
+        {
+            <div class="empty">@T["Applications.NoDecisions"]</div>
+        }
+    </div>
+</section>

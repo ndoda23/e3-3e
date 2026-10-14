@@ -1,0 +1,25 @@
+@model CreditFlow.Application.Authorization.UserAccessProfile?
+@if (Model is not null)
+{
+    // Line 2: the role, never truncated. Line 3: the branch, if any.
+    var role = Model.RoleName;
+    var metaText = Model.BranchName;
+
+    <div class="user-card">
+        <avatar name="@Model.FullName" />
+        <a class="grow user-link" href="/Account/Manage" title="@T["Layout.MyAccount"]">
+            <div class="user-name truncate" title="@Model.FullName">@Model.FullName</div>
+            <div class="user-role" data-user-role>@role</div>
+            @if (metaText is not null)
+            {
+                <div class="user-meta truncate" title="@metaText">@metaText</div>
+            }
+        </a>
+        <form method="post" action="/Account/Logout">
+            @Html.AntiForgeryToken()
+            <button class="icon-btn plain" type="submit" title="@T["Layout.SignOut"]">
+                <icon name="log-out" size="16" label="@T["Layout.SignOut"]" />
+            </button>
+        </form>
+    </div>
+}
