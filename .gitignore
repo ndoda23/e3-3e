@@ -498,4 +498,4 @@ coverage*/
 
 
 # Bank documentation - local only
-docs/
+docs/*.zip
