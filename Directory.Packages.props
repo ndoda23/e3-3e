@@ -27,6 +27,9 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
+        <!-- Transitive (ASP.NET Core DataProtection): pinned to the patched release. -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.21" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
   </ItemGroup>
 
   <ItemGroup Label="Third party">
