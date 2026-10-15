@@ -9,8 +9,6 @@ offers, contract signing with gapless numbers, idempotent disbursement, loan boo
 escalation and offer expiry, notifications, reports with Excel / CSV export, and the Admin area for users, roles,
 products, scoring rules, thresholds, FX rates and holidays.
 
-It continues an earlier codebase (LAMS, Phase 1: sign-in with MFA, permission-based authorization, Admin area). The
-plan, every step and its progress are in [PLAN.md](PLAN.md).
 
 **Contents:** [Running locally](#running-locally) · [Architecture](#architecture) ·
 [Authentication and authorization](#authentication-and-authorization) · [Key decisions](#key-decisions) ·
